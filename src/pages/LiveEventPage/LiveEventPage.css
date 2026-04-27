@@ -14,11 +14,11 @@
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  animation: live-event-page__overlay-in 280ms ease forwards;
+  animation: live-event-page__overlay-in 0.2s ease-out;
 }
 
 .live-event-page--closing .live-event-page__overlay {
-  animation: live-event-page__overlay-out 320ms ease forwards;
+  animation: live-event-page__overlay-out 0.3s ease-out forwards;
 }
 
 @keyframes live-event-page__overlay-in {
@@ -41,8 +41,8 @@
   overflow-y: visible;
   transform: translate3d(0, var(--close-drag), 0);
   transition:
-    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
-  animation: live-event-page__carousel-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.3s ease-out;
+  animation: live-event-page__carousel-in 0.3s ease-out;
   will-change: transform, top;
   pointer-events: none;
 }
@@ -50,6 +50,10 @@
 .live-event-page--closing .live-event-page__carousel {
   transform: translate3d(0, 100%, 0);
   animation: none;
+}
+
+.live-event-page--dragging-close .live-event-page__carousel {
+  transition: none;
 }
 
 @keyframes live-event-page__carousel-in {

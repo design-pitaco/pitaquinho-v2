@@ -1396,6 +1396,12 @@ const MemoLiveEventContent = memo(LiveEventContent, (previous, next) => (
 ))
 
 const AXIS_LOCK_THRESHOLD = 8
+const HORIZONTAL_INTENT_RATIO = 0.65
+const VERTICAL_INTENT_RATIO = 1.25
+const DISMISS_DRAG_START_THRESHOLD = 8
+const DISMISS_VERTICAL_INTENT_RATIO = 1.15
+const DISMISS_CLOSE_THRESHOLD = 96
+const LIVE_EVENT_TRANSITION_MS = 300
 const clampSheetProgress = (value: number) => Math.max(0, Math.min(1, value))
 
 interface SheetMetrics {
@@ -1411,7 +1417,7 @@ function measureSheetMetrics(): SheetMetrics {
   const viewportHeight = window.innerHeight || 844
   const peekWidth = Math.max(1, viewportWidth - 48)
   const peekHeight = Math.max(1, viewportHeight - 80)
-  const initialScale = Math.min(peekWidth / viewportWidth, peekHeight / viewportHeight)
+  const initialScale = peekHeight / viewportHeight
 
   return {
     viewportWidth,
@@ -1432,6 +1438,14 @@ interface VerticalGesture {
   pointerId: number
 }
 
+interface DismissDragGesture {
+  startX: number
+  startY: number
+  lastY: number
+  axis: GestureAxis
+  isDragging: boolean
+}
+
 export function LiveEventPage({
   isOpen,
   onClose,
@@ -1446,6 +1460,7 @@ export function LiveEventPage({
   const [activeIndex, setActiveIndex] = useState(selectedIndex)
   const [isClosing, setIsClosing] = useState(false)
   const [isCarouselDragging, setIsCarouselDragging] = useState(false)
+  const [isCloseDragging, setIsCloseDragging] = useState(false)
   const [isSheetFull, setIsSheetFull] = useState(false)
   const [closeDrag, setCloseDrag] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -1456,7 +1471,9 @@ export function LiveEventPage({
   const carouselStartXRef = useRef(0)
   const carouselStartScrollLeftRef = useRef(0)
   const isCarouselDraggingRef = useRef(false)
+  const isCloseDraggingRef = useRef(false)
   const verticalGestureRef = useRef<VerticalGesture | null>(null)
+  const dismissGestureRef = useRef<DismissDragGesture | null>(null)
 
   const handleSheetProgress = useCallback((value: number) => {
     const nextProgress = clampSheetProgress(value)
@@ -1488,8 +1505,11 @@ export function LiveEventPage({
       setIsSheetFull(false)
       setCloseDrag(0)
       setIsCarouselDragging(false)
+      setIsCloseDragging(false)
       isCarouselDraggingRef.current = false
+      isCloseDraggingRef.current = false
       verticalGestureRef.current = null
+      dismissGestureRef.current = null
     }, 0)
 
     return () => window.clearTimeout(timer)
@@ -1540,10 +1560,10 @@ export function LiveEventPage({
     return firstSlide.offsetWidth + gap
   }, [])
 
-  const getActiveScrollElement = () => (
+  const getActiveScrollElement = useCallback(() => (
     carouselRef.current
       ?.querySelector<HTMLElement>('.live-event-page__slide--active .live-event-page__scroll') ?? null
-  )
+  ), [])
 
   const scrollActiveSheetTo = (targetProgress: 0 | 1) => {
     const scrollElement = getActiveScrollElement()
@@ -1556,6 +1576,113 @@ export function LiveEventPage({
     handleSheetProgress(targetProgress)
     setCloseDrag(0)
   }
+
+  const requestClose = useCallback(() => {
+    if (isClosing) return
+    setIsClosing(true)
+    closeTimerRef.current = window.setTimeout(() => {
+      onClose()
+    }, LIVE_EVENT_TRANSITION_MS)
+  }, [isClosing, onClose])
+
+  const setCloseDraggingState = useCallback((isDragging: boolean) => {
+    isCloseDraggingRef.current = isDragging
+    setIsCloseDragging(isDragging)
+  }, [])
+
+  const canStartDismissDrag = useCallback((scrollElement?: HTMLElement | null) => {
+    const targetScrollElement = scrollElement ?? getActiveScrollElement()
+
+    return Boolean(
+      targetScrollElement
+      && !isClosing
+      && !isCarouselDraggingRef.current
+      && sheetProgressRef.current <= 0
+      && targetScrollElement.scrollTop <= 0
+    )
+  }, [getActiveScrollElement, isClosing])
+
+  const beginDismissDrag = useCallback((clientX: number, clientY: number, scrollElement?: HTMLElement | null) => {
+    if (!canStartDismissDrag(scrollElement)) {
+      dismissGestureRef.current = null
+      return false
+    }
+
+    dismissGestureRef.current = {
+      startX: clientX,
+      startY: clientY,
+      lastY: clientY,
+      axis: 'undecided',
+      isDragging: false,
+    }
+
+    return true
+  }, [canStartDismissDrag])
+
+  const updateDismissDrag = useCallback((clientX: number, clientY: number, scrollElement?: HTMLElement | null) => {
+    const gesture = dismissGestureRef.current
+    if (!gesture) return false
+
+    const dx = clientX - gesture.startX
+    const dy = clientY - gesture.startY
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+
+    gesture.lastY = clientY
+
+    if (gesture.axis === 'undecided') {
+      const hasDownIntent = dy > 0
+        && absDy >= DISMISS_DRAG_START_THRESHOLD
+        && absDy >= absDx * DISMISS_VERTICAL_INTENT_RATIO
+      const hasLateralIntent = absDx >= DISMISS_DRAG_START_THRESHOLD && absDx > absDy
+      const hasUpIntent = dy <= -DISMISS_DRAG_START_THRESHOLD
+        && absDy >= absDx * DISMISS_VERTICAL_INTENT_RATIO
+
+      if (hasDownIntent) {
+        if (!canStartDismissDrag(scrollElement)) {
+          dismissGestureRef.current = null
+          return false
+        }
+
+        gesture.axis = 'vertical'
+        gesture.isDragging = true
+        setCloseDraggingState(true)
+      } else if (hasLateralIntent || hasUpIntent) {
+        dismissGestureRef.current = null
+        return false
+      }
+    }
+
+    if (!gesture.isDragging) return false
+
+    setCloseDrag(Math.max(0, dy))
+    return true
+  }, [canStartDismissDrag, setCloseDraggingState])
+
+  const finishDismissDrag = useCallback(() => {
+    const gesture = dismissGestureRef.current
+    dismissGestureRef.current = null
+    if (!gesture?.isDragging) return false
+
+    const dragDistance = Math.max(0, gesture.lastY - gesture.startY)
+    setCloseDraggingState(false)
+
+    if (dragDistance >= DISMISS_CLOSE_THRESHOLD) {
+      requestClose()
+    } else {
+      setCloseDrag(0)
+    }
+
+    return true
+  }, [requestClose, setCloseDraggingState])
+
+  const cancelDismissDrag = useCallback(() => {
+    if (!dismissGestureRef.current && !isCloseDraggingRef.current) return
+
+    dismissGestureRef.current = null
+    setCloseDraggingState(false)
+    setCloseDrag(0)
+  }, [setCloseDraggingState])
 
   const scrollCarouselToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const carouselElement = carouselRef.current
@@ -1573,6 +1700,66 @@ export function LiveEventPage({
     const targetIndex = Math.min(Math.max(selectedIndex, 0), Math.max(eventMatches.length - 1, 0))
     scrollCarouselToIndex(targetIndex, 'auto')
   }, [isOpen, eventMatches.length, selectedIndex, scrollCarouselToIndex])
+
+  useEffect(() => {
+    if (!isOpen || isClosing || eventMatches.length === 0) return
+
+    const scrollElement = getActiveScrollElement()
+    if (!scrollElement) return
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) {
+        cancelDismissDrag()
+        return
+      }
+
+      const touch = event.touches[0]
+      if (!touch) return
+
+      beginDismissDrag(touch.clientX, touch.clientY, scrollElement)
+    }
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return
+
+      const touch = event.touches[0]
+      if (!touch) return
+
+      if (updateDismissDrag(touch.clientX, touch.clientY, scrollElement)) {
+        event.preventDefault()
+      }
+    }
+
+    const handleTouchEnd = () => {
+      finishDismissDrag()
+    }
+
+    const handleTouchCancel = () => {
+      cancelDismissDrag()
+    }
+
+    scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
+    scrollElement.addEventListener('touchmove', handleTouchMove, { passive: false })
+    scrollElement.addEventListener('touchend', handleTouchEnd)
+    scrollElement.addEventListener('touchcancel', handleTouchCancel)
+
+    return () => {
+      scrollElement.removeEventListener('touchstart', handleTouchStart)
+      scrollElement.removeEventListener('touchmove', handleTouchMove)
+      scrollElement.removeEventListener('touchend', handleTouchEnd)
+      scrollElement.removeEventListener('touchcancel', handleTouchCancel)
+    }
+  }, [
+    activeIndex,
+    beginDismissDrag,
+    cancelDismissDrag,
+    eventMatches.length,
+    finishDismissDrag,
+    getActiveScrollElement,
+    isClosing,
+    isOpen,
+    updateDismissDrag,
+  ])
 
   const snapToNearestSlide = (dragDelta = 0) => {
     const carouselElement = carouselRef.current
@@ -1634,11 +1821,8 @@ export function LiveEventPage({
     carouselStartXRef.current = event.pageX - carouselElement.offsetLeft
     carouselStartScrollLeftRef.current = carouselElement.scrollLeft
 
-    if (event.pointerType === 'mouse') {
-      verticalGestureRef.current.axis = 'horizontal'
-      isCarouselDraggingRef.current = true
-      setIsCarouselDragging(true)
-      event.currentTarget.setPointerCapture(event.pointerId)
+    if (event.pointerType !== 'touch') {
+      beginDismissDrag(event.clientX, event.clientY, getActiveScrollElement())
     }
   }
 
@@ -1647,18 +1831,34 @@ export function LiveEventPage({
     if (!carouselElement) return
 
     const gesture = verticalGestureRef.current
+    if (event.pointerType !== 'touch' && dismissGestureRef.current) {
+      const didDismissDrag = updateDismissDrag(event.clientX, event.clientY, getActiveScrollElement())
+
+      if (didDismissDrag) {
+        event.currentTarget.setPointerCapture(event.pointerId)
+        event.preventDefault()
+        return
+      }
+    }
+
     if (gesture) {
       const dx = event.clientX - gesture.startX
       const dy = event.clientY - gesture.startY
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
 
       if (gesture.axis === 'undecided') {
-        if (Math.abs(dx) > AXIS_LOCK_THRESHOLD || Math.abs(dy) > AXIS_LOCK_THRESHOLD) {
-          gesture.axis = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
-          if (gesture.axis === 'horizontal') {
-            isCarouselDraggingRef.current = true
-            setIsCarouselDragging(true)
-            event.currentTarget.setPointerCapture(event.pointerId)
-          }
+        const hasHorizontalIntent = absDx >= AXIS_LOCK_THRESHOLD && absDx >= absDy * HORIZONTAL_INTENT_RATIO
+        const hasVerticalIntent = absDy >= AXIS_LOCK_THRESHOLD && absDy >= absDx * VERTICAL_INTENT_RATIO
+
+        if (hasHorizontalIntent) {
+          gesture.axis = 'horizontal'
+          isCarouselDraggingRef.current = true
+          setIsCarouselDragging(true)
+          event.currentTarget.setPointerCapture(event.pointerId)
+          event.preventDefault()
+        } else if (hasVerticalIntent) {
+          gesture.axis = 'vertical'
         }
       }
     }
@@ -1682,6 +1882,13 @@ export function LiveEventPage({
   }
 
   const handleCarouselPointerUp = () => {
+    if (finishDismissDrag()) {
+      isCarouselDraggingRef.current = false
+      setIsCarouselDragging(false)
+      verticalGestureRef.current = null
+      return
+    }
+
     const gesture = verticalGestureRef.current
     const shouldSnapCarousel = isCarouselDraggingRef.current && gesture?.axis !== 'vertical'
 
@@ -1698,7 +1905,10 @@ export function LiveEventPage({
   }
 
   const handleCarouselPointerCancel = () => {
-    if (isCarouselDraggingRef.current) {
+    const wasCloseDragging = isCloseDraggingRef.current
+    cancelDismissDrag()
+
+    if (!wasCloseDragging && isCarouselDraggingRef.current) {
       snapToNearestSlide()
     }
     isCarouselDraggingRef.current = false
@@ -1707,14 +1917,6 @@ export function LiveEventPage({
       verticalGestureRef.current = null
       setCloseDrag(0)
     }
-  }
-
-  const requestClose = () => {
-    if (isClosing) return
-    setIsClosing(true)
-    closeTimerRef.current = window.setTimeout(() => {
-      onClose()
-    }, 360)
   }
 
   if (!isOpen || eventMatches.length === 0) return null
@@ -1727,7 +1929,7 @@ export function LiveEventPage({
 
   return createPortal(
     <div
-      className={`live-event-page${isClosing ? ' live-event-page--closing' : ''}`}
+      className={`live-event-page${isClosing ? ' live-event-page--closing' : ''}${isCloseDragging ? ' live-event-page--dragging-close' : ''}`}
       style={rootStyle}
     >
       <div className="live-event-page__overlay" onClick={requestClose} />
