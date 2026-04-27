@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import './Header.css'
 import { SportRail } from '../SportRail'
 import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
@@ -7,9 +8,10 @@ import iconNotificacoes from '../../assets/iconNotificacoesHeader.svg'
 interface HeaderProps {
   activeSport?: string | null
   onSportChange?: (sportId: string) => void
+  children?: ReactNode
 }
 
-export function Header({ activeSport, onSportChange }: HeaderProps = {}) {
+export function Header({ activeSport, onSportChange, children }: HeaderProps = {}) {
   const isSportPage = !!activeSport && activeSport !== 'destaques'
 
   return (
@@ -43,6 +45,7 @@ export function Header({ activeSport, onSportChange }: HeaderProps = {}) {
       </div>
 
       <SportRail activeSport={activeSport} onSportChange={onSportChange} />
+      {children}
     </header>
   )
 }

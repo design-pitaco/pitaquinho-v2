@@ -1,7 +1,6 @@
 .sport-filter-bar {
-  position: sticky;
-  top: 148px;
-  z-index: 201;
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;

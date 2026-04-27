@@ -69,18 +69,29 @@ export function Home() {
     })
   }
 
+  const homeClasses = [
+    'home',
+    isVariant3 ? '' : 'home--no-dividers',
+    activeSport ? 'home--sport-active' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div className={`home ${isVariant3 ? '' : 'home--no-dividers'}`}>
-      <Header activeSport={activeSport} onSportChange={handleSportChange} />
-      <TrilhoEBanner hideBanner={!!activeSport} />
-      {activeSport ? (
-        <Fragment key={`sport-${activeSport}-${contentResetKey}`}>
+    <div className={homeClasses}>
+      <Header activeSport={activeSport} onSportChange={handleSportChange}>
+        {activeSport && (
           <SportFilterBar
             sport={activeSport}
             selectedCompetitionId={selectedCompetition?.id ?? null}
             onSelectCompetition={handleSelectCompetition}
             onClearCompetition={handleClearCompetition}
           />
+        )}
+      </Header>
+      <TrilhoEBanner hideBanner={!!activeSport} />
+      {activeSport ? (
+        <Fragment key={`sport-${activeSport}-${contentResetKey}`}>
           {selectedCompetition ? (
             <CompetitionPage
               sport={activeSport}

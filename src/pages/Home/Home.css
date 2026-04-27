@@ -7,6 +7,10 @@
   padding-bottom: 60px;
 }
 
+.home--sport-active {
+  padding-top: 204px;
+}
+
 .home__content {
   flex: 1;
   padding: 0;
@@ -23,4 +27,3 @@
   border-bottom: none;
   padding: 0 0 24px 0;
 }
-

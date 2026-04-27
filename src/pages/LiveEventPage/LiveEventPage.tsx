@@ -1,6 +1,5 @@
-import { memo, useCallback, useState, useEffect, useLayoutEffect, useRef, type PointerEvent, type WheelEvent } from 'react'
+import { memo, useCallback, useState, useEffect, useRef, type CSSProperties, type PointerEvent, type UIEvent, type WheelEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, useMotionValue, useMotionValueEvent, useSpring, useTransform } from 'motion/react'
 import './LiveEventPage.css'
 
 import iconAoVivo from '../../assets/iconAoVivo.png'
@@ -64,13 +63,10 @@ interface LiveEventContentProps {
   match: LiveEventMatch
   leagueName: string
   currentTime: string
-  sheetMetrics: SheetMetrics
   isExpanded: boolean
-  isActive: boolean
   onRequestClose: () => void
   onRequestExpand: () => void
   onRequestCollapse: () => void
-  onSheetProgress: (progress: number) => void
 }
 
 type TabId = 'transmissao' | 'campo'
@@ -586,24 +582,14 @@ function buildFallbackEvents(teamName: string, score: number): MatchEvent[] {
   return events.sort((a, b) => a.minute - b.minute)
 }
 
-const SHEET_EXPAND_SCROLL_RANGE = 80
-const sheetScrollSpring = {
-  stiffness: 520,
-  damping: 46,
-  mass: 0.55,
-} as const
-
 function LiveEventContent({
   onRequestClose,
   onRequestExpand,
   onRequestCollapse,
-  onSheetProgress,
   isExpanded,
-  isActive,
   match,
   leagueName,
   currentTime,
-  sheetMetrics,
 }: LiveEventContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>('transmissao')
   const [activeDetailTab, setActiveDetailTab] = useState<DetailTabId>('destaques')
@@ -615,20 +601,11 @@ function LiveEventContent({
   const [isCardsMarketOpen, setIsCardsMarketOpen] = useState(true)
   const [isDoubleChanceMarketOpen, setIsDoubleChanceMarketOpen] = useState(true)
   const [isShotsExpanded, setIsShotsExpanded] = useState(false)
-  const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false)
   const [displayTime, setDisplayTime] = useState(currentTime)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const matchCardRef = useRef<HTMLDivElement>(null)
   const dragStartYRef = useRef<number | null>(null)
-  const partialScrollSettleTimerRef = useRef<number | null>(null)
-  const isScrollTouchActiveRef = useRef(false)
-  const compactHeaderThresholdRef = useRef(Number.POSITIVE_INFINITY)
-  const scrollY = useMotionValue(0)
-  const rawSheetProgress = useTransform(scrollY, [0, SHEET_EXPAND_SCROLL_RANGE], [0, 1], { clamp: true })
-  const sheetProgress = useSpring(rawSheetProgress, sheetScrollSpring)
-  const sheetScale = useTransform(sheetProgress, [0, 1], [sheetMetrics.initialScale, 1])
-  const sheetRadius = useTransform(sheetProgress, [0, 1], [28, 0])
-  const contentExpansionOffset = useTransform(scrollY, [0, SHEET_EXPAND_SCROLL_RANGE], [0, SHEET_EXPAND_SCROLL_RANGE], { clamp: true })
+  const isResettingCompactScrollRef = useRef(false)
+  const compactScrollResetTimerRef = useRef<number | null>(null)
   const allShotsOnGoalRows = getShotsOnGoalRows(match, true)
   const primaryShotsOnGoalRows = allShotsOnGoalRows.slice(0, 4)
   const extraShotsOnGoalRows = allShotsOnGoalRows.slice(4, 8)
@@ -636,39 +613,6 @@ function LiveEventContent({
   const totalCornersRows = getTotalCornersRows(match)
   const totalCardsRows = getTotalCardsRows()
   const doubleChanceRows = getDoubleChanceRows(match)
-
-  const clearPartialScrollSettleTimer = useCallback(() => {
-    if (partialScrollSettleTimerRef.current === null) return
-
-    window.clearTimeout(partialScrollSettleTimerRef.current)
-    partialScrollSettleTimerRef.current = null
-  }, [])
-
-  const snapPartialScrollToCollapsed = useCallback(() => {
-    partialScrollSettleTimerRef.current = null
-    if (!isActive) return
-
-    const scrollElement = scrollRef.current
-    if (!scrollElement) return
-
-    const currentScrollTop = scrollElement.scrollTop
-    if (currentScrollTop <= 0 || currentScrollTop >= SHEET_EXPAND_SCROLL_RANGE) return
-
-    onSheetProgress(0)
-    scrollElement.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  }, [isActive, onSheetProgress])
-
-  const schedulePartialScrollSnap = useCallback((delay = 120) => {
-    clearPartialScrollSettleTimer()
-    partialScrollSettleTimerRef.current = window.setTimeout(snapPartialScrollToCollapsed, delay)
-  }, [clearPartialScrollSettleTimer, snapPartialScrollToCollapsed])
-
-  const stopPlayerOddsPointerPropagation = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    event.stopPropagation()
-  }, [])
 
   const handlePlayerOddsWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
     const horizontalDelta = getHorizontalWheelDelta(event.deltaX, event.deltaY, event.shiftKey)
@@ -679,6 +623,23 @@ function LiveEventContent({
     event.stopPropagation()
     event.currentTarget.scrollLeft += horizontalDelta
   }, [])
+
+  const handleContentScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    if (isResettingCompactScrollRef.current) return
+
+    const scrollTop = event.currentTarget.scrollTop
+
+    if (isExpanded) {
+      if (scrollTop <= LIVE_EVENT_COLLAPSE_SCROLL_THRESHOLD) {
+        onRequestCollapse()
+      }
+      return
+    }
+
+    if (scrollTop >= LIVE_EVENT_EXPAND_SCROLL_THRESHOLD) {
+      onRequestExpand()
+    }
+  }, [isExpanded, onRequestCollapse, onRequestExpand])
 
   useEffect(() => {
     const syncTimer = window.setTimeout(() => setDisplayTime(currentTime), 0)
@@ -704,100 +665,35 @@ function LiveEventContent({
       setIsCardsMarketOpen(true)
       setIsDoubleChanceMarketOpen(true)
       setIsShotsExpanded(false)
-      setIsCompactHeaderVisible(false)
       setScrolledOddsRows({})
-      clearPartialScrollSettleTimer()
-      isScrollTouchActiveRef.current = false
-      scrollY.set(0)
+      scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [clearPartialScrollSettleTimer, match, scrollY])
-
-  useEffect(() => () => {
-    clearPartialScrollSettleTimer()
-  }, [clearPartialScrollSettleTimer])
-
-  useEffect(() => {
-    const scrollElement = scrollRef.current
-    if (!scrollElement) return
-
-    const syncScrollPosition = () => {
-      scrollY.set(scrollElement.scrollTop)
-    }
-
-    const handleTouchStart = () => {
-      isScrollTouchActiveRef.current = true
-      clearPartialScrollSettleTimer()
-    }
-
-    const handleTouchEnd = () => {
-      isScrollTouchActiveRef.current = false
-      schedulePartialScrollSnap(80)
-    }
-
-    const handleTouchCancel = () => {
-      isScrollTouchActiveRef.current = false
-      schedulePartialScrollSnap(80)
-    }
-
-    scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
-    scrollElement.addEventListener('touchend', handleTouchEnd)
-    scrollElement.addEventListener('touchcancel', handleTouchCancel)
-    scrollElement.addEventListener('scroll', syncScrollPosition, { passive: true })
-    syncScrollPosition()
-
-    return () => {
-      scrollElement.removeEventListener('touchstart', handleTouchStart)
-      scrollElement.removeEventListener('touchend', handleTouchEnd)
-      scrollElement.removeEventListener('touchcancel', handleTouchCancel)
-      scrollElement.removeEventListener('scroll', syncScrollPosition)
-    }
-  }, [clearPartialScrollSettleTimer, schedulePartialScrollSnap, scrollY])
-
-  useLayoutEffect(() => {
-    const matchCardElement = matchCardRef.current
-    if (!matchCardElement) return
-
-    const updateThreshold = () => {
-      compactHeaderThresholdRef.current = matchCardElement.offsetTop + matchCardElement.offsetHeight + 16
-    }
-
-    updateThreshold()
-
-    const resizeObserver = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(updateThreshold)
-      : null
-
-    resizeObserver?.observe(matchCardElement)
-    window.addEventListener('resize', updateThreshold)
-
-    return () => {
-      resizeObserver?.disconnect()
-      window.removeEventListener('resize', updateThreshold)
-    }
   }, [match])
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    const progress = clampSheetProgress(latest / SHEET_EXPAND_SCROLL_RANGE)
-    if (isActive) onSheetProgress(progress)
-
-    if (isActive) {
-      const isPartiallyExpanded = latest > 0 && latest < SHEET_EXPAND_SCROLL_RANGE
-
-      if (isPartiallyExpanded && !isScrollTouchActiveRef.current) {
-        schedulePartialScrollSnap()
-      } else if (!isPartiallyExpanded) {
-        clearPartialScrollSettleTimer()
-      }
+  useEffect(() => () => {
+    if (compactScrollResetTimerRef.current !== null) {
+      window.clearTimeout(compactScrollResetTimerRef.current)
+      compactScrollResetTimerRef.current = null
     }
+  }, [])
 
-    const contentScrollTop = Math.max(0, latest - SHEET_EXPAND_SCROLL_RANGE)
-    const shouldShowCompactHeader = isExpanded && contentScrollTop >= compactHeaderThresholdRef.current
-    setIsCompactHeaderVisible((current) => (
-      current === shouldShowCompactHeader ? current : shouldShowCompactHeader
-    ))
-  })
+  useEffect(() => {
+    if (!isExpanded) {
+      isResettingCompactScrollRef.current = true
+      scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+
+      if (compactScrollResetTimerRef.current !== null) {
+        window.clearTimeout(compactScrollResetTimerRef.current)
+      }
+
+      compactScrollResetTimerRef.current = window.setTimeout(() => {
+        isResettingCompactScrollRef.current = false
+        compactScrollResetTimerRef.current = null
+      }, LIVE_EVENT_TRANSITION_MS)
+    }
+  }, [isExpanded])
 
   const handleCloseHandlePointerDown = (event: PointerEvent<HTMLSpanElement>) => {
     dragStartYRef.current = event.clientY
@@ -805,6 +701,9 @@ function LiveEventContent({
   }
 
   const handleCloseHandlePointerUp = (event: PointerEvent<HTMLSpanElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
     const dragStartY = dragStartYRef.current
     dragStartYRef.current = null
     const dragDistance = dragStartY === null ? 0 : event.clientY - dragStartY
@@ -834,53 +733,17 @@ function LiveEventContent({
   }
 
   return (
-    <motion.div
+    <div
       className="live-event-page__content"
-      style={{
-        scale: sheetScale,
-        borderTopLeftRadius: sheetRadius,
-        borderTopRightRadius: sheetRadius,
-      }}
       onClick={(event) => event.stopPropagation()}
     >
-      <div className={`live-event-page__compact-header${isExpanded && isCompactHeaderVisible ? ' live-event-page__compact-header--visible' : ''}`}>
-        <div className="live-event-page__compact-header-bg" />
-        <div className="live-event-page__compact-match">
-          <div className="live-event-page__compact-team">
-            {match.homeTeam.icon ? (
-              <img src={match.homeTeam.icon} alt={match.homeTeam.name} className="live-event-page__compact-logo" />
-            ) : (
-              <div className="live-event-page__compact-logo-placeholder" />
-            )}
-          </div>
-          <div className="live-event-page__compact-scoreboard">
-            <div className="live-event-page__compact-score-row">
-              <span>{match.homeTeam.score}</span>
-              <span>:</span>
-              <span>{match.awayTeam.score}</span>
-            </div>
-            <span className="live-event-page__compact-time">{displayTime}</span>
-          </div>
-          <div className="live-event-page__compact-team">
-            {match.awayTeam.icon ? (
-              <img src={match.awayTeam.icon} alt={match.awayTeam.name} className="live-event-page__compact-logo" />
-            ) : (
-              <div className="live-event-page__compact-logo-placeholder" />
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Scrollable content */}
       <div
         className="live-event-page__scroll"
         ref={scrollRef}
+        onScroll={handleContentScroll}
       >
-        <div className="live-event-page__scroll-stage">
-          <motion.div
-            className="live-event-page__scroll-body"
-            style={{ y: contentExpansionOffset }}
-          >
+        <div className="live-event-page__scroll-body">
         <button
           type="button"
           className="live-event-page__top-close-area"
@@ -889,6 +752,7 @@ function LiveEventContent({
         >
           <span
             className="live-event-page__drag-handle"
+            onClick={(event) => event.stopPropagation()}
             onPointerDown={handleCloseHandlePointerDown}
             onPointerUp={handleCloseHandlePointerUp}
             onPointerCancel={handleCloseHandlePointerCancel}
@@ -898,7 +762,7 @@ function LiveEventContent({
         </button>
 
         {/* ── Match card ── */}
-        <div className="live-event-page__match-card" ref={matchCardRef}>
+        <div className="live-event-page__match-card">
 
           {/* League name */}
           <span className="live-event-page__league-name">{leagueName}</span>
@@ -1200,7 +1064,6 @@ function LiveEventContent({
                     <div
                       key={row.id}
                       className={`live-event-page__player-odds-row${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row--scrolled' : ''}`}
-                      onPointerDown={stopPlayerOddsPointerPropagation}
                       onWheel={handlePlayerOddsWheel}
                       onScroll={(event) => {
                         const isScrolled = event.currentTarget.scrollLeft > 0
@@ -1223,7 +1086,6 @@ function LiveEventContent({
                         <div
                           key={row.id}
                           className={`live-event-page__player-odds-row${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row--scrolled' : ''}`}
-                          onPointerDown={stopPlayerOddsPointerPropagation}
                           onWheel={handlePlayerOddsWheel}
                           onScroll={(event) => {
                             const isScrolled = event.currentTarget.scrollLeft > 0
@@ -1478,10 +1340,9 @@ function LiveEventContent({
           </div>
         </div>
 
-          </motion.div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1489,28 +1350,14 @@ const MemoLiveEventContent = memo(LiveEventContent, (previous, next) => (
   previous.match === next.match
   && previous.leagueName === next.leagueName
   && previous.currentTime === next.currentTime
-  && previous.sheetMetrics.viewportWidth === next.sheetMetrics.viewportWidth
-  && previous.sheetMetrics.viewportHeight === next.sheetMetrics.viewportHeight
-  && previous.sheetMetrics.peekWidth === next.sheetMetrics.peekWidth
-  && previous.sheetMetrics.peekHeight === next.sheetMetrics.peekHeight
-  && previous.sheetMetrics.initialScale === next.sheetMetrics.initialScale
-  && previous.sheetMetrics.carouselGap === next.sheetMetrics.carouselGap
   && previous.isExpanded === next.isExpanded
-  && previous.isActive === next.isActive
 ))
 
-const AXIS_LOCK_THRESHOLD = 8
-const HORIZONTAL_INTENT_RATIO = 0.65
-const VERTICAL_INTENT_RATIO = 1.25
-const SNAP_TO_SLIDE_THRESHOLD = 32
-const DISMISS_DRAG_START_THRESHOLD = 8
-const DISMISS_VERTICAL_INTENT_RATIO = 1.15
-const DISMISS_CLOSE_THRESHOLD = 96
-const DISMISS_SCROLL_TOP_EPSILON = 1
-const DISMISS_SHEET_PROGRESS_EPSILON = 0.02
-const LIVE_EVENT_CAROUSEL_VISUAL_GAP = 8
+const LIVE_EVENT_COMPACT_SIDE_MARGIN = 24
+const LIVE_EVENT_COMPACT_TOP = 80
 const LIVE_EVENT_TRANSITION_MS = 300
-const clampSheetProgress = (value: number) => Math.max(0, Math.min(1, value))
+const LIVE_EVENT_EXPAND_SCROLL_THRESHOLD = 8
+const LIVE_EVENT_COLLAPSE_SCROLL_THRESHOLD = 1
 const getHorizontalWheelDelta = (deltaX: number, deltaY: number, shiftKey: boolean) => {
   if (Math.abs(deltaX) >= Math.abs(deltaY)) return deltaX
   return shiftKey ? deltaY : 0
@@ -1519,47 +1366,33 @@ const getHorizontalWheelDelta = (deltaX: number, deltaY: number, shiftKey: boole
 interface SheetMetrics {
   viewportWidth: number
   viewportHeight: number
-  peekWidth: number
-  peekHeight: number
-  initialScale: number
-  carouselGap: number
+  compactScale: number
 }
 
 function measureSheetMetrics(): SheetMetrics {
-  const viewportWidth = window.innerWidth || 390
-  const viewportHeight = window.innerHeight || 844
-  const peekWidth = Math.max(1, viewportWidth - 48)
-  const peekHeight = Math.max(1, viewportHeight - 80)
-  const initialScale = peekHeight / viewportHeight
-  const scaledSheetWidth = viewportWidth * initialScale
-  const carouselGap = Math.max(0, LIVE_EVENT_CAROUSEL_VISUAL_GAP + scaledSheetWidth - peekWidth)
+  if (typeof window === 'undefined') {
+    return {
+      viewportWidth: 390,
+      viewportHeight: 844,
+      compactScale: 342 / 390,
+    }
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 390
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight ?? 844
+  const availableWidth = Math.max(1, viewportWidth - LIVE_EVENT_COMPACT_SIDE_MARGIN * 2)
+  const availableHeight = Math.max(1, viewportHeight - LIVE_EVENT_COMPACT_TOP)
+  const compactScale = Math.min(
+    1,
+    availableWidth / viewportWidth,
+    availableHeight / viewportHeight
+  )
 
   return {
     viewportWidth,
     viewportHeight,
-    peekWidth,
-    peekHeight,
-    initialScale,
-    carouselGap,
+    compactScale,
   }
-}
-
-type GestureAxis = 'undecided' | 'horizontal' | 'vertical'
-
-interface VerticalGesture {
-  startX: number
-  startY: number
-  axis: GestureAxis
-  pointerType: string
-  pointerId: number
-}
-
-interface DismissDragGesture {
-  startX: number
-  startY: number
-  lastY: number
-  axis: GestureAxis
-  isDragging: boolean
 }
 
 export function LiveEventPage({
@@ -1573,86 +1406,48 @@ export function LiveEventPage({
   currentTime,
 }: LiveEventPageProps) {
   const eventMatches = matches?.length ? matches : match ? [match] : []
-  const [activeIndex, setActiveIndex] = useState(selectedIndex)
+  const selectedMatchIndex = Math.min(Math.max(selectedIndex, 0), Math.max(eventMatches.length - 1, 0))
+  const selectedMatch = eventMatches[selectedMatchIndex]
   const [isClosing, setIsClosing] = useState(false)
-  const [isCarouselDragging, setIsCarouselDragging] = useState(false)
-  const [isCarouselSwipeEnabled, setIsCarouselSwipeEnabled] = useState(true)
-  const [isCloseDragging, setIsCloseDragging] = useState(false)
-  const [isSheetFull, setIsSheetFull] = useState(false)
-  const [closeDrag, setCloseDrag] = useState(0)
-  const carouselRef = useRef<HTMLDivElement>(null)
+  const [shouldRender, setShouldRender] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [sheetMetrics, setSheetMetrics] = useState<SheetMetrics>(() => measureSheetMetrics())
   const closeTimerRef = useRef<number | null>(null)
-  const sheetProgressRef = useRef(0)
-  const isSheetFullRef = useRef(false)
-  const activeIndexRef = useRef(activeIndex)
-  const carouselStartXRef = useRef(0)
-  const carouselStartScrollLeftRef = useRef(0)
-  const isCarouselDraggingRef = useRef(false)
-  const isCarouselSwipeEnabledRef = useRef(true)
-  const isCloseDraggingRef = useRef(false)
-  const verticalGestureRef = useRef<VerticalGesture | null>(null)
-  const dismissGestureRef = useRef<DismissDragGesture | null>(null)
-
-  const handleSheetProgress = useCallback((value: number) => {
-    const nextProgress = clampSheetProgress(value)
-    sheetProgressRef.current = nextProgress
-    const nextIsFull = nextProgress >= 1 ? true : nextProgress <= 0 ? false : isSheetFullRef.current
-    const nextIsCarouselSwipeEnabled = nextProgress <= DISMISS_SHEET_PROGRESS_EPSILON
-
-    if (isSheetFullRef.current !== nextIsFull) {
-      isSheetFullRef.current = nextIsFull
-      setIsSheetFull(nextIsFull)
-    }
-
-    if (isCarouselSwipeEnabledRef.current !== nextIsCarouselSwipeEnabled) {
-      isCarouselSwipeEnabledRef.current = nextIsCarouselSwipeEnabled
-      setIsCarouselSwipeEnabled(nextIsCarouselSwipeEnabled)
-    }
-
-    return nextProgress
-  }, [])
 
   useEffect(() => {
-    if (!isOpen) return
     const timer = window.setTimeout(() => {
-      const targetIndex = Math.min(Math.max(selectedIndex, 0), Math.max(eventMatches.length - 1, 0))
-      activeIndexRef.current = targetIndex
-      setActiveIndex(targetIndex)
-      setIsClosing(false)
-      handleSheetProgress(0)
-      carouselRef.current
-        ?.querySelectorAll<HTMLElement>('.live-event-page__scroll')
-        .forEach((scrollElement) => {
-          scrollElement.scrollTop = 0
-        })
-      isSheetFullRef.current = false
-      setIsSheetFull(false)
-      setCloseDrag(0)
-      setIsCarouselDragging(false)
-      setIsCarouselSwipeEnabled(true)
-      setIsCloseDragging(false)
-      isCarouselDraggingRef.current = false
-      isCarouselSwipeEnabledRef.current = true
-      isCloseDraggingRef.current = false
-      verticalGestureRef.current = null
-      dismissGestureRef.current = null
+      if (isOpen && !isClosing) {
+        if (closeTimerRef.current !== null) {
+          window.clearTimeout(closeTimerRef.current)
+          closeTimerRef.current = null
+        }
+        setSheetMetrics(measureSheetMetrics())
+        setIsExpanded(false)
+        setShouldRender(true)
+        setIsClosing(false)
+      } else if (shouldRender && !isClosing) {
+        setIsClosing(true)
+        setIsExpanded(false)
+        closeTimerRef.current = window.setTimeout(() => {
+          setShouldRender(false)
+          setIsClosing(false)
+          closeTimerRef.current = null
+        }, LIVE_EVENT_TRANSITION_MS)
+      }
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [isOpen, selectedIndex, eventMatches.length, handleSheetProgress])
-
-  useLayoutEffect(() => {
-    activeIndexRef.current = activeIndex
-  }, [activeIndex, eventMatches.length])
+  }, [isOpen, shouldRender, isClosing])
 
   useEffect(() => () => {
     if (closeTimerRef.current !== null) {
       window.clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
     }
   }, [])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!shouldRender) return
 
     const scrollY = window.scrollY
     const previousBodyOverflow = document.body.style.overflow
@@ -1675,443 +1470,83 @@ export function LiveEventPage({
       document.body.style.width = previousBodyWidth
       window.scrollTo(0, scrollY)
     }
-  }, [isOpen])
+  }, [shouldRender])
 
-  const getCarouselStep = useCallback(() => {
-    const carouselElement = carouselRef.current
-    const firstSlide = carouselElement?.querySelector<HTMLElement>('.live-event-page__slide')
-    if (!carouselElement || !firstSlide) return 0
+  useEffect(() => {
+    if (!shouldRender) return
 
-    const computedGap = Number.parseFloat(window.getComputedStyle(carouselElement).columnGap)
-    const gap = Number.isFinite(computedGap) ? computedGap : 0
-    return firstSlide.offsetWidth + gap
-  }, [])
+    const updateSheetMetrics = () => setSheetMetrics(measureSheetMetrics())
 
-  const getActiveScrollElement = useCallback(() => (
-    carouselRef.current
-      ?.querySelector<HTMLElement>('.live-event-page__slide--active .live-event-page__scroll') ?? null
-  ), [])
+    updateSheetMetrics()
+    window.addEventListener('resize', updateSheetMetrics)
+    window.visualViewport?.addEventListener('resize', updateSheetMetrics)
 
-  const scrollActiveSheetTo = (targetProgress: 0 | 1) => {
-    const scrollElement = getActiveScrollElement()
-    if (scrollElement) {
-      scrollElement.scrollTo({
-        top: targetProgress * SHEET_EXPAND_SCROLL_RANGE,
-        behavior: 'smooth',
-      })
+    return () => {
+      window.removeEventListener('resize', updateSheetMetrics)
+      window.visualViewport?.removeEventListener('resize', updateSheetMetrics)
     }
-    handleSheetProgress(targetProgress)
-    setCloseDrag(0)
-  }
+  }, [shouldRender])
 
   const requestClose = useCallback(() => {
     if (isClosing) return
     setIsClosing(true)
+    setIsExpanded(false)
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+    }
     closeTimerRef.current = window.setTimeout(() => {
+      setShouldRender(false)
+      setIsClosing(false)
+      closeTimerRef.current = null
       onClose()
     }, LIVE_EVENT_TRANSITION_MS)
   }, [isClosing, onClose])
 
-  const setCloseDraggingState = useCallback((isDragging: boolean) => {
-    isCloseDraggingRef.current = isDragging
-    setIsCloseDragging(isDragging)
+  const requestExpand = useCallback(() => {
+    setIsExpanded(true)
   }, [])
 
-  const canStartDismissDrag = useCallback((scrollElement?: HTMLElement | null) => {
-    const targetScrollElement = scrollElement ?? getActiveScrollElement()
-
-    return Boolean(
-      targetScrollElement
-      && !isClosing
-      && !isCarouselDraggingRef.current
-      && sheetProgressRef.current <= DISMISS_SHEET_PROGRESS_EPSILON
-      && targetScrollElement.scrollTop <= DISMISS_SCROLL_TOP_EPSILON
-    )
-  }, [getActiveScrollElement, isClosing])
-
-  const beginDismissDrag = useCallback((clientX: number, clientY: number, scrollElement?: HTMLElement | null) => {
-    if (!canStartDismissDrag(scrollElement)) {
-      dismissGestureRef.current = null
-      return false
-    }
-
-    dismissGestureRef.current = {
-      startX: clientX,
-      startY: clientY,
-      lastY: clientY,
-      axis: 'undecided',
-      isDragging: false,
-    }
-
-    return true
-  }, [canStartDismissDrag])
-
-  const updateDismissDrag = useCallback((clientX: number, clientY: number, scrollElement?: HTMLElement | null) => {
-    const gesture = dismissGestureRef.current
-    if (!gesture) return false
-
-    const dx = clientX - gesture.startX
-    const dy = clientY - gesture.startY
-    const absDx = Math.abs(dx)
-    const absDy = Math.abs(dy)
-
-    gesture.lastY = clientY
-
-    if (gesture.axis === 'undecided') {
-      const hasDownIntent = dy > 0
-        && absDy >= DISMISS_DRAG_START_THRESHOLD
-        && absDy >= absDx * DISMISS_VERTICAL_INTENT_RATIO
-      const hasLateralIntent = absDx >= DISMISS_DRAG_START_THRESHOLD && absDx > absDy
-      const hasUpIntent = dy <= -DISMISS_DRAG_START_THRESHOLD
-        && absDy >= absDx * DISMISS_VERTICAL_INTENT_RATIO
-
-      if (hasDownIntent) {
-        gesture.axis = 'vertical'
-        gesture.isDragging = true
-        if (scrollElement) scrollElement.scrollTop = 0
-        setCloseDraggingState(true)
-      } else if (hasLateralIntent || hasUpIntent) {
-        dismissGestureRef.current = null
-        return false
-      }
-    }
-
-    if (!gesture.isDragging) return false
-
-    setCloseDrag(Math.max(0, dy))
-    return true
-  }, [setCloseDraggingState])
-
-  const finishDismissDrag = useCallback(() => {
-    const gesture = dismissGestureRef.current
-    dismissGestureRef.current = null
-    if (!gesture?.isDragging) return false
-
-    const dragDistance = Math.max(0, gesture.lastY - gesture.startY)
-    setCloseDraggingState(false)
-
-    if (dragDistance >= DISMISS_CLOSE_THRESHOLD) {
-      requestClose()
-    } else {
-      setCloseDrag(0)
-    }
-
-    return true
-  }, [requestClose, setCloseDraggingState])
-
-  const cancelDismissDrag = useCallback(() => {
-    if (!dismissGestureRef.current && !isCloseDraggingRef.current) return
-
-    dismissGestureRef.current = null
-    setCloseDraggingState(false)
-    setCloseDrag(0)
-  }, [setCloseDraggingState])
-
-  const scrollCarouselToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
-    const carouselElement = carouselRef.current
-    const step = getCarouselStep()
-    if (!carouselElement || step === 0) return
-
-    carouselElement.scrollTo({
-      left: index * step,
-      behavior,
-    })
-  }, [getCarouselStep])
-
-  useLayoutEffect(() => {
-    if (!isOpen || eventMatches.length === 0) return
-    const targetIndex = Math.min(Math.max(selectedIndex, 0), Math.max(eventMatches.length - 1, 0))
-    scrollCarouselToIndex(targetIndex, 'auto')
-  }, [isOpen, eventMatches.length, selectedIndex, scrollCarouselToIndex])
-
-  const snapToNearestSlide = useCallback((dragDelta = 0) => {
-    const carouselElement = carouselRef.current
-    const step = getCarouselStep()
-    if (!carouselElement || step === 0) return
-
-    const currentIndex = carouselElement.scrollLeft / step
-    let targetIndex: number
-
-    if (dragDelta > SNAP_TO_SLIDE_THRESHOLD) {
-      targetIndex = Math.ceil(currentIndex)
-    } else if (dragDelta < -SNAP_TO_SLIDE_THRESHOLD) {
-      targetIndex = Math.floor(currentIndex)
-    } else {
-      targetIndex = Math.round(currentIndex)
-    }
-
-    targetIndex = Math.max(0, Math.min(targetIndex, eventMatches.length - 1))
-    activeIndexRef.current = targetIndex
-    setActiveIndex(targetIndex)
-    handleSheetProgress(0)
-    isSheetFullRef.current = false
-    setIsSheetFull(false)
-    carouselElement
-      .querySelectorAll<HTMLElement>('.live-event-page__scroll')
-      .forEach((scrollElement) => {
-        scrollElement.scrollTop = 0
-      })
-    scrollCarouselToIndex(targetIndex)
-  }, [eventMatches.length, getCarouselStep, handleSheetProgress, scrollCarouselToIndex])
-
-  useEffect(() => {
-    if (!isOpen || isClosing || eventMatches.length === 0) return
-
-    const scrollElement = getActiveScrollElement()
-    if (!scrollElement) return
-
-    const handleTouchStart = (event: TouchEvent) => {
-      if (event.touches.length !== 1) {
-        cancelDismissDrag()
-        return
-      }
-
-      const touch = event.touches[0]
-      if (!touch) return
-
-      beginDismissDrag(touch.clientX, touch.clientY, scrollElement)
-    }
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1) return
-
-      const touch = event.touches[0]
-      if (!touch) return
-
-      if (updateDismissDrag(touch.clientX, touch.clientY, scrollElement)) {
-        event.preventDefault()
-      }
-    }
-
-    const handleTouchEnd = () => {
-      finishDismissDrag()
-    }
-
-    const handleTouchCancel = () => {
-      cancelDismissDrag()
-    }
-
-    scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
-    scrollElement.addEventListener('touchmove', handleTouchMove, { passive: false })
-    scrollElement.addEventListener('touchend', handleTouchEnd)
-    scrollElement.addEventListener('touchcancel', handleTouchCancel)
-
-    return () => {
-      scrollElement.removeEventListener('touchstart', handleTouchStart)
-      scrollElement.removeEventListener('touchmove', handleTouchMove)
-      scrollElement.removeEventListener('touchend', handleTouchEnd)
-      scrollElement.removeEventListener('touchcancel', handleTouchCancel)
-    }
-  }, [
-    activeIndex,
-    beginDismissDrag,
-    cancelDismissDrag,
-    eventMatches.length,
-    finishDismissDrag,
-    getActiveScrollElement,
-    isClosing,
-    isOpen,
-    updateDismissDrag,
-  ])
-
-  const handleCarouselScroll = () => {
-    if (isCarouselDraggingRef.current) return
-
-    const carouselElement = carouselRef.current
-    const step = getCarouselStep()
-    if (!carouselElement || step === 0) return
-
-    const nextIndex = Math.max(0, Math.min(Math.round(carouselElement.scrollLeft / step), eventMatches.length - 1))
-    if (activeIndexRef.current === nextIndex) return
-
-    activeIndexRef.current = nextIndex
-    setActiveIndex(nextIndex)
-  }
-
-  const handleCarouselWheelCapture = useCallback((event: WheelEvent<HTMLDivElement>) => {
-    const targetElement = event.target instanceof Element ? event.target : null
-    const playerOddsRow = targetElement?.closest('.live-event-page__player-odds-row') as HTMLElement | null
-    if (!playerOddsRow) return
-
-    const horizontalDelta = getHorizontalWheelDelta(event.deltaX, event.deltaY, event.shiftKey)
-    if (horizontalDelta === 0) return
-
-    event.preventDefault()
-    event.stopPropagation()
-    playerOddsRow.scrollLeft += horizontalDelta
+  const requestCollapse = useCallback(() => {
+    setIsExpanded(false)
   }, [])
 
-  const handleCarouselPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    const carouselElement = carouselRef.current
-    if (!carouselElement) return
-    if (sheetProgressRef.current > 0) return
+  if (!shouldRender || !selectedMatch) return null
 
-    verticalGestureRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      axis: 'undecided',
-      pointerType: event.pointerType,
-      pointerId: event.pointerId,
-    }
-
-    carouselStartXRef.current = event.pageX - carouselElement.offsetLeft
-    carouselStartScrollLeftRef.current = carouselElement.scrollLeft
-
-    if (event.pointerType !== 'touch') {
-      beginDismissDrag(event.clientX, event.clientY, getActiveScrollElement())
-    }
-  }
-
-  const handleCarouselPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    const carouselElement = carouselRef.current
-    if (!carouselElement) return
-
-    const gesture = verticalGestureRef.current
-    if (event.pointerType !== 'touch' && dismissGestureRef.current) {
-      const didDismissDrag = updateDismissDrag(event.clientX, event.clientY, getActiveScrollElement())
-
-      if (didDismissDrag) {
-        event.currentTarget.setPointerCapture(event.pointerId)
-        event.preventDefault()
-        return
-      }
-    }
-
-    if (gesture) {
-      const dx = event.clientX - gesture.startX
-      const dy = event.clientY - gesture.startY
-      const absDx = Math.abs(dx)
-      const absDy = Math.abs(dy)
-
-      if (gesture.axis === 'undecided') {
-        const hasHorizontalIntent = absDx >= AXIS_LOCK_THRESHOLD && absDx >= absDy * HORIZONTAL_INTENT_RATIO
-        const hasVerticalIntent = absDy >= AXIS_LOCK_THRESHOLD && absDy >= absDx * VERTICAL_INTENT_RATIO
-
-        if (hasHorizontalIntent) {
-          gesture.axis = 'horizontal'
-          isCarouselDraggingRef.current = true
-          setIsCarouselDragging(true)
-          event.currentTarget.setPointerCapture(event.pointerId)
-          event.preventDefault()
-        } else if (hasVerticalIntent) {
-          gesture.axis = 'vertical'
-        }
-      }
-    }
-
-    if (!isCarouselDraggingRef.current) return
-    if (gesture && gesture.axis === 'undecided') return
-    if (gesture && gesture.axis === 'vertical') return
-
-    event.preventDefault()
-    const x = event.pageX - carouselElement.offsetLeft
-    const walk = (x - carouselStartXRef.current) * 1.5
-    carouselElement.scrollLeft = carouselStartScrollLeftRef.current - walk
-  }
-
-  const finishVerticalGesture = () => {
-    const gesture = verticalGestureRef.current
-    if (!gesture) return
-    verticalGestureRef.current = null
-
-    setCloseDrag(0)
-  }
-
-  const handleCarouselPointerUp = () => {
-    if (finishDismissDrag()) {
-      isCarouselDraggingRef.current = false
-      setIsCarouselDragging(false)
-      verticalGestureRef.current = null
-      return
-    }
-
-    const gesture = verticalGestureRef.current
-    const shouldSnapCarousel = isCarouselDraggingRef.current && gesture?.axis !== 'vertical'
-
-    if (shouldSnapCarousel) {
-      const dragDelta = carouselRef.current
-        ? carouselRef.current.scrollLeft - carouselStartScrollLeftRef.current
-        : 0
-      snapToNearestSlide(dragDelta)
-    }
-
-    isCarouselDraggingRef.current = false
-    setIsCarouselDragging(false)
-    finishVerticalGesture()
-  }
-
-  const handleCarouselPointerCancel = () => {
-    const wasCloseDragging = isCloseDraggingRef.current
-    cancelDismissDrag()
-
-    if (!wasCloseDragging && isCarouselDraggingRef.current) {
-      snapToNearestSlide()
-    }
-    isCarouselDraggingRef.current = false
-    setIsCarouselDragging(false)
-    if (verticalGestureRef.current) {
-      verticalGestureRef.current = null
-      setCloseDrag(0)
-    }
-  }
-
-  if (!isOpen || eventMatches.length === 0) return null
-
-  const closeDragValue = closeDrag
+  const selectedMatchTime = getLiveEventMatchTime(
+    selectedMatch,
+    selectedMatchIndex,
+    currentTimes,
+    selectedMatchIndex === selectedIndex ? currentTime : undefined
+  )
+  const pageClasses = [
+    'live-event-page',
+    isClosing ? 'live-event-page--closing' : '',
+    isExpanded ? 'live-event-page--expanded' : '',
+  ].filter(Boolean).join(' ')
   const rootStyle = {
-    ['--close-drag' as never]: `${closeDragValue}px`,
-  }
-  const sheetMetrics = measureSheetMetrics()
+    ['--live-event-sheet-width' as string]: `${sheetMetrics.viewportWidth}px`,
+    ['--live-event-sheet-height' as string]: `${sheetMetrics.viewportHeight}px`,
+    ['--live-event-compact-scale' as string]: String(sheetMetrics.compactScale),
+  } as CSSProperties
 
   return createPortal(
-    <div
-      className={`live-event-page${isClosing ? ' live-event-page--closing' : ''}${isCloseDragging ? ' live-event-page--dragging-close' : ''}`}
-      style={rootStyle}
-    >
+    <div className={pageClasses} style={rootStyle}>
       <div className="live-event-page__overlay" onClick={requestClose} />
-      <div
-        className="live-event-page__carousel"
-      >
-        <div
-          className={`live-event-page__carousel-list${isCarouselDragging ? ' live-event-page__carousel-list--dragging' : ''}${isCarouselSwipeEnabled ? '' : ' live-event-page__carousel-list--vertical-only'}`}
-          ref={carouselRef}
-          style={{
-            ['--live-event-page-carousel-gap' as never]: `${sheetMetrics.carouselGap}px`,
-          }}
-          onScroll={handleCarouselScroll}
-          onWheelCapture={handleCarouselWheelCapture}
-          onPointerDown={handleCarouselPointerDown}
-          onPointerMove={handleCarouselPointerMove}
-          onPointerUp={handleCarouselPointerUp}
-          onPointerCancel={handleCarouselPointerCancel}
-        >
-          {eventMatches.map((eventMatch, index) => (
-            <div
-              key={getLiveEventMatchKey(eventMatch, index)}
-              data-index={index}
-              className={`live-event-page__slide${index === activeIndex ? ' live-event-page__slide--active' : ''}`}
-              style={{
-                ['--slide-layout-width' as never]: `${sheetMetrics.peekWidth}px`,
-                ['--slide-layout-height' as never]: `${sheetMetrics.peekHeight}px`,
-                ['--sheet-full-width' as never]: `${sheetMetrics.viewportWidth}px`,
-                ['--sheet-full-height' as never]: `${sheetMetrics.viewportHeight}px`,
-              }}
-              aria-hidden={index !== activeIndex}
-            >
+      <div className="live-event-page__sheet-layer">
+        <div className="live-event-page__sheet-slide">
+          <div className="live-event-page__sheet-center">
+            <div className="live-event-page__sheet-scale">
               <MemoLiveEventContent
-                match={eventMatch}
+                match={selectedMatch}
                 leagueName={leagueName}
-                currentTime={getLiveEventMatchTime(eventMatch, index, currentTimes, index === selectedIndex ? currentTime : undefined)}
-                sheetMetrics={sheetMetrics}
-                isExpanded={isSheetFull && index === activeIndex}
-                isActive={index === activeIndex}
+                currentTime={selectedMatchTime}
+                isExpanded={isExpanded}
                 onRequestClose={requestClose}
-                onRequestExpand={() => scrollActiveSheetTo(1)}
-                onRequestCollapse={() => scrollActiveSheetTo(0)}
-                onSheetProgress={handleSheetProgress}
+                onRequestExpand={requestExpand}
+                onRequestCollapse={requestCollapse}
               />
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>,
