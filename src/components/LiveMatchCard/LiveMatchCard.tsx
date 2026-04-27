@@ -97,7 +97,11 @@ export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick
   }
 
   return (
-    <div className="live-section__match" onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
+    <div
+      className="live-section__match"
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
       <div className="live-section__match-header">
         <div className="live-section__match-time">
           <div className="live-section__tag-aovivo">

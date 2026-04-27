@@ -94,11 +94,8 @@
 .live-event-page__slide {
   --slide-layout-width: calc(100vw - 48px);
   --slide-layout-height: calc(100dvh - 80px);
-  --sheet-left: 0px;
-  --sheet-top: 0px;
-  --sheet-width: var(--slide-layout-width);
-  --sheet-height: var(--slide-layout-height);
-  --sheet-radius: 28px;
+  --sheet-full-width: 100vw;
+  --sheet-full-height: 100dvh;
   position: relative;
   flex: 0 0 var(--slide-layout-width);
   width: var(--slide-layout-width);
@@ -117,18 +114,25 @@
 
 .live-event-page__content {
   position: absolute;
-  top: var(--sheet-top);
-  left: var(--sheet-left);
-  width: var(--sheet-width);
-  height: var(--sheet-height);
+  left: 50%;
+  bottom: 0;
+  width: var(--sheet-full-width);
+  height: var(--sheet-full-height);
+  margin-left: calc(var(--sheet-full-width) / -2);
   background-color: #0d0d0d;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   overscroll-behavior: contain;
-  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
-  will-change: top, left, width, height, border-radius;
+  border-radius: 28px 28px 0 0;
+  transform-origin: bottom center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   isolation: isolate;
+}
+
+.live-event-page__slide--active .live-event-page__content {
+  will-change: transform, border-radius;
 }
 
 .live-event-page__compact-header {
@@ -309,6 +313,8 @@
 
 .live-event-page__scroll-stage {
   position: relative;
+  min-height: calc(100% + 80px);
+  padding-bottom: 80px;
 }
 
 .live-event-page__scroll-body {
@@ -341,6 +347,28 @@
 
 .live-event-page__scroll::-webkit-scrollbar {
   display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .live-event-page__overlay {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .live-event-page__compact-header-bg::after {
+    filter: blur(30px);
+    opacity: 0.36;
+  }
+
+  .live-event-page__scroll-body::before {
+    filter: blur(34px);
+    opacity: 0.42;
+  }
+
+  .live-event-page__logo-blur {
+    filter: blur(18px);
+    opacity: 0.76;
+  }
 }
 
 /* ── Match card ── */
