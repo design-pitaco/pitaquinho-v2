@@ -67,6 +67,8 @@ interface LiveEventContentProps {
   onRequestClose: () => void
   onRequestExpand: () => void
   onRequestCollapse: () => void
+  onCompactPullChange: (distance: number) => void
+  onCompactPullEnd: () => void
 }
 
 type TabId = 'transmissao' | 'campo'
@@ -118,6 +120,50 @@ const doubleChanceDisplayNames: Record<string, string> = {
   'New York City': 'NYC',
   'Chicago Fire': 'Chicago',
   Panathinaikos: 'Panath.',
+}
+
+const teamGlowColors: Record<string, string> = {
+  Flamengo: '#e31b23',
+  Cruzeiro: '#2f6dff',
+  Internacional: '#d71920',
+  Inter: '#2d7dff',
+  Bragantino: '#f4f4f4',
+  'Red Bull Bragantino': '#f4f4f4',
+  Vasco: '#f4f4f4',
+  Corinthians: '#f4f4f4',
+  Palmeiras: '#1f9f55',
+  Fluminense: '#8d1230',
+  Botafogo: '#f4f4f4',
+  'Atl. Mineiro': '#f4f4f4',
+  'Atlético-MG': '#f4f4f4',
+  'São Paulo': '#e63232',
+  Mirassol: '#ffd23a',
+  Barcelona: '#a31745',
+  Bayern: '#dc052d',
+  PSG: '#2d5eff',
+  'Real Madrid': '#f4f4f4',
+  Liverpool: '#d00027',
+  Arsenal: '#ef0107',
+  Chelsea: '#034694',
+  'Manchester City': '#6cabdd',
+}
+
+function getTeamGlowColor(teamName: string): string {
+  const trimmedName = teamName.trim()
+  if (teamGlowColors[trimmedName]) return teamGlowColors[trimmedName]
+
+  let hash = 0
+  for (let i = 0; i < trimmedName.length; i++) {
+    hash = (hash * 31 + trimmedName.charCodeAt(i)) >>> 0
+  }
+
+  return `hsl(${hash % 360} 72% 58%)`
+}
+
+function getTeamGlowStyle(teamName: string): CSSProperties {
+  return {
+    ['--live-event-team-glow' as string]: getTeamGlowColor(teamName),
+  } as CSSProperties
 }
 
 function getDoubleChanceDisplayName(teamName: string): string {
@@ -586,6 +632,8 @@ function LiveEventContent({
   onRequestClose,
   onRequestExpand,
   onRequestCollapse,
+  onCompactPullChange,
+  onCompactPullEnd,
   isExpanded,
   match,
   leagueName,
@@ -606,6 +654,11 @@ function LiveEventContent({
   const dragStartYRef = useRef<number | null>(null)
   const isResettingCompactScrollRef = useRef(false)
   const compactScrollResetTimerRef = useRef<number | null>(null)
+  const compactPullGestureRef = useRef<{
+    startX: number
+    startY: number
+    isPulling: boolean
+  } | null>(null)
   const allShotsOnGoalRows = getShotsOnGoalRows(match, true)
   const primaryShotsOnGoalRows = allShotsOnGoalRows.slice(0, 4)
   const extraShotsOnGoalRows = allShotsOnGoalRows.slice(4, 8)
@@ -694,6 +747,66 @@ function LiveEventContent({
       }, LIVE_EVENT_TRANSITION_MS)
     }
   }, [isExpanded])
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current
+    if (!scrollElement || !isMobileTouchScreen()) return
+
+    const handleTouchStart = (event: globalThis.TouchEvent) => {
+      if (isExpanded || event.touches.length !== 1) {
+        compactPullGestureRef.current = null
+        return
+      }
+
+      const touch = event.touches[0]
+      if (!touch) return
+
+      compactPullGestureRef.current = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        isPulling: false,
+      }
+    }
+
+    const handleTouchMove = (event: globalThis.TouchEvent) => {
+      const gesture = compactPullGestureRef.current
+      const touch = event.touches[0]
+      if (!gesture || !touch || isExpanded) return
+
+      const dx = touch.clientX - gesture.startX
+      const dy = touch.clientY - gesture.startY
+      const atScrollTop = scrollElement.scrollTop <= LIVE_EVENT_PULL_TOP_THRESHOLD
+
+      if (!gesture.isPulling) {
+        const hasDownwardIntent = dy >= LIVE_EVENT_PULL_START_THRESHOLD && Math.abs(dy) > Math.abs(dx)
+        if (!atScrollTop || !hasDownwardIntent) return
+        gesture.isPulling = true
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      scrollElement.scrollTop = 0
+      onCompactPullChange(getCompactPullDistance(dy))
+    }
+
+    const finishCompactPull = () => {
+      const wasPulling = compactPullGestureRef.current?.isPulling
+      compactPullGestureRef.current = null
+      if (wasPulling) onCompactPullEnd()
+    }
+
+    scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
+    scrollElement.addEventListener('touchmove', handleTouchMove, { passive: false })
+    scrollElement.addEventListener('touchend', finishCompactPull)
+    scrollElement.addEventListener('touchcancel', finishCompactPull)
+
+    return () => {
+      scrollElement.removeEventListener('touchstart', handleTouchStart)
+      scrollElement.removeEventListener('touchmove', handleTouchMove)
+      scrollElement.removeEventListener('touchend', finishCompactPull)
+      scrollElement.removeEventListener('touchcancel', finishCompactPull)
+    }
+  }, [isExpanded, onCompactPullChange, onCompactPullEnd])
 
   const handleCloseHandlePointerDown = (event: PointerEvent<HTMLSpanElement>) => {
     dragStartYRef.current = event.clientY
@@ -787,7 +900,11 @@ function LiveEventContent({
                 <div className="live-event-page__logo-container">
                   {match.homeTeam.icon ? (
                     <>
-                      <img src={match.homeTeam.icon} alt="" className="live-event-page__logo-blur" aria-hidden="true" />
+                      <span
+                        className="live-event-page__logo-glow"
+                        style={getTeamGlowStyle(match.homeTeam.name)}
+                        aria-hidden="true"
+                      />
                       <img src={match.homeTeam.icon} alt={match.homeTeam.name} className="live-event-page__logo" />
                     </>
                   ) : (
@@ -808,7 +925,11 @@ function LiveEventContent({
                 <div className="live-event-page__logo-container">
                   {match.awayTeam.icon ? (
                     <>
-                      <img src={match.awayTeam.icon} alt="" className="live-event-page__logo-blur live-event-page__logo-blur--away" aria-hidden="true" />
+                      <span
+                        className="live-event-page__logo-glow"
+                        style={getTeamGlowStyle(match.awayTeam.name)}
+                        aria-hidden="true"
+                      />
                       <img src={match.awayTeam.icon} alt={match.awayTeam.name} className="live-event-page__logo" />
                     </>
                   ) : (
@@ -1358,10 +1479,26 @@ const LIVE_EVENT_COMPACT_TOP = 80
 const LIVE_EVENT_TRANSITION_MS = 300
 const LIVE_EVENT_EXPAND_SCROLL_THRESHOLD = 8
 const LIVE_EVENT_COLLAPSE_SCROLL_THRESHOLD = 1
+const LIVE_EVENT_PULL_TOP_THRESHOLD = 1
+const LIVE_EVENT_PULL_START_THRESHOLD = 6
+const LIVE_EVENT_PULL_RESISTANCE = 0.56
+const LIVE_EVENT_MAX_COMPACT_PULL = 132
 const getHorizontalWheelDelta = (deltaX: number, deltaY: number, shiftKey: boolean) => {
   if (Math.abs(deltaX) >= Math.abs(deltaY)) return deltaX
   return shiftKey ? deltaY : 0
 }
+
+const isMobileTouchScreen = () => (
+  typeof window !== 'undefined'
+  && (
+    window.matchMedia?.('(hover: none) and (pointer: coarse)').matches
+    || navigator.maxTouchPoints > 0
+  )
+)
+
+const getCompactPullDistance = (distance: number) => (
+  Math.min(LIVE_EVENT_MAX_COMPACT_PULL, Math.max(0, distance * LIVE_EVENT_PULL_RESISTANCE))
+)
 
 interface SheetMetrics {
   viewportWidth: number
@@ -1411,6 +1548,8 @@ export function LiveEventPage({
   const [isClosing, setIsClosing] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [compactPullY, setCompactPullY] = useState(0)
+  const [isCompactPulling, setIsCompactPulling] = useState(false)
   const [sheetMetrics, setSheetMetrics] = useState<SheetMetrics>(() => measureSheetMetrics())
   const closeTimerRef = useRef<number | null>(null)
 
@@ -1423,11 +1562,15 @@ export function LiveEventPage({
         }
         setSheetMetrics(measureSheetMetrics())
         setIsExpanded(false)
+        setCompactPullY(0)
+        setIsCompactPulling(false)
         setShouldRender(true)
         setIsClosing(false)
       } else if (shouldRender && !isClosing) {
         setIsClosing(true)
         setIsExpanded(false)
+        setCompactPullY(0)
+        setIsCompactPulling(false)
         closeTimerRef.current = window.setTimeout(() => {
           setShouldRender(false)
           setIsClosing(false)
@@ -1491,6 +1634,8 @@ export function LiveEventPage({
     if (isClosing) return
     setIsClosing(true)
     setIsExpanded(false)
+    setCompactPullY(0)
+    setIsCompactPulling(false)
     if (closeTimerRef.current !== null) {
       window.clearTimeout(closeTimerRef.current)
     }
@@ -1503,11 +1648,26 @@ export function LiveEventPage({
   }, [isClosing, onClose])
 
   const requestExpand = useCallback(() => {
+    setCompactPullY(0)
+    setIsCompactPulling(false)
     setIsExpanded(true)
   }, [])
 
   const requestCollapse = useCallback(() => {
+    setCompactPullY(0)
+    setIsCompactPulling(false)
     setIsExpanded(false)
+  }, [])
+
+  const handleCompactPullChange = useCallback((distance: number) => {
+    if (isExpanded || isClosing) return
+    setIsCompactPulling(true)
+    setCompactPullY(distance)
+  }, [isClosing, isExpanded])
+
+  const handleCompactPullEnd = useCallback(() => {
+    setIsCompactPulling(false)
+    setCompactPullY(0)
   }, [])
 
   if (!shouldRender || !selectedMatch) return null
@@ -1522,11 +1682,13 @@ export function LiveEventPage({
     'live-event-page',
     isClosing ? 'live-event-page--closing' : '',
     isExpanded ? 'live-event-page--expanded' : '',
+    isCompactPulling ? 'live-event-page--compact-pulling' : '',
   ].filter(Boolean).join(' ')
   const rootStyle = {
     ['--live-event-sheet-width' as string]: `${sheetMetrics.viewportWidth}px`,
     ['--live-event-sheet-height' as string]: `${sheetMetrics.viewportHeight}px`,
     ['--live-event-compact-scale' as string]: String(sheetMetrics.compactScale),
+    ['--live-event-compact-pull-y' as string]: `${compactPullY}px`,
   } as CSSProperties
 
   return createPortal(
@@ -1544,6 +1706,8 @@ export function LiveEventPage({
                 onRequestClose={requestClose}
                 onRequestExpand={requestExpand}
                 onRequestCollapse={requestCollapse}
+                onCompactPullChange={handleCompactPullChange}
+                onCompactPullEnd={handleCompactPullEnd}
               />
             </div>
           </div>
