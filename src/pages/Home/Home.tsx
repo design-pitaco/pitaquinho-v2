@@ -6,8 +6,6 @@ import { OffersSection } from '../../components/OffersSection'
 import { LiveSection } from '../../components/LiveSection'
 import { EscadinhaSection } from '../../components/EscadinhaSection'
 import { PreMatchSection } from '../../components/PreMatchSection'
-import { TreasureSection } from '../../components/TreasureSection'
-import { WinningNowSection } from '../../components/WinningNowSection'
 import { SportFilterBar } from '../../components/SportFilterBar'
 import { CalendarSection } from '../../components/CalendarSection'
 import { CompetitionPage } from '../../components/CompetitionPage'
@@ -113,8 +111,8 @@ export function Home() {
           <LiveSection onMatchClick={handleLiveMatchClick} />
           <EscadinhaSection />
           <PreMatchSection />
-          <TreasureSection />
-          <WinningNowSection />
+          {/* <TreasureSection /> */}
+          {/* <WinningNowSection /> */}
         </Fragment>
       )}
       <main className="home__content" />

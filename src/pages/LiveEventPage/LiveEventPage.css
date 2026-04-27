@@ -94,10 +94,11 @@
 .live-event-page__slide {
   --slide-layout-width: calc(100vw - 48px);
   --slide-layout-height: calc(100dvh - 80px);
-  --slide-translate-x: 0px;
-  --slide-translate-y: 0px;
-  --slide-scale: 1;
-  --slide-radius: 28px;
+  --sheet-left: 0px;
+  --sheet-top: 0px;
+  --sheet-width: var(--slide-layout-width);
+  --sheet-height: var(--slide-layout-height);
+  --sheet-radius: 28px;
   position: relative;
   flex: 0 0 var(--slide-layout-width);
   width: var(--slide-layout-width);
@@ -115,18 +116,18 @@
 }
 
 .live-event-page__content {
-  position: relative;
-  width: 100vw;
-  height: 100dvh;
+  position: absolute;
+  top: var(--sheet-top);
+  left: var(--sheet-left);
+  width: var(--sheet-width);
+  height: var(--sheet-height);
   background-color: #0d0d0d;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   overscroll-behavior: contain;
-  border-radius: var(--slide-radius) var(--slide-radius) 0 0;
-  transform: translate3d(var(--slide-translate-x), var(--slide-translate-y), 0) scale(var(--slide-scale));
-  transform-origin: top left;
-  will-change: transform, border-radius;
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  will-change: top, left, width, height, border-radius;
   isolation: isolate;
 }
 
@@ -291,7 +292,6 @@
 
 /* ── Scrollable content ── */
 .live-event-page__scroll {
-  --sheet-scroll-offset: 0px;
   position: relative;
   z-index: 1;
   flex: 1;
@@ -309,8 +309,6 @@
 
 .live-event-page__scroll-stage {
   position: relative;
-  min-height: calc(100% + 80px);
-  padding-bottom: 80px;
 }
 
 .live-event-page__scroll-body {
@@ -320,8 +318,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transform: translate3d(0, var(--sheet-scroll-offset), 0);
-  will-change: transform;
 }
 
 .live-event-page__scroll-body::before {

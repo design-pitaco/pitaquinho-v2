@@ -584,7 +584,7 @@ function buildFallbackEvents(teamName: string, score: number): MatchEvent[] {
   return events.sort((a, b) => a.minute - b.minute)
 }
 
-const SHEET_EXPAND_SCROLL_RANGE = 80
+const SHEET_EXPAND_SCROLL_RANGE = 160
 
 function LiveEventContent({
   onRequestClose,
@@ -656,11 +656,9 @@ function LiveEventContent({
     const matchCardElement = matchCardRef.current
     if (!scrollElement || !matchCardElement) return
 
-    const scrollOffset = Math.min(scrollElement.scrollTop, SHEET_EXPAND_SCROLL_RANGE)
-    scrollElement.style.setProperty('--sheet-scroll-offset', `${scrollOffset}px`)
     if (isActive) onSheetScroll(scrollElement.scrollTop)
 
-    const contentScrollTop = Math.max(0, scrollElement.scrollTop - SHEET_EXPAND_SCROLL_RANGE)
+    const contentScrollTop = scrollElement.scrollTop
     const matchCardEnd = matchCardElement.offsetTop + matchCardElement.offsetHeight
     const shouldShowCompactHeader = isExpanded && contentScrollTop >= matchCardEnd + 16
     setIsCompactHeaderVisible((current) => (
@@ -1379,6 +1377,7 @@ export function LiveEventPage({
   const [isClosing, setIsClosing] = useState(false)
   const [isCarouselDragging, setIsCarouselDragging] = useState(false)
   const [isSheetFull, setIsSheetFull] = useState(false)
+  const [sheetRenderProgress, setSheetRenderProgress] = useState(0)
   const [closeDrag, setCloseDrag] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
   const closeTimerRef = useRef<number | null>(null)
@@ -1393,7 +1392,11 @@ export function LiveEventPage({
   const setSheetProgressValue = useCallback((value: number) => {
     const nextProgress = clampSheetProgress(value)
     sheetProgressRef.current = nextProgress
-    const nextIsFull = nextProgress >= 1 ? true : nextProgress <= 0 ? false : isSheetFullRef.current
+    const nextIsFull = nextProgress >= 1
+
+    if (nextProgress <= 0 || nextProgress >= 1 || isSheetFullRef.current !== nextIsFull) {
+      setSheetRenderProgress(nextProgress)
+    }
 
     if (isSheetFullRef.current !== nextIsFull) {
       isSheetFullRef.current = nextIsFull
@@ -1409,14 +1412,13 @@ export function LiveEventPage({
       const viewportHeight = window.innerHeight || 844
       const peekWidth = Math.max(1, viewportWidth - 48)
       const peekHeight = Math.max(1, viewportHeight - 80)
-      const peekScale = Math.min(peekWidth / viewportWidth, peekHeight / viewportHeight)
-      const activeScale = peekScale + (1 - peekScale) * progress
       const activeSlide = carouselRef.current?.querySelector<HTMLElement>('.live-event-page__slide--active')
 
-      activeSlide?.style.setProperty('--slide-scale', `${activeScale}`)
-      activeSlide?.style.setProperty('--slide-translate-x', `${-24 * progress}px`)
-      activeSlide?.style.setProperty('--slide-translate-y', `${-80 * progress}px`)
-      activeSlide?.style.setProperty('--slide-radius', `${28 * (1 - progress)}px`)
+      activeSlide?.style.setProperty('--sheet-left', `${-24 * progress}px`)
+      activeSlide?.style.setProperty('--sheet-top', `${-80 * progress}px`)
+      activeSlide?.style.setProperty('--sheet-width', `${peekWidth + 48 * progress}px`)
+      activeSlide?.style.setProperty('--sheet-height', `${peekHeight + 80 * progress}px`)
+      activeSlide?.style.setProperty('--sheet-radius', `${28 * (1 - progress)}px`)
     })
 
     return nextProgress
@@ -1430,6 +1432,7 @@ export function LiveEventPage({
       setSheetProgressValue(0)
       isSheetFullRef.current = false
       setIsSheetFull(false)
+      setSheetRenderProgress(0)
       setCloseDrag(0)
       setIsCarouselDragging(false)
       isCarouselDraggingRef.current = false
@@ -1538,11 +1541,11 @@ export function LiveEventPage({
     setSheetProgressValue(0)
     isSheetFullRef.current = false
     setIsSheetFull(false)
+    setSheetRenderProgress(0)
     carouselElement
       .querySelectorAll<HTMLElement>('.live-event-page__scroll')
       .forEach((scrollElement) => {
         scrollElement.scrollTop = 0
-        scrollElement.style.setProperty('--sheet-scroll-offset', '0px')
       })
     scrollCarouselToIndex(targetIndex)
   }
@@ -1667,7 +1670,6 @@ export function LiveEventPage({
   const viewportHeight = window.innerHeight || 844
   const peekWidth = Math.max(1, viewportWidth - 48)
   const peekHeight = Math.max(1, viewportHeight - 80)
-  const peekScale = Math.min(peekWidth / viewportWidth, peekHeight / viewportHeight)
 
   return createPortal(
     <div
@@ -1687,34 +1689,39 @@ export function LiveEventPage({
           onPointerUp={handleCarouselPointerUp}
           onPointerCancel={handleCarouselPointerCancel}
         >
-          {eventMatches.map((eventMatch, index) => (
-            <div
-              key={getLiveEventMatchKey(eventMatch, index)}
-              data-index={index}
-              className={`live-event-page__slide${index === activeIndex ? ' live-event-page__slide--active' : ''}`}
-              style={{
-                ['--slide-layout-width' as never]: `${peekWidth}px`,
-                ['--slide-layout-height' as never]: `${peekHeight}px`,
-                ['--slide-scale' as never]: `${index === activeIndex && isSheetFull ? 1 : peekScale}`,
-                ['--slide-translate-x' as never]: `${index === activeIndex && isSheetFull ? -24 : 0}px`,
-                ['--slide-translate-y' as never]: `${index === activeIndex && isSheetFull ? -80 : 0}px`,
-                ['--slide-radius' as never]: `${index === activeIndex && isSheetFull ? 0 : 28}px`,
-              }}
-              aria-hidden={index !== activeIndex}
-            >
-              <MemoLiveEventContent
-                match={eventMatch}
-                leagueName={leagueName}
-                currentTime={getLiveEventMatchTime(eventMatch, index, currentTimes, index === selectedIndex ? currentTime : undefined)}
-                isExpanded={isSheetFull && index === activeIndex}
-                isActive={index === activeIndex}
-                onRequestClose={requestClose}
-                onRequestExpand={() => scrollActiveSheetTo(1)}
-                onRequestCollapse={() => scrollActiveSheetTo(0)}
-                onSheetScroll={(scrollTop) => setSheetProgressValue(scrollTop / SHEET_EXPAND_SCROLL_RANGE)}
-              />
-            </div>
-          ))}
+          {eventMatches.map((eventMatch, index) => {
+            const sheetProgress = index === activeIndex ? sheetRenderProgress : 0
+
+            return (
+              <div
+                key={getLiveEventMatchKey(eventMatch, index)}
+                data-index={index}
+                className={`live-event-page__slide${index === activeIndex ? ' live-event-page__slide--active' : ''}`}
+                style={{
+                  ['--slide-layout-width' as never]: `${peekWidth}px`,
+                  ['--slide-layout-height' as never]: `${peekHeight}px`,
+                  ['--sheet-left' as never]: `${-24 * sheetProgress}px`,
+                  ['--sheet-top' as never]: `${-80 * sheetProgress}px`,
+                  ['--sheet-width' as never]: `${peekWidth + 48 * sheetProgress}px`,
+                  ['--sheet-height' as never]: `${peekHeight + 80 * sheetProgress}px`,
+                  ['--sheet-radius' as never]: `${28 * (1 - sheetProgress)}px`,
+                }}
+                aria-hidden={index !== activeIndex}
+              >
+                <MemoLiveEventContent
+                  match={eventMatch}
+                  leagueName={leagueName}
+                  currentTime={getLiveEventMatchTime(eventMatch, index, currentTimes, index === selectedIndex ? currentTime : undefined)}
+                  isExpanded={isSheetFull && index === activeIndex}
+                  isActive={index === activeIndex}
+                  onRequestClose={requestClose}
+                  onRequestExpand={() => scrollActiveSheetTo(1)}
+                  onRequestCollapse={() => scrollActiveSheetTo(0)}
+                  onSheetScroll={(scrollTop) => setSheetProgressValue(scrollTop / SHEET_EXPAND_SCROLL_RANGE)}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>,
