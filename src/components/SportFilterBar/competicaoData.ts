@@ -1,0 +1,234 @@
+import iconFutebol from '../../assets/iconFutebol.png'
+import iconBasquete from '../../assets/iconBasquete.png'
+import iconTenis from '../../assets/iconTenis.png'
+import iconVolei from '../../assets/iconVolei.png'
+import iconEsoccer from '../../assets/iconEsoccer.png'
+
+import flagBrasil from '../../assets/flagBrasil.png'
+import flagAlemanha from '../../assets/flagAlemanha.png'
+import flagArgentina from '../../assets/flagArgentina.png'
+import flagEspanha from '../../assets/flagEspanha.png'
+import flagInglaterra from '../../assets/flagInglaterra.png'
+import flagItalia from '../../assets/flagItalia.png'
+import flagUSA from '../../assets/flagUSA.png'
+import flagMundo from '../../assets/flagMundo.png'
+import flagGrecia from '../../assets/flagGrecia.png'
+import flagBulgaria from '../../assets/flagBulgaria.png'
+import flagRussia from '../../assets/flagRussia.png'
+
+import type { Competition, CompetitionCountry } from '../BottomSheet/CompeticaoBottomSheet'
+
+export interface CompeticaoConfig {
+  sportLabel: string
+  sportIcon: string
+  topCompetitions: Competition[]
+  countries: CompetitionCountry[]
+}
+
+const futebolConfig: CompeticaoConfig = {
+  sportLabel: 'Futebol',
+  sportIcon: iconFutebol,
+  topCompetitions: [
+    { id: 'fut-brasileiro', name: 'Brasileirão Série A' },
+    { id: 'fut-libertadores', name: 'Libertadores' },
+    { id: 'fut-champions', name: 'Champions League' },
+    { id: 'fut-sul-americana', name: 'Sul-Americana' },
+    { id: 'fut-uefa-liga-europa', name: 'UEFA - Liga Europa' },
+  ],
+  countries: [
+    {
+      id: 'fut-africa-do-sul',
+      name: 'África do Sul',
+      flag: flagMundo,
+      competitions: [
+        { id: 'fut-africa-premier', name: 'Premier Soccer League' },
+      ],
+    },
+    {
+      id: 'fut-alemanha',
+      name: 'Alemanha',
+      flag: flagAlemanha,
+      competitions: [
+        { id: 'fut-bundesliga', name: 'Bundesliga' },
+        { id: 'fut-2-bundesliga', name: '2. Bundesliga' },
+        { id: 'fut-dfb-pokal', name: 'DFB-Pokal' },
+      ],
+    },
+    {
+      id: 'fut-arabia-saudita',
+      name: 'Arábia Saudita',
+      flag: flagMundo,
+      competitions: [{ id: 'fut-saudi-pro', name: 'Saudi Pro League' }],
+    },
+    {
+      id: 'fut-argentina',
+      name: 'Argentina',
+      flag: flagArgentina,
+      competitions: [
+        { id: 'fut-arg-liga-profesional', name: 'Liga Profesional' },
+        { id: 'fut-arg-copa-argentina', name: 'Copa Argentina' },
+      ],
+    },
+    {
+      id: 'fut-australia',
+      name: 'Austrália',
+      flag: flagMundo,
+      competitions: [{ id: 'fut-aus-a-league', name: 'A-League' }],
+    },
+    {
+      id: 'fut-brasil',
+      name: 'Brasil',
+      flag: flagBrasil,
+      competitions: [
+        { id: 'fut-brasileirao-a', name: 'Brasileirão Série A' },
+        { id: 'fut-brasileirao-b', name: 'Brasileirão Série B' },
+        { id: 'fut-copa-do-brasil', name: 'Copa do Brasil' },
+      ],
+    },
+    {
+      id: 'fut-espanha',
+      name: 'Espanha',
+      flag: flagEspanha,
+      competitions: [
+        { id: 'fut-laliga', name: 'LaLiga' },
+        { id: 'fut-copa-del-rey', name: 'Copa del Rey' },
+      ],
+    },
+    {
+      id: 'fut-inglaterra',
+      name: 'Inglaterra',
+      flag: flagInglaterra,
+      competitions: [
+        { id: 'fut-premier-league', name: 'Premier League' },
+        { id: 'fut-fa-cup', name: 'FA Cup' },
+      ],
+    },
+    {
+      id: 'fut-italia',
+      name: 'Itália',
+      flag: flagItalia,
+      competitions: [
+        { id: 'fut-serie-a', name: 'Serie A' },
+        { id: 'fut-coppa-italia', name: 'Coppa Italia' },
+      ],
+    },
+  ],
+}
+
+const basqueteConfig: CompeticaoConfig = {
+  sportLabel: 'Basquete',
+  sportIcon: iconBasquete,
+  topCompetitions: [
+    { id: 'bsq-nba', name: 'NBA' },
+    { id: 'bsq-euroleague', name: 'EuroLeague' },
+    { id: 'bsq-nbb', name: 'NBB' },
+    { id: 'bsq-acb', name: 'Liga ACB' },
+  ],
+  countries: [
+    {
+      id: 'bsq-argentina',
+      name: 'Argentina',
+      flag: flagArgentina,
+      competitions: [{ id: 'bsq-arg-la-liga', name: 'La Liga Nacional' }],
+    },
+    {
+      id: 'bsq-brasil',
+      name: 'Brasil',
+      flag: flagBrasil,
+      competitions: [{ id: 'bsq-br-nbb', name: 'NBB' }],
+    },
+    {
+      id: 'bsq-bulgaria',
+      name: 'Bulgária',
+      flag: flagBulgaria,
+      competitions: [{ id: 'bsq-bul-naf', name: 'NBL' }],
+    },
+    {
+      id: 'bsq-eua',
+      name: 'Estados Unidos',
+      flag: flagUSA,
+      competitions: [
+        { id: 'bsq-nba-2', name: 'NBA' },
+        { id: 'bsq-ncaab', name: 'NCAAB' },
+        { id: 'bsq-wnba', name: 'WNBA' },
+      ],
+    },
+    {
+      id: 'bsq-grecia',
+      name: 'Grécia',
+      flag: flagGrecia,
+      competitions: [{ id: 'bsq-grc-greek-league', name: 'Greek League' }],
+    },
+    {
+      id: 'bsq-russia',
+      name: 'Rússia',
+      flag: flagRussia,
+      competitions: [{ id: 'bsq-rus-vtb', name: 'VTB United League' }],
+    },
+  ],
+}
+
+const tenisConfig: CompeticaoConfig = {
+  sportLabel: 'Tênis',
+  sportIcon: iconTenis,
+  topCompetitions: [
+    { id: 'ten-atp-finals', name: 'ATP Finals' },
+    { id: 'ten-wimbledon', name: 'Wimbledon' },
+    { id: 'ten-roland-garros', name: 'Roland Garros' },
+  ],
+  countries: [],
+}
+
+const voleiConfig: CompeticaoConfig = {
+  sportLabel: 'Vôlei',
+  sportIcon: iconVolei,
+  topCompetitions: [
+    { id: 'vol-superliga', name: 'Superliga' },
+    { id: 'vol-vnl', name: 'VNL' },
+  ],
+  countries: [],
+}
+
+const esoccerConfig: CompeticaoConfig = {
+  sportLabel: 'Esoccer',
+  sportIcon: iconEsoccer,
+  topCompetitions: [
+    { id: 'eso-fifa-cup', name: 'FIFA Cup' },
+    { id: 'eso-efl-cup', name: 'EFL Cup' },
+  ],
+  countries: [],
+}
+
+export const competicaoConfigBySport: Record<string, CompeticaoConfig> = {
+  futebol: futebolConfig,
+  basquete: basqueteConfig,
+  tenis: tenisConfig,
+  volei: voleiConfig,
+  esoccer: esoccerConfig,
+}
+
+export const defaultCompeticaoConfig = futebolConfig
+
+const enabledCompetitionIds = new Set([
+  'fut-brasileiro',
+  'fut-brasileirao-a',
+  'bsq-nba',
+  'bsq-nba-2',
+])
+
+export function isCompetitionEnabled(id: string): boolean {
+  return enabledCompetitionIds.has(id)
+}
+
+export function findCompetition(
+  config: CompeticaoConfig,
+  id: string
+): Competition | null {
+  const top = config.topCompetitions.find((c) => c.id === id)
+  if (top) return top
+  for (const country of config.countries) {
+    const found = country.competitions.find((c) => c.id === id)
+    if (found) return found
+  }
+  return null
+}

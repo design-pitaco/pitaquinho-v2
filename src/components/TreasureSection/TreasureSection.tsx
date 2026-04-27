@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './TreasureSection.css'
 
-import iconTesouro from '../../assets/iconTesouro.png'
 import imgTesouroRei from '../../assets/imgTesouroRei.png'
 import setaLink from '../../assets/setaLink.png'
 
@@ -85,10 +84,9 @@ export function TreasureSection() {
       {/* Header */}
       <div className="treasure-section__header">
         <div className="treasure-section__title">
-          <img src={iconTesouro} alt="" className="treasure-section__icon" />
           <span>Tesouro do Rei</span>
+          <img src={setaLink} alt="Ver mais" className="treasure-section__arrow" />
         </div>
-        <img src={setaLink} alt="Ver mais" className="treasure-section__arrow" />
       </div>
 
       {/* Treasure Box */}

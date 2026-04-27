@@ -13,12 +13,10 @@ import iconAccordion from '../../assets/iconAccordion.png'
 // Backgrounds
 import bgMissao from '../../assets/bgMissao.png'
 import bg1x2 from '../../assets/bg1x2.png'
-import bgTorneio from '../../assets/bgTorneio.png'
 import bgAumentada from '../../assets/bgAumentada.png'
 import bgVirtuais from '../../assets/bgVirtuais.png'
 import bgAoVivoBasquete from '../../assets/aoVivoBasquete.png'
-import bgAoVivoTenis from '../../assets/aoVivoTenis.png'
-import bgLongoPrazo from '../../assets/longoPrazo.png'
+import bgAoVivoTenis from '../../assets/bgAoVivoTenis.png'
 import bgCombinada from '../../assets/combinada.png'
 import iconSuperCombinada from '../../assets/iconSuperCombinada.png'
 import iconAoVivo from '../../assets/iconAoVivo.png'
@@ -30,8 +28,16 @@ import iconAtivo from '../../assets/iconAtivo.svg'
 import imgMissaoRodadaGratis from '../../assets/imgMissaoRodadaGratis.png'
 
 // Escudos para Ao Vivo
-import escudoMagic from '../../assets/escudoMagic.png'
-import escudoKnicks from '../../assets/escudoKnics.png'
+import escudoKnicksGde from '../../assets/escudoKnicksGde.png'
+import escudoMagicGde from '../../assets/escudoMagicGde.png'
+
+// Escudos para 1x2
+import escudoBarcelonaGde from '../../assets/escudoBarcelonaGde.png'
+import escudoRealGde from '../../assets/escudoRealGde.png'
+
+// Bandeiras
+import flagRussia from '../../assets/flagRussia.png'
+import flagUSA from '../../assets/flagUSA.png'
 
 // Mission progress type
 interface MissionProgress {
@@ -59,12 +65,14 @@ interface TennisPlayer {
   games: number
   points: string
   isServing: boolean
+  flag?: string
 }
 
 interface TennisMatch {
   player1: TennisPlayer
   player2: TennisPlayer
   currentSet: string
+  setScore: string
   odds: { player1: string; player2: string }
 }
 
@@ -84,7 +92,7 @@ interface Banner {
   description: string
   buttonText?: string
   showInfoBtn?: boolean
-  odds?: { team: string; value: string }[]
+  odds?: { team: string; value: string; badge?: string }[]
   oddBoosted?: { old: string; new: string }
   liveMatch?: LiveMatch
   tennisMatch?: TennisMatch
@@ -96,43 +104,32 @@ const banners: Banner[] = [
     id: 7,
     type: 'aoVivoTenis',
     headerLeft: 'Ao Vivo',
-    headerRight: 'Roland Garros',
+    headerRight: 'Aberto de Madrid',
     showTimer: true,
     background: bgAoVivoTenis,
     title: '',
     description: '',
     tennisMatch: {
       player1: {
-        name: 'Sinner',
-        sets: 0,
-        games: 1,
+        name: 'A. Sabalenka',
+        sets: 5,
+        games: 5,
         points: '40',
         isServing: true,
+        flag: flagRussia,
       },
       player2: {
-        name: 'Alcaraz',
-        sets: 0,
-        games: 3,
+        name: 'P. Stearns',
+        sets: 2,
+        games: 2,
         points: '15',
         isServing: false,
+        flag: flagUSA,
       },
       currentSet: '1º set',
-      odds: { player1: '1.78x', player2: '1.78x' },
+      setScore: '1 x 0',
+      odds: { player1: '1.22x', player2: '4.75x' },
     },
-  },
-  {
-    id: 8,
-    type: 'longoPrazo',
-    headerLeft: 'Fecha 28/01',
-    headerRight: 'Campeonato Brasileiro',
-    background: bgLongoPrazo,
-    title: 'Campeão de 2026!',
-    description: 'Quem será o grande campeão do campeonato Brasileiro de 2026?',
-    odds: [
-      { team: 'Flamengo', value: '3.50x' },
-      { team: 'Palmeiras', value: '5.00x' },
-      { team: 'Cruzeiro', value: '6.00x' },
-    ],
   },
   {
     id: 9,
@@ -140,12 +137,12 @@ const banners: Banner[] = [
     headerLeft: 'Hoje, 17:00',
     headerRight: 'Chelsea x Arsenal',
     background: bgCombinada,
-    title: 'Super Palmer',
+    title: 'Super Combo',
     description: '',
     comboStats: [
-      { value: '3+', label: 'Finalização ao Gol' },
-      { value: '2+', label: 'Assistências' },
-      { value: '5+', label: 'Finalização Totais' },
+      { value: 'CHE', label: 'Resultado Final' },
+      { value: 'CHE +2', label: 'Total de Gols' },
+      { value: 'ARS +4', label: 'Total de Escanteios' },
     ],
     oddBoosted: { old: '7.50x', new: '10.50x' },
   },
@@ -174,13 +171,13 @@ const banners: Banner[] = [
       homeTeam: {
         name: 'Knicks',
         shortName: 'NYK',
-        badge: escudoKnicks,
+        badge: escudoKnicksGde,
         score: 42,
       },
       awayTeam: {
         name: 'Magic',
         shortName: 'ORL',
-        badge: escudoMagic,
+        badge: escudoMagicGde,
         score: 38,
       },
       matchTime: "Q2 05:00",
@@ -193,25 +190,13 @@ const banners: Banner[] = [
     headerLeft: 'Hoje, 17:00',
     headerRight: 'Champions League',
     background: bg1x2,
-    title: 'Real x Barça',
-    description: 'Está preparado para esse clássico? Aposte agora mesmo.',
+    title: '',
+    description: '',
     odds: [
-      { team: 'Real Madrid', value: '1.78x' },
+      { team: 'Real Madrid', value: '1.78x', badge: escudoRealGde },
       { team: 'Empate', value: '3.50x' },
-      { team: 'Barcelona', value: '2.10x' },
+      { team: 'Barcelona', value: '2.10x', badge: escudoBarcelonaGde },
     ],
-  },
-  {
-    id: 3,
-    type: 'torneio',
-    headerLeft: 'Torneio Diário',
-    headerRight: 'Termina em 3 dias',
-    showTimer: true,
-    background: bgTorneio,
-    title: 'R$10 Mil por dia!',
-    description: 'Jogue o game Ratinho Sortudo e dispute prêmios todos os dias!',
-    buttonText: 'Jogar Torneio',
-    showInfoBtn: true,
   },
   {
     id: 4,
@@ -231,7 +216,7 @@ const banners: Banner[] = [
     background: bgVirtuais,
     title: 'Chegou Virtuais!',
     description: 'Jogos a todo minuto para você não parar de se divertir.',
-    buttonText: 'Jogue Agora essa Novidade',
+    buttonText: 'Jogue Agora',
   },
 ]
 
@@ -311,7 +296,6 @@ function updateMatchTime(timeStr: string): string {
 export function BannerCarousel() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const [progressKey, setProgressKey] = useState(0)
   const [activatedMissions, setActivatedMissions] = useState<Record<number, MissionProgress>>({})
   const [showToast, setShowToast] = useState(false)
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
@@ -388,7 +372,7 @@ export function BannerCarousel() {
     
     autoPlayRef.current = setInterval(() => {
       if (scrollRef.current) {
-        const cardWidth = scrollRef.current.offsetWidth - 40 + 20
+        const cardWidth = scrollRef.current.offsetWidth - 24 + 20
         const currentScroll = scrollRef.current.scrollLeft
         const currentIndex = Math.round(currentScroll / cardWidth)
         const nextIndex = (currentIndex + 1) % banners.length
@@ -411,14 +395,6 @@ export function BannerCarousel() {
       }
     }
   }, [])
-
-  // Reseta a animação do bullet quando muda de banner (apenas se autoplay estiver ativo)
-  useEffect(() => {
-    // Só reseta se o autoplay estiver rodando (não durante interação manual)
-    if (autoPlayRef.current) {
-    setProgressKey(prev => prev + 1)
-    }
-  }, [activeIndex])
 
   // Atualiza o tempo do jogo ao vivo a cada segundo
   useEffect(() => {
@@ -444,8 +420,6 @@ export function BannerCarousel() {
       clearInterval(autoPlayRef.current)
       autoPlayRef.current = null
     }
-    // Reseta a animação do bullet
-    setProgressKey(prev => prev + 1)
     // Inicia um novo ciclo de autoplay
     startAutoPlay()
   }
@@ -453,7 +427,7 @@ export function BannerCarousel() {
   const handleScroll = () => {
     if (scrollRef.current) {
       const currentScrollLeft = scrollRef.current.scrollLeft
-      const cardWidth = scrollRef.current.offsetWidth - 40 + 20
+      const cardWidth = scrollRef.current.offsetWidth - 24 + 20
       const newIndex = Math.round(currentScrollLeft / cardWidth)
       setActiveIndex(Math.min(newIndex, banners.length - 1))
     }
@@ -462,7 +436,7 @@ export function BannerCarousel() {
   // Centraliza no banner mais próximo com sensibilidade ao arraste
   const snapToNearestBanner = (dragDelta: number = 0) => {
     if (!scrollRef.current) return
-    const cardWidth = scrollRef.current.offsetWidth - 40 + 20
+    const cardWidth = scrollRef.current.offsetWidth - 24 + 20
     const currentScroll = scrollRef.current.scrollLeft
     const currentIndex = currentScroll / cardWidth
     
@@ -562,9 +536,15 @@ export function BannerCarousel() {
                       </div>
                       <span>Ao Vivo</span>
                     </div>
-                    <span className="banner-card__match-time">
-                      {banner.type === 'aoVivoTenis' ? banner.tennisMatch?.currentSet : liveMatchTime}
-                    </span>
+                    {banner.type === 'aoVivoTenis' ? (
+                      <>
+                        <span className="banner-card__match-time">{banner.tennisMatch?.currentSet}</span>
+                        <span className="banner-card__header-dot" />
+                        <span className="banner-card__match-time">{banner.tennisMatch?.setScore}</span>
+                      </>
+                    ) : (
+                      <span className="banner-card__match-time">{liveMatchTime}</span>
+                    )}
                   </div>
                   <span className="banner-card__header-right-text">{banner.headerRight}</span>
                 </>
@@ -589,33 +569,39 @@ export function BannerCarousel() {
                 <div className="banner-card__live-content">
                   <div className="banner-card__tennis-scores">
                     <div className="banner-card__tennis-player">
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--filled">
-                        {banner.tennisMatch.player1.isServing && (
-                          <img src={iconTenis} alt="" className="banner-card__tennis-serve" />
-                        )}
-                        <span>{banner.tennisMatch.player1.sets}</span>
+                      <div className="banner-card__tennis-score-group">
+                        <div className="banner-card__tennis-score-box banner-card__tennis-score-box--filled">
+                          {banner.tennisMatch.player1.isServing && (
+                            <img src={iconTenis} alt="" className="banner-card__tennis-serve" />
+                          )}
+                          <span>{banner.tennisMatch.player1.games}</span>
+                        </div>
+                        <div className="banner-card__tennis-score-box">
+                          <span>{banner.tennisMatch.player1.points}</span>
+                        </div>
                       </div>
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--outline">
-                        <span>{banner.tennisMatch.player1.games}</span>
-                      </div>
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--outline">
-                        <span>{banner.tennisMatch.player1.points}</span>
-                      </div>
+                      <span className="banner-card__tennis-dot" />
+                      {banner.tennisMatch.player1.flag && (
+                        <img src={banner.tennisMatch.player1.flag} alt="" className="banner-card__tennis-flag" />
+                      )}
                       <span className="banner-card__tennis-player-name">{banner.tennisMatch.player1.name}</span>
                     </div>
                     <div className="banner-card__tennis-player">
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--filled">
-                        {banner.tennisMatch.player2.isServing && (
-                          <img src={iconTenis} alt="" className="banner-card__tennis-serve" />
-                        )}
-                        <span>{banner.tennisMatch.player2.sets}</span>
+                      <div className="banner-card__tennis-score-group">
+                        <div className="banner-card__tennis-score-box banner-card__tennis-score-box--filled">
+                          {banner.tennisMatch.player2.isServing && (
+                            <img src={iconTenis} alt="" className="banner-card__tennis-serve" />
+                          )}
+                          <span>{banner.tennisMatch.player2.games}</span>
+                        </div>
+                        <div className="banner-card__tennis-score-box">
+                          <span>{banner.tennisMatch.player2.points}</span>
+                        </div>
                       </div>
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--outline">
-                        <span>{banner.tennisMatch.player2.games}</span>
-                      </div>
-                      <div className="banner-card__tennis-score-box banner-card__tennis-score-box--outline">
-                        <span>{banner.tennisMatch.player2.points}</span>
-                      </div>
+                      <span className="banner-card__tennis-dot" />
+                      {banner.tennisMatch.player2.flag && (
+                        <img src={banner.tennisMatch.player2.flag} alt="" className="banner-card__tennis-flag" />
+                      )}
                       <span className="banner-card__tennis-player-name">{banner.tennisMatch.player2.name}</span>
                     </div>
                   </div>
@@ -637,15 +623,15 @@ export function BannerCarousel() {
                 <div className="banner-card__live-content">
                   <div className="banner-card__live-scores">
                     <div className="banner-card__live-team">
-                      <div className="banner-card__live-score-box">
-                        <span>{banner.liveMatch.homeTeam.score}</span>
-                      </div>
+                      <span className="banner-card__live-score">{banner.liveMatch.homeTeam.score}</span>
+                      <span className="banner-card__live-dot" />
+                      <img src={banner.liveMatch.homeTeam.badge} alt="" className="banner-card__live-badge" />
                       <span className="banner-card__live-team-name">{banner.liveMatch.homeTeam.name}</span>
                     </div>
                     <div className="banner-card__live-team">
-                      <div className="banner-card__live-score-box">
-                        <span>{banner.liveMatch.awayTeam.score}</span>
-                      </div>
+                      <span className="banner-card__live-score">{banner.liveMatch.awayTeam.score}</span>
+                      <span className="banner-card__live-dot" />
+                      <img src={banner.liveMatch.awayTeam.badge} alt="" className="banner-card__live-badge" />
                       <span className="banner-card__live-team-name">{banner.liveMatch.awayTeam.name}</span>
                     </div>
                   </div>
@@ -680,7 +666,7 @@ export function BannerCarousel() {
                       {banner.comboStats.map((stat, i) => (
                         <div key={i} className="banner-card__combinada-stat">
                           <span className="banner-card__combinada-stat-value">{stat.value}</span>
-                          <span className="banner-card__combinada-stat-dot">•</span>
+                          <span className="banner-card__combinada-stat-dot"> - </span>
                           <span className="banner-card__combinada-stat-label">{stat.label}</span>
                         </div>
                       ))}
@@ -699,8 +685,20 @@ export function BannerCarousel() {
               {/* Regular Content */}
               {banner.type !== 'aoVivo' && banner.type !== 'aoVivoTenis' && banner.type !== 'combinada' && (
               <div className={`banner-card__info ${banner.odds ? 'banner-card__info--full' : ''}`}>
+
+                {/* Times com escudo (1x2) */}
+                {banner.type === '1x2' && banner.odds ? (
+                  <div className="banner-card__teams">
+                    {banner.odds.filter(o => o.badge).map((odd, i) => (
+                      <div key={i} className="banner-card__live-team">
+                        <img src={odd.badge} alt="" className="banner-card__live-badge" />
+                        <span className="banner-card__live-team-name">{odd.team}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                 <div className="banner-card__text">
-                  <h3 className="banner-card__title">
+                  <h3 className={`banner-card__title${['aumentada', 'missao', 'virtuais'].includes(banner.type) ? ' banner-card__title--aumentada' : ''}`}>
                     {banner.type === 'aumentada' && (
                       <img src={iconAumentada} alt="" className="banner-card__boost-icon" />
                     )}
@@ -712,6 +710,7 @@ export function BannerCarousel() {
                     ))}
                   </p>
                 </div>
+                )}
 
                 {/* Botões padrão */}
                 {banner.buttonText && (
@@ -803,7 +802,7 @@ export function BannerCarousel() {
           >
             {index === activeIndex && (
               <span 
-                key={progressKey}
+                key={activeIndex}
                 className="banner-carousel__bullet-progress" 
               />
             )}
@@ -899,4 +898,3 @@ export function BannerCarousel() {
     </div>
   )
 }
-

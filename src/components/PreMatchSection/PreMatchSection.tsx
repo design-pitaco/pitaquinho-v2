@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './PreMatchSection.css'
+import { getTeamLogo } from '../../data/teamLogos'
 
-import iconEmBreve from '../../assets/iconEmBreve.png'
 import setaLink from '../../assets/setaLink.png'
 import iconFutebol from '../../assets/iconFutebol.png'
 import iconBasquete from '../../assets/iconBasquete.png'
@@ -31,7 +31,6 @@ import escudoCharleston from '../../assets/escudoCharleston.png'
 import escudoSouthern from '../../assets/escudoSouthern.png'
 import escudoTexas from '../../assets/escudoTexas.png'
 import escudoCaxias from '../../assets/escudoCaxias.png'
-import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
 // Escudos Brasil
 import escudoBotafogo from '../../assets/escudoBotafogo.png'
 import escudoBahia from '../../assets/escudoBahia.png'
@@ -184,8 +183,8 @@ const leagues: League[] = [
       {
         id: '1',
         dateTime: 'Hoje, 21:30',
-        homeTeam: { name: 'Palmeiras', icon: escudoPalmeiras },
-        awayTeam: { name: 'Fluminense', icon: escudoFluminense },
+        homeTeam: { name: 'Palmeiras', icon: getTeamLogo("Palmeiras", escudoPalmeiras) },
+        awayTeam: { name: 'Fluminense', icon: getTeamLogo("Fluminense", escudoFluminense) },
         odds: { home: '1.65x', draw: '3.80x', away: '5.00x' },
         doubleChanceOdds: { homeOrDraw: '1.20x', homeOrAway: '1.35x', awayOrDraw: '2.10x' },
         bothTeamsScoreOdds: { yes: '1.85x', no: '1.90x' },
@@ -196,8 +195,8 @@ const leagues: League[] = [
       {
         id: '2',
         dateTime: 'Hoje, 21:30',
-        homeTeam: { name: 'Botafogo', icon: escudoBotafogo },
-        awayTeam: { name: 'Bahia', icon: escudoBahia },
+        homeTeam: { name: 'Botafogo', icon: getTeamLogo("Botafogo", escudoBotafogo) },
+        awayTeam: { name: 'Bahia', icon: getTeamLogo("Bahia", escudoBahia) },
         odds: { home: '1.85x', draw: '3.40x', away: '4.20x' },
         doubleChanceOdds: { homeOrDraw: '1.25x', homeOrAway: '1.40x', awayOrDraw: '1.95x' },
         bothTeamsScoreOdds: { yes: '1.75x', no: '2.00x' },
@@ -208,8 +207,8 @@ const leagues: League[] = [
       {
         id: '3',
         dateTime: 'Amanhã, 20:00',
-        homeTeam: { name: 'Atl. Mineiro', icon: escudoAtlMineiro },
-        awayTeam: { name: 'Santos', icon: escudoSantos },
+        homeTeam: { name: 'Atl. Mineiro', icon: getTeamLogo("Atl. Mineiro", escudoAtlMineiro) },
+        awayTeam: { name: 'Santos', icon: getTeamLogo("Santos", escudoSantos) },
         odds: { home: '2.10x', draw: '3.25x', away: '3.50x' },
         doubleChanceOdds: { homeOrDraw: '1.30x', homeOrAway: '1.35x', awayOrDraw: '1.70x' },
         bothTeamsScoreOdds: { yes: '1.70x', no: '2.05x' },
@@ -228,8 +227,8 @@ const leagues: League[] = [
       {
         id: '4',
         dateTime: 'Terça, 16:00',
-        homeTeam: { name: 'Real Madrid', icon: escudoReal },
-        awayTeam: { name: 'Barcelona', icon: escudoBarca },
+        homeTeam: { name: 'Real Madrid', icon: getTeamLogo("Real Madrid", escudoReal) },
+        awayTeam: { name: 'Barcelona', icon: getTeamLogo("Barcelona", escudoBarca) },
         odds: { home: '2.20x', draw: '3.40x', away: '3.10x' },
         doubleChanceOdds: { homeOrDraw: '1.35x', homeOrAway: '1.30x', awayOrDraw: '1.60x' },
         bothTeamsScoreOdds: { yes: '1.55x', no: '2.30x' },
@@ -240,8 +239,8 @@ const leagues: League[] = [
       {
         id: '5',
         dateTime: 'Terça, 16:00',
-        homeTeam: { name: 'Liverpool', icon: escudoLiverpool },
-        awayTeam: { name: 'Man. City', icon: escudoManchesterCity },
+        homeTeam: { name: 'Liverpool', icon: getTeamLogo("Liverpool", escudoLiverpool) },
+        awayTeam: { name: 'Man. City', icon: getTeamLogo("Man. City", escudoManchesterCity) },
         odds: { home: '2.40x', draw: '3.50x', away: '2.80x' },
         doubleChanceOdds: { homeOrDraw: '1.45x', homeOrAway: '1.30x', awayOrDraw: '1.55x' },
         bothTeamsScoreOdds: { yes: '1.50x', no: '2.40x' },
@@ -252,8 +251,8 @@ const leagues: League[] = [
       {
         id: '6',
         dateTime: 'Quarta, 16:00',
-        homeTeam: { name: 'Benfica', icon: escudoBenfica },
-        awayTeam: { name: 'Ajax', icon: escudoAjax },
+        homeTeam: { name: 'Benfica', icon: getTeamLogo("Benfica", escudoBenfica) },
+        awayTeam: { name: 'Ajax', icon: getTeamLogo("Ajax", escudoAjax) },
         odds: { home: '2.10x', draw: '3.40x', away: '3.30x' },
         doubleChanceOdds: { homeOrDraw: '1.30x', homeOrAway: '1.32x', awayOrDraw: '1.68x' },
         bothTeamsScoreOdds: { yes: '1.65x', no: '2.15x' },
@@ -272,8 +271,8 @@ const leagues: League[] = [
       {
         id: '6',
         dateTime: 'Sábado, 12:30',
-        homeTeam: { name: 'Arsenal', icon: escudoArsenal },
-        awayTeam: { name: 'Chelsea', icon: escudoChelsea },
+        homeTeam: { name: 'Arsenal', icon: getTeamLogo("Arsenal", escudoArsenal) },
+        awayTeam: { name: 'Chelsea', icon: getTeamLogo("Chelsea", escudoChelsea) },
         odds: { home: '1.90x', draw: '3.60x', away: '3.80x' },
         doubleChanceOdds: { homeOrDraw: '1.25x', homeOrAway: '1.28x', awayOrDraw: '1.85x' },
         bothTeamsScoreOdds: { yes: '1.60x', no: '2.20x' },
@@ -284,8 +283,8 @@ const leagues: League[] = [
       {
         id: '7',
         dateTime: 'Sábado, 15:00',
-        homeTeam: { name: 'Brighton', icon: escudoBrighton },
-        awayTeam: { name: 'West Ham', icon: escudoWestHam },
+        homeTeam: { name: 'Brighton', icon: getTeamLogo("Brighton", escudoBrighton) },
+        awayTeam: { name: 'West Ham', icon: getTeamLogo("West Ham", escudoWestHam) },
         odds: { home: '2.00x', draw: '3.50x', away: '3.60x' },
         doubleChanceOdds: { homeOrDraw: '1.28x', homeOrAway: '1.30x', awayOrDraw: '1.78x' },
         bothTeamsScoreOdds: { yes: '1.72x', no: '2.02x' },
@@ -295,8 +294,8 @@ const leagues: League[] = [
       {
         id: '8',
         dateTime: 'Sábado, 17:00',
-        homeTeam: { name: 'Leeds', icon: escudoLeeds },
-        awayTeam: { name: 'Burnley', icon: escudoBurnley },
+        homeTeam: { name: 'Leeds', icon: getTeamLogo("Leeds", escudoLeeds) },
+        awayTeam: { name: 'Burnley', icon: getTeamLogo("Burnley", escudoBurnley) },
         odds: { home: '2.20x', draw: '3.30x', away: '3.20x' },
         doubleChanceOdds: { homeOrDraw: '1.32x', homeOrAway: '1.32x', awayOrDraw: '1.62x' },
         bothTeamsScoreOdds: { yes: '1.80x', no: '1.95x' },
@@ -315,8 +314,8 @@ const leagues: League[] = [
       {
         id: '9',
         dateTime: 'Domingo, 14:00',
-        homeTeam: { name: 'Getafe', icon: escudoGetafe },
-        awayTeam: { name: 'Elche', icon: escudoElche },
+        homeTeam: { name: 'Getafe', icon: getTeamLogo("Getafe", escudoGetafe) },
+        awayTeam: { name: 'Elche', icon: getTeamLogo("Elche", escudoElche) },
         odds: { home: '2.10x', draw: '3.20x', away: '3.50x' },
         doubleChanceOdds: { homeOrDraw: '1.28x', homeOrAway: '1.32x', awayOrDraw: '1.68x' },
         bothTeamsScoreOdds: { yes: '2.10x', no: '1.68x' },
@@ -326,8 +325,8 @@ const leagues: League[] = [
       {
         id: '10',
         dateTime: 'Domingo, 16:00',
-        homeTeam: { name: 'Alavés', icon: escudoAlaves },
-        awayTeam: { name: 'Espanyol', icon: escudoEspanyol },
+        homeTeam: { name: 'Alavés', icon: getTeamLogo("Alavés", escudoAlaves) },
+        awayTeam: { name: 'Espanyol', icon: getTeamLogo("Espanyol", escudoEspanyol) },
         odds: { home: '2.40x', draw: '3.10x', away: '2.95x' },
         doubleChanceOdds: { homeOrDraw: '1.35x', homeOrAway: '1.33x', awayOrDraw: '1.52x' },
         bothTeamsScoreOdds: { yes: '1.90x', no: '1.85x' },
@@ -337,8 +336,8 @@ const leagues: League[] = [
       {
         id: '11',
         dateTime: 'Domingo, 18:30',
-        homeTeam: { name: 'Mallorca', icon: escudoMallorca },
-        awayTeam: { name: 'Levante', icon: escudoLevante },
+        homeTeam: { name: 'Mallorca', icon: getTeamLogo("Mallorca", escudoMallorca) },
+        awayTeam: { name: 'Levante', icon: getTeamLogo("Levante", escudoLevante) },
         odds: { home: '2.25x', draw: '3.30x', away: '3.15x' },
         doubleChanceOdds: { homeOrDraw: '1.32x', homeOrAway: '1.32x', awayOrDraw: '1.60x' },
         bothTeamsScoreOdds: { yes: '1.75x', no: '2.00x' },
@@ -357,8 +356,8 @@ const leagues: League[] = [
       {
         id: '12',
         dateTime: 'Sábado, 16:30',
-        homeTeam: { name: 'B. Leverkusen', icon: escudoBayerLeverkusen },
-        awayTeam: { name: 'Bayern', icon: escudoBayerMunique },
+        homeTeam: { name: 'B. Leverkusen', icon: getTeamLogo("B. Leverkusen", escudoBayerLeverkusen) },
+        awayTeam: { name: 'Bayern', icon: getTeamLogo("Bayern", escudoBayerMunique) },
         odds: { home: '2.40x', draw: '3.40x', away: '2.80x' },
         doubleChanceOdds: { homeOrDraw: '1.42x', homeOrAway: '1.30x', awayOrDraw: '1.55x' },
         bothTeamsScoreOdds: { yes: '1.45x', no: '2.60x' },
@@ -369,8 +368,8 @@ const leagues: League[] = [
       {
         id: '13',
         dateTime: 'Sábado, 13:30',
-        homeTeam: { name: 'Wolfsburg', icon: escudoWolfsburg },
-        awayTeam: { name: 'Eintracht', icon: escudoEintracht },
+        homeTeam: { name: 'Wolfsburg', icon: getTeamLogo("Wolfsburg", escudoWolfsburg) },
+        awayTeam: { name: 'Eintracht', icon: getTeamLogo("Eintracht", escudoEintracht) },
         odds: { home: '2.70x', draw: '3.30x', away: '2.55x' },
         doubleChanceOdds: { homeOrDraw: '1.48x', homeOrAway: '1.32x', awayOrDraw: '1.45x' },
         bothTeamsScoreOdds: { yes: '1.68x', no: '2.10x' },
@@ -380,8 +379,8 @@ const leagues: League[] = [
       {
         id: '14',
         dateTime: 'Domingo, 15:30',
-        homeTeam: { name: 'Augsburg', icon: escudoAugsburg },
-        awayTeam: { name: 'Hamburger', icon: escudoHamburger },
+        homeTeam: { name: 'Augsburg', icon: getTeamLogo("Augsburg", escudoAugsburg) },
+        awayTeam: { name: 'Hamburger', icon: getTeamLogo("Hamburger", escudoHamburger) },
         odds: { home: '2.50x', draw: '3.20x', away: '2.85x' },
         doubleChanceOdds: { homeOrDraw: '1.40x', homeOrAway: '1.33x', awayOrDraw: '1.50x' },
         bothTeamsScoreOdds: { yes: '1.72x', no: '2.02x' },
@@ -401,8 +400,8 @@ const leagues: League[] = [
       {
         id: 'nba-pre-1',
         dateTime: 'Hoje, 22:00',
-        homeTeam: { name: 'Bulls', icon: escudoBulls },
-        awayTeam: { name: 'Heat', icon: escudoMiami },
+        homeTeam: { name: 'Bulls', icon: getTeamLogo("Bulls", escudoBulls) },
+        awayTeam: { name: 'Heat', icon: getTeamLogo("Heat", escudoMiami) },
         odds: { home: '2.45x', away: '1.55x' },
         totalPointsOdds: { line: 218.5, under: '1.90x', over: '1.90x' },
         handicapOdds: { line: 6.5, home: '1.88x', away: '1.92x' },
@@ -413,8 +412,8 @@ const leagues: League[] = [
       {
         id: 'nba-pre-2',
         dateTime: 'Amanhã, 21:30',
-        homeTeam: { name: 'Warriors', icon: escudoWarriors },
-        awayTeam: { name: 'Lakers', icon: escudoLakers },
+        homeTeam: { name: 'Warriors', icon: getTeamLogo("Warriors", escudoWarriors) },
+        awayTeam: { name: 'Lakers', icon: getTeamLogo("Lakers", escudoLakers) },
         odds: { home: '1.72x', away: '2.15x' },
         totalPointsOdds: { line: 228.5, under: '1.85x', over: '1.95x' },
         handicapOdds: { line: -4.5, home: '1.90x', away: '1.90x' },
@@ -425,8 +424,8 @@ const leagues: League[] = [
       {
         id: 'nba-pre-3',
         dateTime: 'Amanhã, 23:00',
-        homeTeam: { name: 'Pistons', icon: escudoPistons },
-        awayTeam: { name: 'Cavaliers', icon: escudoCavaliers },
+        homeTeam: { name: 'Pistons', icon: getTeamLogo("Pistons", escudoPistons) },
+        awayTeam: { name: 'Cavaliers', icon: getTeamLogo("Cavaliers", escudoCavaliers) },
         odds: { home: '3.20x', away: '1.35x' },
         totalPointsOdds: { line: 212.5, under: '1.92x', over: '1.88x' },
         handicapOdds: { line: 8.5, home: '1.85x', away: '1.95x' },
@@ -574,8 +573,8 @@ const leagues: League[] = [
       {
         id: 'nbb-pre-1',
         dateTime: 'Hoje, 20:00',
-        homeTeam: { name: 'Botafogo', icon: escudoBotafogo },
-        awayTeam: { name: 'Caxias do Sul', icon: escudoCaxias },
+        homeTeam: { name: 'Botafogo', icon: getTeamLogo("Botafogo", escudoBotafogo) },
+        awayTeam: { name: 'Caxias do Sul', icon: getTeamLogo("Caxias do Sul", escudoCaxias) },
         odds: { home: '1.55x', away: '2.45x' },
         totalPointsOdds: { line: 172.5, under: '1.90x', over: '1.90x' },
         handicapOdds: { line: -5.5, home: '1.88x', away: '1.92x' },
@@ -601,15 +600,25 @@ export function PreMatchSection() {
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const sportChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [isFollowingScroll, setIsFollowingScroll] = useState(false)
 
-  // Reset market when sport changes
+  // Elevate chip z-index while it's actively following the scroll (sticky engaged).
+  // When the chip releases at the bottom of the section, z-index drops back.
   useEffect(() => {
-    if (activeSport === 'basquete') {
-      setActiveMarket('vencedor')
-    } else {
-      setActiveMarket('resultado-final')
+    const chipsEl = marketChipsRef.current
+    if (!chipsEl) return
+    const STICKY_TOP = 135
+    const update = () => {
+      const top = chipsEl.getBoundingClientRect().top
+      setIsFollowingScroll(Math.abs(top - STICKY_TOP) < 1)
     }
-    // Reset market chips scroll position
+    window.addEventListener('scroll', update, { passive: true })
+    update()
+    return () => window.removeEventListener('scroll', update)
+  }, [])
+
+  // Reset market chips scroll position when sport changes
+  useEffect(() => {
     if (marketChipsRef.current) {
       marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
     }
@@ -637,10 +646,9 @@ export function PreMatchSection() {
       {/* Header */}
       <div className="prematch-section__header">
         <div className="prematch-section__title">
-          <img src={iconEmBreve} alt="" className="prematch-section__icon" />
           <span>Começa em Breve</span>
+          <img src={setaLink} alt="Ver mais" className="prematch-section__arrow" />
         </div>
-        <img src={setaLink} alt="Ver mais" className="prematch-section__arrow" />
       </div>
 
       {/* Sport Chips */}
@@ -653,6 +661,7 @@ export function PreMatchSection() {
             onClick={() => {
               if (chip.disabled) return
               setActiveSport(chip.id)
+              setActiveMarket(chip.id === 'basquete' ? 'vencedor' : 'resultado-final')
               // Scroll to make chip visible
               const chipEl = sportChipRefs.current[index]
               const containerEl = sportChipsRef.current
@@ -661,7 +670,7 @@ export function PreMatchSection() {
                 const chipWidth = chipEl.offsetWidth
                 const containerWidth = containerEl.offsetWidth
                 const containerScroll = containerEl.scrollLeft
-                const padding = 20
+                const padding = 12
                 if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
                   containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
                 } else if (chipLeft < containerScroll + padding) {
@@ -678,7 +687,7 @@ export function PreMatchSection() {
       </div>
 
       {/* Market Chips */}
-      <div className="prematch-section__chips prematch-section__chips--sticky" ref={marketChipsRef}>
+      <div className={`prematch-section__chips prematch-section__chips--sticky${isFollowingScroll ? ' prematch-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
         {currentMarketChips.map((chip, index) => (
           <button
             key={chip.id}
@@ -694,7 +703,7 @@ export function PreMatchSection() {
                 const chipWidth = chipEl.offsetWidth
                 const containerWidth = containerEl.offsetWidth
                 const containerScroll = containerEl.scrollLeft
-                const padding = 20
+                const padding = 12
                 if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
                   containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
                 } else if (chipLeft < containerScroll + padding) {
@@ -742,10 +751,10 @@ export function PreMatchSection() {
                               {match.homeTeam.icon ? (
                                 <img src={match.homeTeam.icon} alt="" className="prematch-section__team-icon" />
                               ) : league.sport === 'basquete' ? (
-                                <img 
-                                  src={escudoDefaultBasquete} 
-                                  alt="" 
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home" 
+                                <img
+                                  src={iconBasquete}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
                                 />
                               ) : (
                                 <div className="prematch-section__team-icon--placeholder" />
@@ -756,10 +765,10 @@ export function PreMatchSection() {
                               {match.awayTeam.icon ? (
                                 <img src={match.awayTeam.icon} alt="" className="prematch-section__team-icon" />
                               ) : league.sport === 'basquete' ? (
-                                <img 
-                                  src={escudoDefaultBasquete} 
-                                  alt="" 
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away" 
+                                <img
+                                  src={iconBasquete}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
                                 />
                               ) : (
                                 <div className="prematch-section__team-icon--placeholder" />
@@ -925,6 +934,10 @@ export function PreMatchSection() {
                       </div>
                     ))}
                   </div>
+                  <button className="prematch-section__league-more">
+                    <span>Veja mais do {league.name}</span>
+                    <img src={setaLink} alt="" className="prematch-section__league-more-icon" />
+                  </button>
                 </div>
               </div>
             )}

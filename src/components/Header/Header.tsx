@@ -1,37 +1,48 @@
 import './Header.css'
-import logoRei from '../../assets/logoRei.svg'
-import iconDeposito from '../../assets/iconDeposito.png'
-import iconHamburguer from '../../assets/iconHamburguer.png'
+import { SportRail } from '../SportRail'
+import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
+import iconBusca from '../../assets/iconBuscaHeader.svg'
+import iconNotificacoes from '../../assets/iconNotificacoesHeader.svg'
 
-export function Header() {
+interface HeaderProps {
+  activeSport?: string | null
+  onSportChange?: (sportId: string) => void
+}
+
+export function Header({ activeSport, onSportChange }: HeaderProps = {}) {
+  const isSportPage = !!activeSport && activeSport !== 'destaques'
+
   return (
-    <header className="header">
-      <div className="header__content">
-        {/* Logo */}
+    <header className={`header${isSportPage ? ' header--sport-active' : ''}`}>
+      <div className="header__bg-dark" />
+      <div className="header__bg-gradient" />
+
+      <div className="header__top">
         <div className="header__logo">
-          <img src={logoRei} alt="Rei do Pitaco" />
+          <img src={logoReidoPitaco} alt="Rei do Pitaco" />
         </div>
 
-        {/* Saldo e Botões */}
-        <div className="header__actions">
-          {/* Saldo */}
-          <div className="header__balance">
-            <span className="header__balance-label">Saldo</span>
-            <span className="header__balance-value">R$ 0,00</span>
-          </div>
+        <div className="header__toggle">
+          <button className="header__toggle-btn header__toggle-btn--active">
+            APOSTAS
+          </button>
+          <button className="header__toggle-btn">
+            CASSINO
+          </button>
+        </div>
 
-          {/* Botões */}
-          <div className="header__buttons">
-            <button className="header__btn header__btn--deposit" aria-label="Depositar">
-              <img src={iconDeposito} alt="Depositar" />
-            </button>
-            <button className="header__btn header__btn--menu" aria-label="Menu">
-              <img src={iconHamburguer} alt="Menu" />
-            </button>
-          </div>
+        <div className="header__actions">
+          <button className="header__icon-btn" aria-label="Buscar">
+            <img src={iconBusca} alt="Buscar" />
+          </button>
+          <button className="header__icon-btn" aria-label="Notificações">
+            <img src={iconNotificacoes} alt="Notificações" />
+            <span className="header__badge">8</span>
+          </button>
         </div>
       </div>
+
+      <SportRail activeSport={activeSport} onSportChange={onSportChange} />
     </header>
   )
 }
-

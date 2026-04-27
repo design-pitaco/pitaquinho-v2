@@ -1,7 +1,9 @@
-export { 
-  BottomSheet, 
-  MissionObjective, 
-  MissionInfoRow, 
+export {
+  BottomSheet,
+  MissionObjective,
+  MissionInfoRow,
   MissionFaqItem,
-  MissionTimer 
+  MissionTimer
 } from './BottomSheet'
+export { CompeticaoBottomSheet } from './CompeticaoBottomSheet'
+export type { Competition, CompetitionCountry } from './CompeticaoBottomSheet'

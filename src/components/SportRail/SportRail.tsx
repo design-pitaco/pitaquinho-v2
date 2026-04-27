@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './SportRail.css'
 
-// Importando ícones dos assets
-import iconCassino from '../../assets/iconCassino.png'
-import iconPromocao from '../../assets/iconPromocao.png'
+import iconAoVivo from '../../assets/iconAoVivo.png'
+import iconDestaque from '../../assets/iconDestaque.png'
 import iconFutebol from '../../assets/iconFutebol.png'
 import iconBasquete from '../../assets/iconBasquete.png'
 import iconVirtuais from '../../assets/iconVirtuais.png'
@@ -21,32 +20,39 @@ import iconDota from '../../assets/iconDota.png'
 import iconLoL from '../../assets/iconLoL.png'
 
 interface SportItem {
+  id: string
   icon: string
   label: string
 }
 
 const sports: SportItem[] = [
-  { icon: iconCassino, label: 'Cassino' },
-  { icon: iconPromocao, label: 'Promoções' },
-  { icon: iconFutebol, label: 'Futebol' },
-  { icon: iconBasquete, label: 'Basquete' },
-  { icon: iconVirtuais, label: 'Virtuais' },
-  { icon: iconF1, label: 'F1' },
-  { icon: iconTenis, label: 'Tênis' },
-  { icon: iconEsoccer, label: 'Esoccer' },
-  { icon: iconFutebolAmericano, label: 'Fut. Americano' },
-  { icon: iconVolei, label: 'Vôlei' },
-  { icon: iconTenisMesa, label: 'Tênis Mesa' },
-  { icon: iconValorant, label: 'Valorant' },
-  { icon: iconEbasketball, label: 'Ebasketball' },
-  { icon: iconHandebol, label: 'Handebol' },
-  { icon: iconBaisebol, label: 'Beisebol' },
-  { icon: iconDota, label: 'Dota 2' },
-  { icon: iconLoL, label: 'LoL' },
+  { id: 'destaques', icon: iconDestaque, label: 'Destaques' },
+  { id: 'futebol', icon: iconFutebol, label: 'Futebol' },
+  { id: 'basquete', icon: iconBasquete, label: 'Basquete' },
+  { id: 'tenis', icon: iconTenis, label: 'Tênis' },
+  { id: 'virtuais', icon: iconVirtuais, label: 'Virtuais' },
+  { id: 'f1', icon: iconF1, label: 'F1' },
+  { id: 'esoccer', icon: iconEsoccer, label: 'Esoccer' },
+  { id: 'futebol-americano', icon: iconFutebolAmericano, label: 'Fut. Americano' },
+  { id: 'volei', icon: iconVolei, label: 'Vôlei' },
+  { id: 'tenis-mesa', icon: iconTenisMesa, label: 'Tênis Mesa' },
+  { id: 'valorant', icon: iconValorant, label: 'Valorant' },
+  { id: 'ebasketball', icon: iconEbasketball, label: 'Ebasketball' },
+  { id: 'handebol', icon: iconHandebol, label: 'Handebol' },
+  { id: 'beisebol', icon: iconBaisebol, label: 'Beisebol' },
+  { id: 'dota', icon: iconDota, label: 'Dota 2' },
+  { id: 'lol', icon: iconLoL, label: 'LoL' },
 ]
 
-export function SportRail() {
+interface SportRailProps {
+  activeSport?: string | null
+  onSportChange?: (sportId: string) => void
+}
+
+export function SportRail({ activeSport, onSportChange }: SportRailProps = {}) {
   const [gap, setGap] = useState(12)
+  const listRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   useEffect(() => {
     const calculateGap = () => {
@@ -56,21 +62,14 @@ export function SportRail() {
       const minGap = 8
       const maxGap = 24
 
-      // Tenta encontrar o número de itens que resulta em um gap válido
-      // Começamos com mais itens e vamos reduzindo até encontrar um gap aceitável
       for (let fullItems = 8; fullItems >= 1; fullItems--) {
-        // Calcula o gap necessário para mostrar fullItems completos + 50% do próximo
-        // Fórmula: paddingLeft + fullItems * itemWidth + fullItems * gap + 0.5 * itemWidth = viewportWidth
         const calculatedGap = (viewportWidth - paddingLeft - (fullItems + 0.5) * itemWidth) / fullItems
-        
-        // Se o gap está dentro do range aceitável, usa esse valor
         if (calculatedGap >= minGap && calculatedGap <= maxGap) {
           setGap(calculatedGap)
           return
         }
       }
-      
-      // Fallback: usa gap padrão
+
       setGap(12)
     }
 
@@ -79,19 +78,56 @@ export function SportRail() {
     return () => window.removeEventListener('resize', calculateGap)
   }, [])
 
+  useEffect(() => {
+    if (!activeSport) return
+    const index = sports.findIndex((s) => s.id === activeSport)
+    const itemEl = itemRefs.current[index]
+    const containerEl = listRef.current?.parentElement
+    if (itemEl && containerEl) {
+      const itemLeft = itemEl.offsetLeft
+      const itemWidth = itemEl.offsetWidth
+      const containerWidth = containerEl.offsetWidth
+      const containerScroll = containerEl.scrollLeft
+      const padding = 20
+      if (itemLeft + itemWidth > containerScroll + containerWidth - padding) {
+        containerEl.scrollTo({ left: itemLeft - padding, behavior: 'smooth' })
+      } else if (itemLeft < containerScroll + padding) {
+        containerEl.scrollTo({ left: itemLeft - padding, behavior: 'smooth' })
+      }
+    }
+  }, [activeSport])
+
+  const isSportPage = !!activeSport && activeSport !== 'destaques'
+  const liveSports = ['futebol', 'basquete']
+
   return (
-    <div className="sport-rail">
-      <div className="sport-rail__list" style={{ gap: `${gap}px` }}>
-        {sports.map((sport, index) => (
-          <button key={index} className="sport-rail__item">
-            <div className="sport-rail__icon">
-              <img src={sport.icon} alt={sport.label} />
-            </div>
-            <span className="sport-rail__label">{sport.label}</span>
-          </button>
-        ))}
+    <div className={`sport-rail${isSportPage ? ' sport-rail--sport-active' : ''}`}>
+      <div className="sport-rail__list" ref={listRef} style={{ gap: `${gap}px` }}>
+        {sports.map((sport, index) => {
+          const isActive = activeSport === sport.id || (!activeSport && sport.id === 'destaques')
+          return (
+            <button
+              key={sport.id}
+              ref={(el) => { itemRefs.current[index] = el }}
+              className={`sport-rail__item${isActive ? ' sport-rail__item--active' : ''}`}
+              onClick={() => {
+                const clickable = ['destaques', 'futebol', 'basquete']
+                if (clickable.includes(sport.id)) onSportChange?.(sport.id)
+              }}
+            >
+              <div className={`sport-rail__icon${isActive ? ' sport-rail__icon--active' : ''}`}>
+                <img src={sport.icon} alt={sport.label} />
+                {liveSports.includes(sport.id) && (
+                  <span className="sport-rail__live-indicator" aria-label="Ao vivo">
+                    <img src={iconAoVivo} alt="" className="sport-rail__live-icon" />
+                  </span>
+                )}
+              </div>
+              <span className="sport-rail__label">{sport.label}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
 }
-

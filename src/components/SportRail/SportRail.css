@@ -1,8 +1,14 @@
 .sport-rail {
+  position: relative;
+  z-index: 1;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 0 20px 12px;
+  padding: 0 0 24px 12px;
+}
+
+.sport-rail--sport-active {
+  padding-bottom: 20px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -43,11 +49,34 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #123b24;
+  background-color: rgba(0, 0, 0, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
+
+.sport-rail__icon--active {
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  position: relative;
+}
+
+.sport-rail__icon--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+
 
 .sport-rail__icon img {
   width: 20px;
@@ -55,9 +84,60 @@
   object-fit: contain;
 }
 
+.sport-rail__live-indicator {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  isolation: isolate;
+}
+
+.sport-rail__live-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border: 0.5px solid #f87171;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  animation: sport-rail-ping-live 6s linear infinite;
+  z-index: 0;
+}
+
+.sport-rail__live-icon {
+  width: 13px !important;
+  height: 13px !important;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: invert(62%) sepia(60%) saturate(600%) hue-rotate(314deg) brightness(100%) contrast(95%);
+}
+
+@keyframes sport-rail-ping-live {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  33.33% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
 .sport-rail__label {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 500;
   color: #ffffff;
   text-align: center;
@@ -67,4 +147,3 @@
   width: 100%;
   line-height: 1;
 }
-

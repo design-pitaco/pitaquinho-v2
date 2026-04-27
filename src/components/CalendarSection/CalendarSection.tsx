@@ -1,0 +1,1432 @@
+import { useState, useRef, useEffect, type RefObject } from 'react'
+import '../PreMatchSection/PreMatchSection.css'
+import './CalendarSection.css'
+import { LiveMatchCard } from '../LiveMatchCard'
+import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
+import { getTeamLogo } from '../../data/teamLogos'
+
+import setaLink from '../../assets/setaLink.png'
+import iconAccordion from '../../assets/iconAccordion.png'
+import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
+import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
+import iconFutebol from '../../assets/iconFutebol.png'
+import iconBasquete from '../../assets/iconBasquete.png'
+// Flags
+import flagBrasil from '../../assets/flagBrasil.png'
+import flagMundo from '../../assets/flagMundo.png'
+import flagInglaterra from '../../assets/flagInglaterra.png'
+import flagEspanha from '../../assets/flagEspanha.png'
+import flagAlemanha from '../../assets/flagAlemanha.png'
+import flagUSA from '../../assets/flagUSA.png'
+// Escudos Futebol
+import escudoBotafogo from '../../assets/escudoBotafogo.png'
+import escudoFlamengo from '../../assets/escudoFlamengo.png'
+import escudoCruzeiro from '../../assets/escudoCruzeiro.png'
+import escudoInter from '../../assets/escudoInter.png'
+import escudoBragantino from '../../assets/escudoBragantino.png'
+import escudoMirasol from '../../assets/escudoMirasol.png'
+import escudoSaoPaulo from '../../assets/escudoSaoPaulo.png'
+import escudoAtleticoMadrid from '../../assets/escudoAtleticoMadrid.png'
+import escudoInterItalia from '../../assets/escudoInterItalia.png'
+import escudoPalmeiras from '../../assets/escudoPalmeiras.png'
+import escudoFluminense from '../../assets/escudoFluminense.png'
+import escudoReal from '../../assets/escudoReal.png'
+import escudoBarca from '../../assets/escudoBarca.png'
+import escudoLiverpool from '../../assets/escudoLiverpool.png'
+import escudoManchesterCity from '../../assets/escudomanchesterCity.png'
+import escudoBenfica from '../../assets/escudoBenfica.png'
+import escudoAjax from '../../assets/escudoAjax.png'
+import escudoArsenal from '../../assets/escudoArsenal.png'
+import escudoChelsea from '../../assets/escudoChelsea.png'
+import escudoBrighton from '../../assets/escudoBrighton.png'
+import escudoWestHam from '../../assets/escudoWestHam.png'
+import escudoLeeds from '../../assets/escudoLeeds.png'
+import escudoBurnley from '../../assets/escudoBurnley.png'
+import escudoGetafe from '../../assets/escudoGetafe.png'
+import escudoElche from '../../assets/escudoElche.png'
+import escudoAlaves from '../../assets/escudoAlaves.png'
+import escudoEspanyol from '../../assets/escudoEspanyol.png'
+import escudoMallorca from '../../assets/escudoMallorca.png'
+import escudoLevante from '../../assets/escudoLevante.png'
+import escudoBayerLeverkusen from '../../assets/escudoBayerLeverkusen.png'
+import escudoBayerMunique from '../../assets/escudoBayerMunique.png'
+import escudoWolfsburg from '../../assets/escudoWolfsburg.png'
+import escudoEintracht from '../../assets/escudoEintracht.png'
+import escudoAugsburg from '../../assets/escudoAugsburg.png'
+import escudoHamburger from '../../assets/escudoHamburger.png'
+import escudoAtlMineiro from '../../assets/escudoAtlMineiro.png'
+import escudoSantos from '../../assets/escudoSantos.png'
+import escudoPSG from '../../assets/escudoPSG.png'
+import escudoLyon from '../../assets/escudoLyon.png'
+import escudoNewcastle from '../../assets/escudoNewcastle.png'
+import escudoNapoli from '../../assets/escudoNapoli.png'
+// Escudos Basquete
+import escudoBulls from '../../assets/escudoBullsGde.png'
+import escudoMiami from '../../assets/escudoMiami.png'
+import escudoJazz from '../../assets/escudoJazz.png'
+import escudoThunder from '../../assets/escudoThunder.png'
+import escudoKennesaw from '../../assets/escudoKennesaw.png'
+import escudoWesleyan from '../../assets/escudoWesleyan.png'
+import escudoLafayette from '../../assets/escudoLafayette.png'
+import escudoPennsylvania from '../../assets/escudoPennsylvania.png'
+import escudoSouthCarolina from '../../assets/escudoSouthCarolina.png'
+import escudoCharleston from '../../assets/escudoCharleston.png'
+import escudoSouthern from '../../assets/escudoSouthern.png'
+import escudoTexas from '../../assets/escudoTexas.png'
+import escudoCaxias from '../../assets/escudoCaxias.png'
+import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
+
+interface DateChip {
+  id: string
+  topLabel: string    // bold top line — "Em alta", "Sex", "Sáb"...
+  bottomLabel: string // regular bottom line — "Agora", "19 Mar"...
+}
+
+const PT_WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function buildDateChips(): DateChip[] {
+  const chips: DateChip[] = [{ id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' }]
+  const today = new Date()
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    chips.push({
+      id: `day-${i}`,
+      topLabel: PT_WEEKDAYS[d.getDay()],
+      bottomLabel: `${d.getDate()} ${PT_MONTHS[d.getMonth()]}`,
+    })
+  }
+  return chips
+}
+
+interface MarketChip {
+  id: string
+  label: string
+}
+
+const footballMarketChips: MarketChip[] = [
+  { id: 'resultado-final', label: 'Resultado Final' },
+  { id: 'dupla-chance', label: 'Dupla Chance' },
+  { id: 'ambos-marcam', label: 'Ambos Marcam' },
+  { id: 'total-gols', label: 'Total de Gols' },
+  { id: 'escanteios', label: 'Total de Escanteios' },
+]
+
+const basketballMarketChips: MarketChip[] = [
+  { id: 'vencedor', label: 'Vencedor' },
+  { id: 'total-pontos', label: 'Total de Pontos' },
+  { id: 'handicap', label: 'Handicap' },
+  { id: 'q3-total', label: '3° Quarto - Total de Pontos' },
+  { id: 'q4-total', label: '4° Quarto - Total de Pontos' },
+]
+
+interface Event {
+  id: string
+  dateTime: string
+  isLive?: boolean
+  earlyPayout?: boolean
+  homeScore?: number
+  awayScore?: number
+  homeName: string
+  homeIcon: string
+  awayName: string
+  awayIcon: string
+  odds: {
+    home: string
+    draw?: string
+    away: string
+  }
+  doubleChanceOdds?: {
+    homeOrDraw: string
+    homeOrAway: string
+    awayOrDraw: string
+  }
+  bothTeamsScoreOdds?: {
+    yes: string
+    no: string
+  }
+  totalGoalsOdds?: {
+    line: number
+    under: string
+    over: string
+  }
+  totalCornersOdds?: {
+    line: number
+    under: string
+    over: string
+  }
+  totalPointsOdds?: {
+    line: number
+    under: string
+    over: string
+  }
+  handicapOdds?: {
+    line: number
+    home: string
+    away: string
+  }
+  q3TotalOdds?: {
+    line: number
+    under: string
+    over: string
+  }
+  q4TotalOdds?: {
+    line: number
+    under: string
+    over: string
+  }
+}
+
+interface Championship {
+  id: string
+  name: string
+  flag: string
+  sport: string
+  events: Event[]
+}
+
+const oddNumber = (odd: string) => Number(odd.replace('x', ''))
+
+const formatOdd = (odd: number) => `${Math.max(1.05, odd).toFixed(2)}x`
+
+const eventSeed = (event: Event) =>
+  event.id.split('').reduce((total, char) => total + char.charCodeAt(0), 0)
+
+interface MarketOdds {
+  doubleChance?: {
+    homeOrDraw: string
+    homeOrAway: string
+    awayOrDraw: string
+  }
+  bothTeamsScore?: {
+    yes: string
+    no: string
+  }
+  totalGoals?: {
+    line: number
+    under: string
+    over: string
+  }
+  totalCorners?: {
+    line: number
+    under: string
+    over: string
+  }
+  totalPoints?: {
+    line: number
+    under: string
+    over: string
+  }
+  handicap?: {
+    homeLine: number
+    awayLine: number
+    home: string
+    away: string
+  }
+  q3Total?: {
+    line: number
+    under: string
+    over: string
+  }
+  q4Total?: {
+    line: number
+    under: string
+    over: string
+  }
+}
+
+const getMarketOdds = (event: Event, sport: string): MarketOdds => {
+  const seed = eventSeed(event)
+  const homeOdd = oddNumber(event.odds.home)
+  const drawOdd = event.odds.draw ? oddNumber(event.odds.draw) : 0
+  const awayOdd = oddNumber(event.odds.away)
+  const variation = (seed % 7) * 0.04
+
+  if (sport === 'basquete') {
+    const baseTotal = 164.5 + (seed % 9) * 2
+    const quarterTotal = 39.5 + (seed % 5)
+    const favoriteIsHome = homeOdd < awayOdd
+    const handicapLine = Number((3.5 + (seed % 6)).toFixed(1))
+    const eventHandicapLine = event.handicapOdds?.line
+
+    return {
+      totalPoints: event.totalPointsOdds ?? {
+        line: baseTotal,
+        under: formatOdd(1.78 + variation),
+        over: formatOdd(2.04 - variation),
+      },
+      handicap: event.handicapOdds ? {
+        homeLine: eventHandicapLine ?? 0,
+        awayLine: eventHandicapLine ? -eventHandicapLine : 0,
+        home: event.handicapOdds.home,
+        away: event.handicapOdds.away,
+      } : {
+        homeLine: favoriteIsHome ? -handicapLine : handicapLine,
+        awayLine: favoriteIsHome ? handicapLine : -handicapLine,
+        home: formatOdd(1.82 + variation),
+        away: formatOdd(1.98 - variation),
+      },
+      q3Total: event.q3TotalOdds ?? {
+        line: quarterTotal,
+        under: formatOdd(1.74 + variation),
+        over: formatOdd(2.08 - variation),
+      },
+      q4Total: event.q4TotalOdds ?? {
+        line: quarterTotal + 1,
+        under: formatOdd(1.80 + variation),
+        over: formatOdd(2.02 - variation),
+      },
+    }
+  }
+
+  const totalGoalsLine = [1.5, 2.5, 3.5][seed % 3]
+  const cornersLine = [8.5, 9.5, 10.5][seed % 3]
+
+  return {
+    doubleChance: event.doubleChanceOdds ?? {
+      homeOrDraw: formatOdd(Math.min(homeOdd, drawOdd) - 0.36 + variation),
+      homeOrAway: formatOdd(Math.min(homeOdd, awayOdd) - 0.28 + variation),
+      awayOrDraw: formatOdd(Math.min(awayOdd, drawOdd) - 0.32 + variation),
+    },
+    bothTeamsScore: event.bothTeamsScoreOdds ?? {
+      yes: formatOdd(1.62 + variation),
+      no: formatOdd(2.28 - variation),
+    },
+    totalGoals: event.totalGoalsOdds ?? {
+      line: totalGoalsLine,
+      under: formatOdd(1.74 + variation),
+      over: formatOdd(2.05 - variation),
+    },
+    totalCorners: event.totalCornersOdds ?? {
+      line: cornersLine,
+      under: formatOdd(1.78 + variation),
+      over: formatOdd(2.00 - variation),
+    },
+  }
+}
+
+const parseMatchTime = (time: string) => {
+  const quarterMatch = time.match(/Q(\d) (\d+):(\d+)/)
+  if (quarterMatch) {
+    return {
+      period: Number(quarterMatch[1]),
+      minutes: Number(quarterMatch[2]),
+      seconds: Number(quarterMatch[3]),
+      isQuarter: true,
+    }
+  }
+
+  const halfMatch = time.match(/(\d)T (\d+):(\d+)/)
+  if (halfMatch) {
+    return {
+      period: Number(halfMatch[1]),
+      minutes: Number(halfMatch[2]),
+      seconds: Number(halfMatch[3]),
+      isQuarter: false,
+    }
+  }
+
+  return null
+}
+
+const updateMatchTime = (time: string) => {
+  const parsed = parseMatchTime(time)
+  if (!parsed) return time
+
+  const { period, isQuarter } = parsed
+  let { minutes, seconds } = parsed
+
+  if (isQuarter) {
+    seconds -= 1
+    if (seconds < 0) {
+      seconds = 59
+      minutes = Math.max(0, minutes - 1)
+    }
+  } else {
+    seconds += 1
+    if (seconds >= 60) {
+      seconds = 0
+      minutes += 1
+    }
+  }
+
+  const mins = String(minutes).padStart(2, '0')
+  const secs = String(seconds).padStart(2, '0')
+  return isQuarter ? `Q${period} ${mins}:${secs}` : `${period}T ${mins}:${secs}`
+}
+
+const championships: Championship[] = [
+  // Futebol
+  {
+    id: 'brasil-serie-a',
+    name: 'Brasil - Série A',
+    flag: flagBrasil,
+    sport: 'futebol',
+    events: [
+      {
+        id: '1',
+        dateTime: '2T 22:12',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 2,
+        awayScore: 1,
+        homeName: 'Flamengo',
+        homeIcon: escudoFlamengo,
+        awayName: 'Cruzeiro',
+        awayIcon: escudoCruzeiro,
+        odds: { home: '1.25x', draw: '5.50x', away: '9.00x' },
+        doubleChanceOdds: { homeOrDraw: '1.10x', homeOrAway: '1.15x', awayOrDraw: '3.20x' },
+        bothTeamsScoreOdds: { yes: '1.45x', no: '2.60x' },
+        totalGoalsOdds: { line: 3.5, under: '1.35x', over: '3.10x' },
+        totalCornersOdds: { line: 9.5, under: '1.75x', over: '2.00x' },
+      },
+      {
+        id: '2',
+        dateTime: '1T 38:45',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 1,
+        awayScore: 1,
+        homeName: 'Internacional',
+        homeIcon: escudoInter,
+        awayName: 'Bragantino',
+        awayIcon: escudoBragantino,
+        odds: { home: '2.10x', draw: '3.40x', away: '3.25x' },
+        doubleChanceOdds: { homeOrDraw: '1.30x', homeOrAway: '1.28x', awayOrDraw: '1.65x' },
+        bothTeamsScoreOdds: { yes: '1.55x', no: '2.30x' },
+        totalGoalsOdds: { line: 2.5, under: '1.50x', over: '2.50x' },
+        totalCornersOdds: { line: 9.5, under: '1.85x', over: '1.90x' },
+      },
+      {
+        id: '11',
+        dateTime: 'Intervalo',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 0,
+        awayScore: 1,
+        homeName: 'Mirassol',
+        homeIcon: escudoMirasol,
+        awayName: 'São Paulo',
+        awayIcon: escudoSaoPaulo,
+        odds: { home: '4.50x', draw: '3.80x', away: '1.70x' },
+        doubleChanceOdds: { homeOrDraw: '2.05x', homeOrAway: '1.25x', awayOrDraw: '1.18x' },
+        bothTeamsScoreOdds: { yes: '1.85x', no: '1.90x' },
+        totalGoalsOdds: { line: 2.5, under: '1.75x', over: '2.00x' },
+        totalCornersOdds: { line: 9.5, under: '1.90x', over: '1.85x' },
+      },
+      {
+        id: 'cal-f-1',
+        dateTime: 'Hoje, 21:30',
+        homeName: 'Palmeiras',
+        homeIcon: escudoPalmeiras,
+        awayName: 'Fluminense',
+        awayIcon: escudoFluminense,
+        odds: { home: '1.65x', draw: '3.80x', away: '5.00x' },
+      },
+      {
+        id: 'cal-f-2',
+        dateTime: 'Hoje, 21:30',
+        homeName: 'Botafogo',
+        homeIcon: escudoBotafogo,
+        awayName: 'Bahia',
+        awayIcon: iconFutebol,
+        odds: { home: '1.85x', draw: '3.40x', away: '4.20x' },
+      },
+      {
+        id: 'cal-f-3',
+        dateTime: 'Amanhã, 20:00',
+        homeName: 'Atl. Mineiro',
+        homeIcon: escudoAtlMineiro,
+        awayName: 'Santos',
+        awayIcon: escudoSantos,
+        odds: { home: '2.10x', draw: '3.25x', away: '3.50x' },
+      },
+      {
+        id: 'cal-f-16',
+        dateTime: 'Sábado, 18:30',
+        homeName: 'Vitória',
+        homeIcon: iconFutebol,
+        awayName: 'Sport',
+        awayIcon: iconFutebol,
+        odds: { home: '1.95x', draw: '3.40x', away: '3.50x' },
+      },
+      {
+        id: 'cal-f-17',
+        dateTime: 'Domingo, 16:00',
+        homeName: 'Grêmio',
+        homeIcon: iconFutebol,
+        awayName: 'Juventude',
+        awayIcon: iconFutebol,
+        odds: { home: '2.40x', draw: '3.20x', away: '2.85x' },
+      },
+    ],
+  },
+  {
+    id: 'champions-league',
+    name: 'Champions League',
+    flag: flagMundo,
+    sport: 'futebol',
+    events: [
+      {
+        id: '3',
+        dateTime: '1T 12:23',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 0,
+        awayScore: 0,
+        homeName: 'Atlético Madrid',
+        homeIcon: escudoAtleticoMadrid,
+        awayName: 'Inter',
+        awayIcon: escudoInterItalia,
+        odds: { home: '2.35x', draw: '3.20x', away: '2.90x' },
+        doubleChanceOdds: { homeOrDraw: '1.35x', homeOrAway: '1.30x', awayOrDraw: '1.52x' },
+        bothTeamsScoreOdds: { yes: '1.70x', no: '2.05x' },
+        totalGoalsOdds: { line: 2.5, under: '1.90x', over: '1.85x' },
+        totalCornersOdds: { line: 10.5, under: '1.80x', over: '1.95x' },
+      },
+      {
+        id: '4',
+        dateTime: '2T 34:15',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 2,
+        awayScore: 2,
+        homeName: 'PSG',
+        homeIcon: escudoPSG,
+        awayName: 'Lyon',
+        awayIcon: escudoLyon,
+        odds: { home: '1.65x', draw: '4.00x', away: '4.75x' },
+        doubleChanceOdds: { homeOrDraw: '1.18x', homeOrAway: '1.22x', awayOrDraw: '2.15x' },
+        bothTeamsScoreOdds: { yes: '1.40x', no: '2.85x' },
+        totalGoalsOdds: { line: 4.5, under: '1.45x', over: '2.70x' },
+        totalCornersOdds: { line: 10.5, under: '1.70x', over: '2.05x' },
+      },
+      {
+        id: '12',
+        dateTime: '1T 08:47',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 0,
+        awayScore: 0,
+        homeName: 'Newcastle',
+        homeIcon: escudoNewcastle,
+        awayName: 'Napoli',
+        awayIcon: escudoNapoli,
+        odds: { home: '2.60x', draw: '3.30x', away: '2.70x' },
+        doubleChanceOdds: { homeOrDraw: '1.45x', homeOrAway: '1.32x', awayOrDraw: '1.48x' },
+        bothTeamsScoreOdds: { yes: '1.75x', no: '2.00x' },
+        totalGoalsOdds: { line: 2.5, under: '1.85x', over: '1.90x' },
+        totalCornersOdds: { line: 10.5, under: '1.88x', over: '1.88x' },
+      },
+      {
+        id: 'cal-f-4',
+        dateTime: 'Terça, 16:00',
+        homeName: 'Real Madrid',
+        homeIcon: escudoReal,
+        awayName: 'Barcelona',
+        awayIcon: escudoBarca,
+        odds: { home: '2.20x', draw: '3.40x', away: '3.10x' },
+      },
+      {
+        id: 'cal-f-5',
+        dateTime: 'Terça, 16:00',
+        homeName: 'Liverpool',
+        homeIcon: escudoLiverpool,
+        awayName: 'Man. City',
+        awayIcon: escudoManchesterCity,
+        odds: { home: '2.40x', draw: '3.50x', away: '2.80x' },
+      },
+      {
+        id: 'cal-f-6',
+        dateTime: 'Quarta, 16:00',
+        homeName: 'Benfica',
+        homeIcon: escudoBenfica,
+        awayName: 'Ajax',
+        awayIcon: escudoAjax,
+        odds: { home: '2.10x', draw: '3.40x', away: '3.30x' },
+      },
+    ],
+  },
+  {
+    id: 'premier-league',
+    name: 'Inglaterra - Premier League',
+    flag: flagInglaterra,
+    sport: 'futebol',
+    events: [
+      {
+        id: 'premier-live-1',
+        dateTime: '1T 18:34',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 1,
+        awayScore: 0,
+        homeName: 'Arsenal',
+        homeIcon: escudoArsenal,
+        awayName: 'Chelsea',
+        awayIcon: escudoChelsea,
+        odds: { home: '1.72x', draw: '3.90x', away: '5.10x' },
+        doubleChanceOdds: { homeOrDraw: '1.18x', homeOrAway: '1.24x', awayOrDraw: '2.10x' },
+        bothTeamsScoreOdds: { yes: '1.82x', no: '1.92x' },
+        totalGoalsOdds: { line: 2.5, under: '1.76x', over: '2.02x' },
+        totalCornersOdds: { line: 9.5, under: '1.86x', over: '1.90x' },
+      },
+      {
+        id: 'cal-f-7',
+        dateTime: 'Sábado, 12:30',
+        homeName: 'Tottenham',
+        homeIcon: iconFutebol,
+        awayName: 'Wolves',
+        awayIcon: iconFutebol,
+        odds: { home: '1.90x', draw: '3.60x', away: '3.80x' },
+      },
+      {
+        id: 'cal-f-8',
+        dateTime: 'Sábado, 15:00',
+        homeName: 'Brighton',
+        homeIcon: escudoBrighton,
+        awayName: 'West Ham',
+        awayIcon: escudoWestHam,
+        odds: { home: '2.00x', draw: '3.50x', away: '3.60x' },
+      },
+      {
+        id: 'cal-f-9',
+        dateTime: 'Sábado, 17:00',
+        homeName: 'Leeds',
+        homeIcon: escudoLeeds,
+        awayName: 'Burnley',
+        awayIcon: escudoBurnley,
+        odds: { home: '2.20x', draw: '3.30x', away: '3.20x' },
+      },
+    ],
+  },
+  {
+    id: 'la-liga',
+    name: 'Espanha - La Liga',
+    flag: flagEspanha,
+    sport: 'futebol',
+    events: [
+      {
+        id: 'laliga-live-1',
+        dateTime: '2T 07:41',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 0,
+        awayScore: 1,
+        homeName: 'Getafe',
+        homeIcon: escudoGetafe,
+        awayName: 'Elche',
+        awayIcon: escudoElche,
+        odds: { home: '4.40x', draw: '3.15x', away: '1.88x' },
+        doubleChanceOdds: { homeOrDraw: '1.86x', homeOrAway: '1.34x', awayOrDraw: '1.20x' },
+        bothTeamsScoreOdds: { yes: '1.95x', no: '1.80x' },
+        totalGoalsOdds: { line: 2.5, under: '1.62x', over: '2.22x' },
+        totalCornersOdds: { line: 8.5, under: '1.82x', over: '1.94x' },
+      },
+      {
+        id: 'cal-f-10',
+        dateTime: 'Domingo, 14:00',
+        homeName: 'Sevilla',
+        homeIcon: iconFutebol,
+        awayName: 'Villarreal',
+        awayIcon: iconFutebol,
+        odds: { home: '2.10x', draw: '3.20x', away: '3.50x' },
+      },
+      {
+        id: 'cal-f-11',
+        dateTime: 'Domingo, 16:00',
+        homeName: 'Alavés',
+        homeIcon: escudoAlaves,
+        awayName: 'Espanyol',
+        awayIcon: escudoEspanyol,
+        odds: { home: '2.40x', draw: '3.10x', away: '2.95x' },
+      },
+      {
+        id: 'cal-f-12',
+        dateTime: 'Domingo, 18:30',
+        homeName: 'Mallorca',
+        homeIcon: escudoMallorca,
+        awayName: 'Levante',
+        awayIcon: escudoLevante,
+        odds: { home: '2.25x', draw: '3.30x', away: '3.15x' },
+      },
+    ],
+  },
+  {
+    id: 'bundesliga',
+    name: 'Alemanha - Bundesliga',
+    flag: flagAlemanha,
+    sport: 'futebol',
+    events: [
+      {
+        id: 'bundesliga-live-1',
+        dateTime: '1T 31:09',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 1,
+        awayScore: 1,
+        homeName: 'B. Leverkusen',
+        homeIcon: escudoBayerLeverkusen,
+        awayName: 'Bayern',
+        awayIcon: escudoBayerMunique,
+        odds: { home: '2.70x', draw: '3.45x', away: '2.45x' },
+        doubleChanceOdds: { homeOrDraw: '1.48x', homeOrAway: '1.30x', awayOrDraw: '1.36x' },
+        bothTeamsScoreOdds: { yes: '1.42x', no: '2.80x' },
+        totalGoalsOdds: { line: 3.5, under: '1.72x', over: '2.08x' },
+        totalCornersOdds: { line: 10.5, under: '1.88x', over: '1.88x' },
+      },
+      {
+        id: 'cal-f-13',
+        dateTime: 'Sábado, 16:30',
+        homeName: 'B. Dortmund',
+        homeIcon: iconFutebol,
+        awayName: 'RB Leipzig',
+        awayIcon: iconFutebol,
+        odds: { home: '2.40x', draw: '3.40x', away: '2.80x' },
+      },
+      {
+        id: 'cal-f-14',
+        dateTime: 'Sábado, 13:30',
+        homeName: 'Wolfsburg',
+        homeIcon: escudoWolfsburg,
+        awayName: 'Eintracht',
+        awayIcon: escudoEintracht,
+        odds: { home: '2.70x', draw: '3.30x', away: '2.55x' },
+      },
+      {
+        id: 'cal-f-15',
+        dateTime: 'Domingo, 15:30',
+        homeName: 'Augsburg',
+        homeIcon: escudoAugsburg,
+        awayName: 'Hamburger',
+        awayIcon: escudoHamburger,
+        odds: { home: '2.50x', draw: '3.20x', away: '2.85x' },
+      },
+    ],
+  },
+  // Basquete
+  {
+    id: 'nba',
+    name: 'NBA',
+    flag: flagUSA,
+    sport: 'basquete',
+    events: [
+      {
+        id: 'nba-1',
+        dateTime: 'Q1 08:22',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 8,
+        awayScore: 11,
+        homeName: 'Jazz',
+        homeIcon: escudoJazz,
+        awayName: 'Thunder',
+        awayIcon: escudoThunder,
+        odds: { home: '2.35x', away: '1.58x' },
+        totalPointsOdds: { line: 218.5, under: '1.90x', over: '1.90x' },
+        handicapOdds: { line: 6.5, home: '1.88x', away: '1.92x' },
+        q3TotalOdds: { line: 54.5, under: '1.85x', over: '1.95x' },
+        q4TotalOdds: { line: 56.5, under: '1.90x', over: '1.90x' },
+      },
+      {
+        id: 'nba-live-3',
+        dateTime: 'Q3 02:41',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 58,
+        awayScore: 51,
+        homeName: 'Knicks',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Magic',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '2.45x', away: '1.55x' },
+      },
+      {
+        id: 'cal-b-1',
+        dateTime: 'Hoje, 22:00',
+        homeName: 'Bulls',
+        homeIcon: escudoBulls,
+        awayName: 'Heat',
+        awayIcon: escudoMiami,
+        odds: { home: '2.45x', away: '1.55x' },
+      },
+      {
+        id: 'cal-b-2',
+        dateTime: 'Amanhã, 21:30',
+        homeName: '76ers',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Celtics',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.72x', away: '2.15x' },
+      },
+      {
+        id: 'cal-b-3',
+        dateTime: 'Amanhã, 23:00',
+        homeName: 'Nuggets',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Suns',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '3.20x', away: '1.35x' },
+      },
+      {
+        id: 'cal-b-16',
+        dateTime: 'Sábado, 20:30',
+        homeName: 'Mavericks',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Spurs',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.48x', away: '2.70x' },
+      },
+      {
+        id: 'cal-b-17',
+        dateTime: 'Domingo, 21:00',
+        homeName: 'Clippers',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Kings',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.38x', away: '3.05x' },
+      },
+    ],
+  },
+  {
+    id: 'ncaab',
+    name: 'NCAAB',
+    flag: flagUSA,
+    sport: 'basquete',
+    events: [
+      {
+        id: 'ncaab-1',
+        dateTime: 'Q1 00:21',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 22,
+        awayScore: 65,
+        homeName: 'Southern Wesleyan',
+        homeIcon: escudoWesleyan,
+        awayName: 'Kennesaw State',
+        awayIcon: escudoKennesaw,
+        odds: { home: '8.50x', away: '1.05x' },
+        totalPointsOdds: { line: 145.5, under: '1.85x', over: '1.95x' },
+        handicapOdds: { line: 42.5, home: '1.90x', away: '1.90x' },
+        q3TotalOdds: { line: 35.5, under: '1.88x', over: '1.92x' },
+        q4TotalOdds: { line: 36.5, under: '1.90x', over: '1.90x' },
+      },
+      {
+        id: 'cal-b-4',
+        dateTime: 'Hoje, 20:00',
+        homeName: 'Lafayette',
+        homeIcon: escudoLafayette,
+        awayName: 'Pennsylvania',
+        awayIcon: escudoPennsylvania,
+        odds: { home: '2.85x', away: '1.42x' },
+      },
+      {
+        id: 'cal-b-5',
+        dateTime: 'Hoje, 21:00',
+        homeName: 'South Carolina St.',
+        homeIcon: escudoSouthCarolina,
+        awayName: 'Charleston',
+        awayIcon: escudoCharleston,
+        odds: { home: '1.95x', away: '1.85x' },
+      },
+      {
+        id: 'cal-b-6',
+        dateTime: 'Hoje, 22:00',
+        homeName: 'Southern',
+        homeIcon: escudoSouthern,
+        awayName: 'Texas',
+        awayIcon: escudoTexas,
+        odds: { home: '5.50x', away: '1.15x' },
+      },
+    ],
+  },
+  {
+    id: 'euro-cup',
+    name: 'Euro Cup',
+    flag: flagMundo,
+    sport: 'basquete',
+    events: [
+      {
+        id: 'cal-b-7',
+        dateTime: 'Amanhã, 14:00',
+        homeName: 'Besiktas',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Lietkabelis',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.72x', away: '2.10x' },
+      },
+      {
+        id: 'cal-b-8',
+        dateTime: 'Amanhã, 15:00',
+        homeName: 'Chemnitz 99',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Panionios',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.55x', away: '2.45x' },
+      },
+      {
+        id: 'cal-b-9',
+        dateTime: 'Amanhã, 15:00',
+        homeName: 'Hapoel Jerusalem',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Hamburg Towers',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.65x', away: '2.25x' },
+      },
+    ],
+  },
+  {
+    id: 'brasil-nbb',
+    name: 'Brasil - NBB',
+    flag: flagBrasil,
+    sport: 'basquete',
+    events: [
+      {
+        id: 'brasil-nbb-live-1',
+        dateTime: 'Q3 02:41',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 58,
+        awayScore: 51,
+        homeName: 'Paulistano',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Unifacisa',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.82x', away: '2.02x' },
+        totalPointsOdds: { line: 168.5, under: '1.88x', over: '1.92x' },
+        handicapOdds: { line: -7.5, home: '1.90x', away: '1.90x' },
+        q3TotalOdds: { line: 42.5, under: '1.90x', over: '1.90x' },
+        q4TotalOdds: { line: 43.5, under: '1.87x', over: '1.93x' },
+      },
+      {
+        id: 'cal-b-10',
+        dateTime: 'Hoje, 20:00',
+        homeName: 'Botafogo',
+        homeIcon: escudoBotafogo,
+        awayName: 'Caxias do Sul',
+        awayIcon: escudoCaxias,
+        odds: { home: '1.55x', away: '2.45x' },
+      },
+      {
+        id: 'cal-b-11',
+        dateTime: 'Amanhã, 19:30',
+        homeName: 'Flamengo',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Minas',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.45x', away: '2.65x' },
+      },
+      {
+        id: 'cal-b-12',
+        dateTime: 'Sábado, 18:00',
+        homeName: 'São Paulo',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Pinheiros',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '2.00x', away: '1.80x' },
+      },
+    ],
+  },
+  {
+    id: 'eurocup-women',
+    name: 'Europa - EuroCup Feminino',
+    flag: flagMundo,
+    sport: 'basquete',
+    events: [
+      {
+        id: 'eurocup-women-live-1',
+        dateTime: 'Q1 04:36',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 16,
+        awayScore: 12,
+        homeName: 'Valencia',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'USK Praha',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.76x', away: '2.08x' },
+        totalPointsOdds: { line: 153.5, under: '1.89x', over: '1.91x' },
+        handicapOdds: { line: -2.5, home: '1.87x', away: '1.93x' },
+        q3TotalOdds: { line: 37.5, under: '1.88x', over: '1.92x' },
+        q4TotalOdds: { line: 38.5, under: '1.86x', over: '1.94x' },
+      },
+      {
+        id: 'cal-b-13',
+        dateTime: 'Amanhã, 13:00',
+        homeName: 'Bourges',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Lyon ASVEL',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.80x', away: '2.00x' },
+      },
+      {
+        id: 'cal-b-14',
+        dateTime: 'Amanhã, 14:30',
+        homeName: 'Fenerbahçe',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Sopron',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.60x', away: '2.35x' },
+      },
+      {
+        id: 'cal-b-15',
+        dateTime: 'Quarta, 15:00',
+        homeName: 'Schio',
+        homeIcon: escudoDefaultBasquete,
+        awayName: 'Girona',
+        awayIcon: escudoDefaultBasquete,
+        odds: { home: '1.90x', away: '1.90x' },
+      },
+    ],
+  },
+]
+
+const competitionToChampionship: Record<string, string> = {
+  'fut-brasileiro': 'brasil-serie-a',
+  'fut-brasileirao-a': 'brasil-serie-a',
+  'bsq-nba': 'nba',
+  'bsq-nba-2': 'nba',
+}
+
+interface CalendarSectionProps {
+  sportFilter?: string | null
+  competitionId?: string | null
+  onLiveMatchClick?: (payload: LiveEventOpenPayload) => void
+}
+
+export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }: CalendarSectionProps = {}) {
+  const [activeDateChip, setActiveDateChip] = useState('agora')
+  const [activeMarket, setActiveMarket] = useState('resultado-final')
+  const dateChips = buildDateChips()
+  const dateChipsRef = useRef<HTMLDivElement>(null)
+  const marketChipsRef = useRef<HTMLDivElement>(null)
+  const dateChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [matchTimes, setMatchTimes] = useState<Record<string, string>>(() => {
+    const times: Record<string, string> = {}
+    championships.forEach((championship) => {
+      championship.events.forEach((event) => {
+        if (event.isLive) times[event.id] = event.dateTime
+      })
+    })
+    return times
+  })
+
+  const mappedCompetitionId = competitionId
+    ? competitionToChampionship[competitionId] ?? competitionId
+    : null
+  const filteredBySport = sportFilter
+    ? championships.filter((c) => c.sport === sportFilter)
+    : championships
+  const filtered = mappedCompetitionId
+    ? filteredBySport.filter((c) => c.id === mappedCompetitionId)
+    : filteredBySport
+  const topFive = filtered.slice(0, mappedCompetitionId ? filtered.length : 5)
+  const isCompetitionPage = !!mappedCompetitionId
+
+  const [openLeagues, setOpenLeagues] = useState<string[]>(
+    topFive.map((c) => c.id)
+  )
+
+  useEffect(() => {
+    setOpenLeagues(topFive.map((c) => c.id))
+    setActiveMarket(sportFilter === 'basquete' ? 'vencedor' : 'resultado-final')
+    if (marketChipsRef.current) {
+      marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sportFilter, competitionId])
+
+  const toggleLeague = (id: string) => {
+    setOpenLeagues((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
+  const currentSport = topFive[0]?.sport ?? sportFilter
+  const currentMarketChips = currentSport === 'basquete' ? basketballMarketChips : footballMarketChips
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMatchTimes((current) => {
+        const next: Record<string, string> = {}
+        Object.keys(current).forEach((id) => {
+          next[id] = updateMatchTime(current[id])
+        })
+        return next
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const scrollChipIntoView = (_index: number, chipsRef: RefObject<HTMLDivElement | null>, chipEl: HTMLButtonElement | null) => {
+    const containerEl = chipsRef.current
+    if (!chipEl || !containerEl) return
+    const chipLeft = chipEl.offsetLeft
+    const chipWidth = chipEl.offsetWidth
+    const containerWidth = containerEl.offsetWidth
+    const containerScroll = containerEl.scrollLeft
+    const padding = 20
+    if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+    } else if (chipLeft < containerScroll + padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+    }
+  }
+
+  const toLiveEventMatch = (event: Event, sport: string): LiveEventMatch => {
+    const marketOdds = getMarketOdds(event, sport)
+
+    return {
+      id: event.id,
+      time: event.dateTime,
+      currentTime: matchTimes[event.id] || event.dateTime,
+      homeTeam: {
+        name: event.homeName,
+        icon: getTeamLogo(event.homeName, event.homeIcon),
+        score: event.homeScore ?? 0,
+      },
+      awayTeam: {
+        name: event.awayName,
+        icon: getTeamLogo(event.awayName, event.awayIcon),
+        score: event.awayScore ?? 0,
+      },
+      odds: event.odds,
+      doubleChanceOdds: marketOdds.doubleChance,
+      bothTeamsScoreOdds: marketOdds.bothTeamsScore,
+      totalGoalsOdds: marketOdds.totalGoals,
+      totalCornersOdds: marketOdds.totalCorners,
+      totalPointsOdds: marketOdds.totalPoints,
+      handicapOdds: event.handicapOdds,
+      q3TotalOdds: marketOdds.q3Total,
+      q4TotalOdds: marketOdds.q4Total,
+    }
+  }
+
+  const openLiveEvent = (league: Championship, selectedEventId: string) => {
+    if (league.sport !== 'futebol') return
+
+    const liveEvents = league.events.filter((event) => event.isLive)
+    const selectedIndex = Math.max(0, liveEvents.findIndex((event) => event.id === selectedEventId))
+    const currentTimes = liveEvents.reduce<Record<string, string>>((times, event) => {
+      times[event.id] = matchTimes[event.id] || event.dateTime
+      return times
+    }, {})
+
+    onLiveMatchClick?.({
+      matches: liveEvents.map((event) => toLiveEventMatch(event, league.sport)),
+      selectedIndex,
+      leagueName: league.name,
+      leagueFlag: league.flag,
+      sport: league.sport,
+      currentTimes,
+    })
+  }
+
+  return (
+    <section className={`prematch-section calendar-section${isCompetitionPage ? ' calendar-section--competition' : ''}`}>
+      {/* Header */}
+      <div className="prematch-section__header">
+        <div className="prematch-section__title">
+          <span>Calendário</span>
+        </div>
+      </div>
+
+      {/* Date chips (row 1) — fixed-width 60×44 with two-line layout per Figma */}
+      <div className="calendar-section__date-chips" ref={dateChipsRef}>
+        {dateChips.map((chip, index) => (
+          <button
+            key={chip.id}
+            ref={(el) => { dateChipRefs.current[index] = el }}
+            className={`calendar-date-chip ${activeDateChip === chip.id ? 'calendar-date-chip--active' : ''}`}
+            onClick={() => {
+              setActiveDateChip(chip.id)
+              scrollChipIntoView(index, dateChipsRef, dateChipRefs.current[index])
+            }}
+          >
+            <span className="calendar-date-chip__top">{chip.topLabel}</span>
+            <span className="calendar-date-chip__bottom">{chip.bottomLabel}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Category chips (row 2) */}
+      <div className="prematch-section__chips" ref={marketChipsRef}>
+        {currentMarketChips.map((chip, index) => (
+          <button
+            key={chip.id}
+            ref={(el) => { marketChipRefs.current[index] = el }}
+            className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
+            onClick={() => {
+              setActiveMarket(chip.id)
+              scrollChipIntoView(index, marketChipsRef, marketChipRefs.current[index])
+            }}
+          >
+            <span data-text={chip.label}>{chip.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Leagues — same layout as PreMatchSection */}
+      <div className="prematch-section__leagues">
+        {topFive.map((league) => {
+          const isOpen = openLeagues.includes(league.id)
+          const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
+          return (
+            <div key={league.id} className={`prematch-section__league ${isOpen ? 'prematch-section__league--open' : ''}`}>
+              {!isCompetitionPage && (
+                <button className="prematch-section__league-header" onClick={() => toggleLeague(league.id)}>
+                  <div className="prematch-section__league-title">
+                    <img src={league.flag} alt="" className="prematch-section__league-flag" />
+                    <span>{league.name}</span>
+                  </div>
+                  <img
+                    src={iconAccordion}
+                    alt=""
+                    className={`prematch-section__accordion-icon ${isOpen ? 'prematch-section__accordion-icon--open' : ''}`}
+                  />
+                </button>
+              )}
+
+              <div className={`prematch-section__matches-wrapper ${isOpen || isCompetitionPage ? 'prematch-section__matches-wrapper--open' : ''}`}>
+                <div className="prematch-section__matches-inner">
+                  <div className="prematch-section__matches">
+                    {(isCompetitionPage
+                      ? [
+                          ...league.events.filter((event) => event.isLive).slice(0, 3),
+                          ...league.events.filter((event) => !event.isLive).slice(0, 5),
+                        ]
+                      : league.events.slice(0, 3)
+                    ).map((event) => {
+                      const marketOdds = getMarketOdds(event, league.sport)
+                      const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
+                      const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
+                      const isHomeFallback = league.sport === 'basquete' && (!homeIcon || homeIcon === escudoDefaultBasquete)
+                      const isAwayFallback = league.sport === 'basquete' && (!awayIcon || awayIcon === escudoDefaultBasquete)
+                      const isHomeSportFallback = league.sport === 'futebol' && homeIcon === iconFutebol
+                      const isAwaySportFallback = league.sport === 'futebol' && awayIcon === iconFutebol
+
+                      if (event.isLive) {
+                        return (
+                          <LiveMatchCard
+                            key={event.id}
+                            sport={league.sport}
+                            activeMarket={activeMarket}
+                            currentTime={matchTimes[event.id] || event.dateTime}
+                            match={{
+                              id: event.id,
+                              time: event.dateTime,
+                              homeTeam: {
+                                name: event.homeName,
+                                icon: homeIcon,
+                                score: event.homeScore ?? 0,
+                              },
+                              awayTeam: {
+                                name: event.awayName,
+                                icon: awayIcon,
+                                score: event.awayScore ?? 0,
+                              },
+                              odds: event.odds,
+                              doubleChanceOdds: marketOdds.doubleChance,
+                              bothTeamsScoreOdds: marketOdds.bothTeamsScore,
+                              totalGoalsOdds: marketOdds.totalGoals,
+                              totalCornersOdds: marketOdds.totalCorners,
+                              totalPointsOdds: marketOdds.totalPoints,
+                              handicapOdds: event.handicapOdds,
+                              q3TotalOdds: marketOdds.q3Total,
+                              q4TotalOdds: marketOdds.q4Total,
+                            }}
+                            onClick={league.sport === 'futebol' ? () => openLiveEvent(league, event.id) : undefined}
+                          />
+                        )
+                      }
+
+                      return (
+                      <div key={event.id} className="prematch-section__match">
+                        <div className="prematch-section__match-header">
+                          <div className="prematch-section__teams-compact">
+                            <div className="prematch-section__team-row">
+                              {isHomeSportFallback ? (
+                                <img
+                                  src={homeIcon}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--sport-home"
+                                />
+                              ) : !isHomeFallback ? (
+                                <img
+                                  src={homeIcon}
+                                  alt=""
+                                  className="prematch-section__team-icon"
+                                />
+                              ) : league.sport === 'basquete' ? (
+                                <img
+                                  src={iconBasquete}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
+                                />
+                              ) : (
+                                <div className="prematch-section__team-icon--placeholder" />
+                              )}
+                              <span className="prematch-section__team-name">{event.homeName}</span>
+                            </div>
+                            <div className="prematch-section__team-row">
+                              {isAwaySportFallback ? (
+                                <img
+                                  src={awayIcon}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--sport-away"
+                                />
+                              ) : !isAwayFallback ? (
+                                <img
+                                  src={awayIcon}
+                                  alt=""
+                                  className="prematch-section__team-icon"
+                                />
+                              ) : league.sport === 'basquete' ? (
+                                <img
+                                  src={iconBasquete}
+                                  alt=""
+                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
+                                />
+                              ) : (
+                                <div className="prematch-section__team-icon--placeholder" />
+                              )}
+                              <span className="prematch-section__team-name">{event.awayName}</span>
+                            </div>
+                          </div>
+                          {!event.isLive && (
+                            <div className="prematch-section__match-info">
+                              <div className="prematch-section__match-info-content">
+                                {event.earlyPayout !== false && (
+                                  <div className="prematch-section__pag-antecipado">
+                                    <span className="prematch-section__pag-antecipado-label">Pag. Antecipado</span>
+                                    <img src={reiAntecipa} alt="" className="prematch-section__rei-antecipa" />
+                                  </div>
+                                )}
+                                <span className="prematch-section__match-datetime">{event.dateTime}</span>
+                              </div>
+                              <img src={setaLink} alt="" className="prematch-section__match-arrow" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="prematch-section__odds">
+                          {activeMarket === 'dupla-chance' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Casa ou Empate</span>
+                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrDraw}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Casa ou Fora</span>
+                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrAway}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Fora ou Empate</span>
+                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.awayOrDraw}</span>
+                              </button>
+                            </>
+                          ) : activeMarket === 'ambos-marcam' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Sim</span>
+                                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.yes}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Não</span>
+                                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.no}</span>
+                              </button>
+                            </>
+                          ) : activeMarket === 'total-gols' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Menos de {marketOdds.totalGoals?.line}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.under}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Mais de {marketOdds.totalGoals?.line}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.over}</span>
+                              </button>
+                            </>
+                          ) : activeMarket === 'escanteios' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Menos de {marketOdds.totalCorners?.line}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.under}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Mais de {marketOdds.totalCorners?.line}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.over}</span>
+                              </button>
+                            </>
+                          ) : activeMarket === 'total-pontos' || activeMarket === 'q3-total' || activeMarket === 'q4-total' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Menos de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.under : activeMarket === 'q4-total' ? marketOdds.q4Total?.under : marketOdds.totalPoints?.under}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Mais de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.over : activeMarket === 'q4-total' ? marketOdds.q4Total?.over : marketOdds.totalPoints?.over}</span>
+                              </button>
+                            </>
+                          ) : activeMarket === 'handicap' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.homeName} {marketOdds.handicap && marketOdds.handicap.homeLine > 0 ? '+' : ''}{marketOdds.handicap?.homeLine}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.handicap?.home}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.awayName} {marketOdds.handicap && marketOdds.handicap.awayLine > 0 ? '+' : ''}{marketOdds.handicap?.awayLine}</span>
+                                <span className="prematch-section__odd-value">{marketOdds.handicap?.away}</span>
+                              </button>
+                            </>
+                          ) : currentSport === 'basquete' ? (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.homeName}</span>
+                                <span className="prematch-section__odd-value">{event.odds.home}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.awayName}</span>
+                                <span className="prematch-section__odd-value">{event.odds.away}</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.homeName}</span>
+                                <span className="prematch-section__odd-value">{event.odds.home}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">Empate</span>
+                                <span className="prematch-section__odd-value">{event.odds.draw}</span>
+                              </button>
+                              <button className="prematch-section__odd-btn">
+                                <span className="prematch-section__odd-team">{event.awayName}</span>
+                                <span className="prematch-section__odd-value">{event.odds.away}</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      )
+                    })}
+                  </div>
+
+                  {!isCompetitionPage && (
+                    <button className="prematch-section__league-more">
+                      <span>Veja mais do {league.name}</span>
+                      <img src={setaLink} alt="" className="prematch-section__league-more-icon" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}

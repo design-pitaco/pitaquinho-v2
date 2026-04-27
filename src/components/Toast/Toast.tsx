@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './Toast.css'
 
 import iconOk from '../../assets/iconOk.svg'
@@ -21,20 +21,43 @@ export function Toast({
 }: ToastProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
+  const closeTimerRef = useRef<number | null>(null)
+
+  const handleClose = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+    }
+    setIsClosing(true)
+    closeTimerRef.current = window.setTimeout(() => {
+      setShouldRender(false)
+      setIsClosing(false)
+      closeTimerRef.current = null
+      onClose()
+    }, 300)
+  }, [onClose])
 
   // Handle open/close with animation
   useEffect(() => {
-    if (isVisible) {
-      setShouldRender(true)
-      setIsClosing(false)
-    } else if (shouldRender && !isClosing) {
-      setIsClosing(true)
-      setTimeout(() => {
-        setShouldRender(false)
+    const timer = window.setTimeout(() => {
+      if (isVisible) {
+        if (closeTimerRef.current !== null) {
+          window.clearTimeout(closeTimerRef.current)
+          closeTimerRef.current = null
+        }
+        setShouldRender(true)
         setIsClosing(false)
-      }, 300)
-    }
-  }, [isVisible])
+      } else if (shouldRender && !isClosing) {
+        setIsClosing(true)
+        closeTimerRef.current = window.setTimeout(() => {
+          setShouldRender(false)
+          setIsClosing(false)
+          closeTimerRef.current = null
+        }, 300)
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [isVisible, shouldRender, isClosing])
 
   // Auto dismiss
   useEffect(() => {
@@ -44,16 +67,7 @@ export function Toast({
       }, duration)
       return () => clearTimeout(timer)
     }
-  }, [isVisible, duration])
-
-  const handleClose = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setShouldRender(false)
-      setIsClosing(false)
-      onClose()
-    }, 300)
-  }
+  }, [isVisible, duration, handleClose])
 
   if (!shouldRender) return null
 

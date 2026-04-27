@@ -1,0 +1,1461 @@
+/* ── Page container ── */
+.live-event-page {
+  --close-drag: 0px;
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.live-event-page__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: live-event-page__overlay-in 280ms ease forwards;
+}
+
+.live-event-page--closing .live-event-page__overlay {
+  animation: live-event-page__overlay-out 320ms ease forwards;
+}
+
+@keyframes live-event-page__overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes live-event-page__overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.live-event-page__carousel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  transform: translate3d(0, var(--close-drag), 0);
+  transition:
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: live-event-page__carousel-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, top;
+  pointer-events: none;
+}
+
+.live-event-page--closing .live-event-page__carousel {
+  transform: translate3d(0, 100%, 0);
+  animation: none;
+}
+
+@keyframes live-event-page__carousel-in {
+  from { transform: translate3d(0, 100%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+.live-event-page__carousel-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 12px;
+  padding: 80px 24px 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: visible;
+  scroll-padding-left: 24px;
+  scroll-snap-type: x mandatory;
+  scroll-snap-stop: always;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior-x: none;
+  pointer-events: none;
+}
+
+.live-event-page__carousel-list--dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.live-event-page__carousel-list::-webkit-scrollbar {
+  display: none;
+}
+
+.live-event-page__slide {
+  --slide-layout-width: calc(100vw - 48px);
+  --slide-layout-height: calc(100dvh - 80px);
+  --slide-translate-x: 0px;
+  --slide-translate-y: 0px;
+  --slide-scale: 1;
+  --slide-radius: 28px;
+  position: relative;
+  flex: 0 0 var(--slide-layout-width);
+  width: var(--slide-layout-width);
+  height: var(--slide-layout-height);
+  overflow: visible;
+  background: transparent;
+  opacity: 1;
+  pointer-events: auto;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.live-event-page__slide--active {
+  z-index: 2;
+}
+
+.live-event-page__content {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  background-color: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  border-radius: var(--slide-radius) var(--slide-radius) 0 0;
+  transform: translate3d(var(--slide-translate-x), var(--slide-translate-y), 0) scale(var(--slide-scale));
+  transform-origin: top left;
+  will-change: transform, border-radius;
+  isolation: isolate;
+}
+
+.live-event-page__compact-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+}
+
+.live-event-page__compact-header--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.live-event-page__compact-header-bg {
+  position: absolute;
+  inset: 0;
+  background: #131313;
+}
+
+.live-event-page__compact-header-bg::after {
+  content: '';
+  position: absolute;
+  top: -42px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(45.09deg, rgb(75, 32, 255) 0%, rgb(151, 48, 255) 100%);
+  filter: blur(42px);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.live-event-page__compact-match {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.live-event-page__compact-team {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-event-page__compact-logo,
+.live-event-page__compact-logo-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: block;
+}
+
+.live-event-page__compact-logo-placeholder {
+  background: #e3e3e3;
+}
+
+.live-event-page__compact-scoreboard {
+  width: 79px;
+  flex: 0 0 79px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.live-event-page__compact-score-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #ffffff;
+}
+
+.live-event-page__compact-score-row span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 20px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.live-event-page__compact-score-row span:first-child,
+.live-event-page__compact-score-row span:last-child {
+  width: 20px;
+  font-weight: 700;
+}
+
+.live-event-page__compact-score-row span:nth-child(2) {
+  width: 7px;
+  font-weight: 400;
+}
+
+.live-event-page__compact-time {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.live-event-page__top-close-area {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 0 0;
+  margin: 0 0 -16px;
+  box-sizing: border-box;
+  cursor: pointer;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.live-event-page__drag-handle {
+  width: 72px;
+  height: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  cursor: grab;
+}
+
+.live-event-page__drag-handle:active {
+  cursor: grabbing;
+}
+
+.live-event-page__drag-handle span {
+  width: 40px;
+  height: 4px;
+  border-radius: 160px;
+  background: #131313;
+  display: block;
+}
+
+/* ── Scrollable content ── */
+.live-event-page__scroll {
+  --sheet-scroll-offset: 0px;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 12px 24px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.live-event-page__scroll-stage {
+  position: relative;
+  min-height: calc(100% + 240px);
+  padding-bottom: 240px;
+}
+
+.live-event-page__scroll-body {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transform: translate3d(0, var(--sheet-scroll-offset), 0);
+  will-change: transform;
+}
+
+.live-event-page__scroll-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(45.09deg, rgb(75, 32, 255) 0%, rgb(151, 48, 255) 100%);
+  filter: blur(50px);
+  opacity: 0.48;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.live-event-page__scroll-body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.live-event-page__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Match card ── */
+.live-event-page__match-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px 20px 8px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* League name inside card */
+.live-event-page__league-name {
+  font-family: 'Red Hat Display', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #ffffff;
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+/* Live row */
+.live-event-page__live-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #202020;
+}
+
+/* Tag Ao Vivo */
+.live-event-page__tag-aovivo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  background-color: #202020;
+  border-radius: 4px;
+  height: 16px;
+}
+
+.live-event-page__tag-aovivo span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  color: #f87171;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.live-event-page__tag-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  isolation: isolate;
+}
+
+.live-event-page__tag-icon-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
+  border: 0.5px solid #F87171;
+  border-radius: 50%;
+  animation: ping-live 6s linear infinite;
+  z-index: 0;
+}
+
+.live-event-page__tag-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: invert(62%) sepia(60%) saturate(600%) hue-rotate(314deg) brightness(100%) contrast(95%);
+}
+
+.live-event-page__match-time {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ── Confronto ── */
+.live-event-page__confronto {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.live-event-page__team-block {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  align-self: stretch;
+}
+
+.live-event-page__team-block--away {
+  justify-content: flex-end;
+}
+
+.live-event-page__team-info {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Logo container */
+.live-event-page__logo-container {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.live-event-page__logo-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  filter: blur(28px);
+  pointer-events: none;
+}
+
+.live-event-page__logo-blur--away {
+  left: 0;
+}
+
+.live-event-page__logo {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.live-event-page__logo-placeholder {
+  width: 56px;
+  height: 56px;
+  background-color: #e3e3e3;
+  border-radius: 50%;
+}
+
+.live-event-page__team-name {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Scores */
+.live-event-page__score {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 56px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.live-event-page__score-separator {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 7px;
+  height: 56px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* ── Events ── */
+.live-event-page__events {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.live-event-page__events-side {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.live-event-page__events-side--away {
+  align-items: flex-end;
+}
+
+.live-event-page__event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.live-event-page__event--reversed {
+  flex-direction: row-reverse;
+}
+
+.live-event-page__event-icon {
+  width: 8px;
+  height: 10px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.live-event-page__event-icon--yellow {
+  background-color: #FFCB05;
+}
+
+.live-event-page__event-icon--red {
+  background-color: #ef4444;
+}
+
+.live-event-page__event-icon--goal {
+  background-color: #22c55e;
+}
+
+.live-event-page__event-text {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6e6e6e;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-event-page__event-ball {
+  width: 10px;
+  height: 10px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ── Stats button ── */
+.live-event-page__stats-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 32px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 100px;
+}
+
+.live-event-page__stats-btn span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.live-event-page__stats-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+/* ── Tabs ── */
+.live-event-page__tabs {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.live-event-page__tab {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 160px;
+  border: none;
+  background-color: #1a1a1a;
+  cursor: pointer;
+}
+
+.live-event-page__tab--active {
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  position: relative;
+}
+
+.live-event-page__tab--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 160px;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.live-event-page__tab span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6e6e6e;
+  white-space: nowrap;
+}
+
+.live-event-page__tab--active span {
+  color: #ffffff;
+}
+
+.live-event-page__tab-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(45%);
+}
+
+.live-event-page__tab--active .live-event-page__tab-icon {
+  filter: brightness(0) invert(1);
+}
+
+.live-event-page__tab-field-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(45%);
+}
+
+.live-event-page__tab--active .live-event-page__tab-field-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* ── Streaming ── */
+.live-event-page__streaming {
+  position: relative;
+  height: 221px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.live-event-page__stream-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* TODO: substituir por player de vídeo real */
+}
+
+.live-event-page__live-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #d12f1d;
+  color: #f7f7f8;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Stream control buttons */
+.live-event-page__stream-btn {
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.32);
+  border: none;
+  border-radius: 1000px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.live-event-page__stream-btn--top-right {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.live-event-page__stream-btn--fullscreen {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+}
+
+.live-event-page__stream-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+/* Icons inside stream buttons */
+.live-event-page__stream-icon {
+  width: 12px;
+  height: 12px;
+  color: #ffffff;
+  display: block;
+  flex-shrink: 0;
+}
+
+.live-event-page__stream-icon--lg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Campo placeholder ── */
+.live-event-page__campo {
+  height: 221px;
+  border-radius: 12px;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.live-event-page__campo-label {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6e6e6e;
+}
+
+.live-event-page__campo-sub {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6e6e6e;
+}
+
+/* ── Event detail tabs ── */
+.live-event-page__detail-tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 40px;
+  min-height: 40px;
+  margin: -16px -12px 0;
+  padding: 0 12px;
+  background: #0d0d0d;
+  border-bottom: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-shrink: 0;
+}
+
+.live-event-page__detail-tabs::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  height: 1px;
+  background: #202020;
+  pointer-events: none;
+}
+
+.live-event-page__detail-tabs + .live-event-page__market-card {
+  margin-top: 8px;
+}
+
+.live-event-page__detail-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.live-event-page__detail-tab {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  padding: 0 6px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.live-event-page__detail-tab span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 700;
+  color: #6e6e6e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-event-page__detail-tab--active span {
+  color: #ffffff;
+}
+
+.live-event-page__detail-tab--active::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  z-index: 2;
+  height: 2px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+}
+
+/* ── Odds section ── */
+.live-event-page__odds-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.live-event-page__odds-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.live-event-page__odds-title {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.live-event-page__extra-bets {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a8a8a8;
+}
+
+.live-event-page__odds {
+  display: flex;
+  gap: 4px;
+}
+
+.live-event-page__odd-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 8px;
+  background-color: #242424;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.live-event-page__odd-team {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.live-event-page__odd-value {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ── Market card (mercado-default) ── */
+.live-event-page__market-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.live-event-page__market-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.live-event-page__market-title {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-event-page__market-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.live-event-page__market-ca-box {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding-right: 8px;
+  border-right: 1px solid #202020;
+  flex-shrink: 0;
+}
+
+.live-event-page__market-ca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #9ECC30;
+  color: #000000;
+  border-radius: 100px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.live-event-page__market-toggle {
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.live-event-page__market-chevron {
+  width: 16px;
+  height: 16px;
+  display: block;
+  transform: rotate(-90deg);
+  transition: transform 160ms ease;
+}
+
+.live-event-page__market-chevron--closed {
+  transform: rotate(90deg);
+}
+
+.live-event-page__market-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.live-event-page__market-card--closed .live-event-page__market-tags {
+  margin-bottom: 0;
+}
+
+.live-event-page__market-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease;
+}
+
+.live-event-page__market-collapse--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.live-event-page__market-collapse-inner {
+  min-height: 0;
+  transform: translateY(-6px);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.live-event-page__market-collapse--open .live-event-page__market-collapse-inner {
+  transform: translateY(0);
+}
+
+.live-event-page__market-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 12px;
+  padding-left: 8px;
+  background-color: #202020;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.live-event-page__market-tag > span:first-child {
+  font-family: 'Red Hat Display', sans-serif;
+  font-size: 8px;
+  font-weight: 500;
+  color: #6E6E6E;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.live-event-page__market-tag-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 12px;
+  width: 20px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: transparent;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.live-event-page__market-tag-img {
+  width: 20px;
+  height: 12px;
+  object-fit: contain;
+  display: block;
+}
+
+.live-event-page__market-odds {
+  display: flex;
+  gap: 4px;
+}
+
+.live-event-page__market-odd {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 8px;
+  background-color: #242424;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.live-event-page__market-odd > span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.live-event-page__market-odd > strong {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.live-event-page__market-card--player-props {
+  overflow: hidden;
+}
+
+.live-event-page__player-market {
+  display: flex;
+  width: 100%;
+  padding-top: 0;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.live-event-page__player-market::-webkit-scrollbar {
+  display: none;
+}
+
+.live-event-page__player-list {
+  width: 124px;
+  flex: 0 0 124px;
+  display: flex;
+  flex-direction: column;
+}
+
+.live-event-page__player-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 4px 4px 4px 0;
+  overflow: hidden;
+}
+
+.live-event-page__player-extra {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 190ms ease;
+}
+
+.live-event-page__player-extra--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.live-event-page__player-extra-inner {
+  min-height: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.live-event-page__player-extra--open .live-event-page__player-extra-inner {
+  transform: translateY(0);
+}
+
+.live-event-page__player-visual {
+  position: relative;
+  width: 40px;
+  height: 32px;
+  flex: 0 0 40px;
+}
+
+.live-event-page__player-avatar-wrap {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #202020;
+  overflow: hidden;
+  flex: 0 0 32px;
+}
+
+.live-event-page__player-avatar {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  display: block;
+}
+
+.live-event-page__player-stat-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #202020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px;
+}
+
+.live-event-page__player-stat-icon img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  display: block;
+}
+
+.live-event-page__player-copy {
+  min-width: 0;
+  width: 76px;
+  height: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.live-event-page__player-copy strong,
+.live-event-page__player-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-event-page__player-copy strong {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.live-event-page__player-copy span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.live-event-page__player-odds-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: calc(100% + 12px);
+  min-width: 0;
+  margin-right: -12px;
+  border-left: none;
+  overflow: visible;
+}
+
+.live-event-page__player-odds-list::-webkit-scrollbar {
+  display: none;
+}
+
+.live-event-page__player-odds-row {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 4px 0 4px 8px;
+  width: 100%;
+  min-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+.live-event-page__player-odds-row--scrolled {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 100%);
+}
+
+.live-event-page__player-odds-row::-webkit-scrollbar {
+  display: none;
+}
+
+.live-event-page__player-odds-row::after {
+  content: '';
+  width: 8px;
+  min-width: 8px;
+  height: 1px;
+  flex: 0 0 8px;
+}
+
+.live-event-page__player-odd {
+  width: calc((100% - 8px) / 2.5);
+  min-width: calc((100% - 8px) / 2.5);
+  height: 32px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 8px;
+  background: #202020;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.live-event-page__player-odd span,
+.live-event-page__player-odd strong {
+  font-family: 'Red Hat Text', sans-serif;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.live-event-page__player-odd span {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.live-event-page__player-odd strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.live-event-page__total-goals-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.live-event-page__total-goals-row {
+  width: 100%;
+  display: flex;
+  gap: 4px;
+}
+
+.live-event-page__total-goals-row .live-event-page__market-odd {
+  background: #202020;
+}
+
+.live-event-page__market-more {
+  height: 32px;
+  padding: 0;
+  margin-top: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.live-event-page__market-more span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.live-event-page__market-more-icon {
+  width: 16px;
+  height: 16px;
+  transform: rotate(90deg);
+  display: block;
+  transition: transform 160ms ease;
+}
+
+.live-event-page__market-more-icon--expanded {
+  transform: rotate(-90deg);
+}

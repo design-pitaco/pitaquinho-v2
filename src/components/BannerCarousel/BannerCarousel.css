@@ -10,7 +10,7 @@
   gap: 20px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 20px;
+  padding: 0 12px;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -36,7 +36,7 @@
 /* Banner Card */
 .banner-card {
   flex-shrink: 0;
-  width: calc(100vw - 40px);
+  width: calc(100vw - 24px);
   scroll-snap-align: center;
 }
 
@@ -44,16 +44,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #123b24;
+  background-color: #1A1A1A;
   padding: 8px 20px;
-  border-radius: 8px 8px 0 0;
+  border-radius: 12px 12px 0 0;
   height: 28px;
   box-sizing: border-box;
 }
 
 .banner-card__header-left {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -62,9 +62,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 400;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
   color: #ffffff;
 }
 
@@ -76,8 +76,8 @@
 }
 
 .banner-card__content {
-  height: 140px;
-  border-radius: 0 0 8px 8px;
+  height: 151px;
+  border-radius: 0 0 12px 12px;
   background-size: cover;
   background-position: center;
   padding: 16px 20px;
@@ -110,7 +110,7 @@
 }
 
 .banner-card__title {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
@@ -121,6 +121,10 @@
   gap: 4px;
 }
 
+.banner-card__title--aumentada {
+  font-size: 16px;
+}
+
 .banner-card__boost-icon {
   width: 16px;
   height: 16px;
@@ -128,7 +132,7 @@
 }
 
 .banner-card__description {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 400;
   color: #ffffff;
@@ -145,13 +149,13 @@
 }
 
 .banner-card__btn {
-  height: 32px;
+  height: 40px;
   padding: 10px 14px;
-  background-color: #123b24;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 1000px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   cursor: pointer;
@@ -162,7 +166,7 @@
 }
 
 .banner-card__btn--icon {
-  width: 32px;
+  width: 40px;
   padding: 0;
 }
 
@@ -180,8 +184,8 @@
 
 .banner-card__odd-btn {
   flex: 1;
-  min-height: 32px;
-  background-color: #123b24;
+  min-height: 40px;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 10px;
   display: flex;
@@ -193,17 +197,17 @@
 }
 
 .banner-card__odd-team {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
   color: #ffffff;
   text-align: center;
   line-height: 1.2;
 }
 
 .banner-card__odd-value {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -211,8 +215,8 @@
 /* Boosted Odd */
 .banner-card__boosted-btn {
   width: 100%;
-  height: 32px;
-  background-color: #123b24;
+  height: 40px;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 10px;
   display: flex;
@@ -223,8 +227,8 @@
 }
 
 .banner-card__old-odd {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   text-decoration: line-through;
@@ -236,7 +240,7 @@
 }
 
 .banner-card__new-odd {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
@@ -247,9 +251,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 32px;
+  height: 40px;
   padding: 0 14px;
-  background-color: #123b24;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 1000px;
   cursor: pointer;
@@ -271,8 +275,8 @@
 }
 
 .banner-card__btn-activated-left span {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
@@ -294,8 +298,8 @@
 }
 
 .banner-card__btn-activated-label {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 400;
   color: #ffffff;
   line-height: 1;
@@ -303,8 +307,8 @@
 }
 
 .banner-card__btn-activated-value {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
@@ -316,14 +320,14 @@
   display: flex;
   justify-content: flex-start;
   gap: 6px;
-  padding: 0 20px;
+  padding: 0 12px;
 }
 
 .banner-carousel__bullet {
   width: 6px;
   height: 6px;
   border-radius: 3px;
-  background-color: rgba(23, 23, 23, 0.32);
+  background-color: #333333;
   transition: width 0.2s ease;
   position: relative;
   overflow: hidden;
@@ -331,7 +335,7 @@
 
 .banner-carousel__bullet--active {
   width: 16px;
-  background-color: rgba(23, 23, 23, 0.32);
+  background-color: #333333;
 }
 
 .banner-carousel__bullet-progress {
@@ -340,7 +344,8 @@
   left: 0;
   height: 100%;
   width: 0;
-  background-color: #171717;
+  opacity: 0.8;
+  background: linear-gradient(87deg, #4B20FF 2.73%, #9730FF 128.78%);
   border-radius: 3px;
   animation: bulletProgress 10s linear forwards;
 }
@@ -367,15 +372,16 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-right: 1px solid rgba(50, 168, 102, 0.4);
+  border-right: 1px solid #202020;
   padding-right: 8px;
 }
 
 .banner-card__tag-aovivo span {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 8px;
   font-weight: 700;
-  color: #32a866;
+  color: #F87171;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -398,7 +404,7 @@
   width: 6px;
   height: 6px;
   background-color: transparent;
-  border: 0.5px solid #32a866;
+  border: 0.5px solid #F87171;
   border-radius: 50%;
   animation: banner-ping-live 6s linear infinite;
   z-index: 0;
@@ -410,6 +416,7 @@
   object-fit: contain;
   position: relative;
   z-index: 1;
+  filter: invert(62%) sepia(60%) saturate(600%) hue-rotate(314deg) brightness(100%) contrast(95%);
 }
 
 @keyframes banner-ping-live {
@@ -428,16 +435,16 @@
 }
 
 .banner-card__match-time {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
 }
 
 .banner-card__header-right-text {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 400;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
   color: #ffffff;
 }
 
@@ -454,10 +461,18 @@
   width: 100%;
 }
 
+.banner-card__teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 60px;
+}
+
 .banner-card__live-scores {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-height: 60px;
   justify-content: center;
 }
@@ -465,33 +480,40 @@
 .banner-card__live-team {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   height: 20px;
 }
 
-.banner-card__live-score-box {
-  width: 32px;
-  height: 20px;
-  background-color: #123b24;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.banner-card__live-score-box span {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+.banner-card__live-score {
+  font-family: 'Red Hat Display', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.5;
+  min-width: 20px;
+}
+
+.banner-card__live-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.banner-card__live-badge {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .banner-card__live-team-name {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Display', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.36;
+  line-height: 1.2;
 }
 
 .banner-card__live-odds {
@@ -502,44 +524,43 @@
 
 .banner-card__live-odd-btn {
   flex: 1;
-  height: 32px;
-  background-color: #123b24;
+  height: 40px;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
   cursor: pointer;
   padding: 0 4px;
 }
 
 .banner-card__live-odd-team {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
   color: #ffffff;
   text-align: center;
-  line-height: 1;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .banner-card__live-odd-value {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* Tennis Banner Styles */
 .banner-card__tennis-scores {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-height: 60px;
   justify-content: center;
 }
@@ -547,9 +568,17 @@
 .banner-card__tennis-player {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   height: 20px;
   position: relative;
+}
+
+.banner-card__tennis-score-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  flex-shrink: 0;
 }
 
 .banner-card__tennis-score-box {
@@ -560,10 +589,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .banner-card__tennis-score-box--filled {
-  background-color: #123b24;
+  background-color: #1A1A1A;
 }
 
 .banner-card__tennis-serve {
@@ -578,24 +608,47 @@
 
 .banner-card__tennis-score-box--outline {
   background-color: transparent;
-  border: 1px solid #123b24;
+  border: 1px solid #1A1A1A;
 }
 
 .banner-card__tennis-score-box span {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 14px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
 }
 
 .banner-card__tennis-player-name {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.36;
-  margin-left: 4px;
+  line-height: 1.2;
+}
+
+.banner-card__tennis-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.banner-card__tennis-flag {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.banner-card__header-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  flex-shrink: 0;
 }
 
 /* Combinada Banner */
@@ -627,8 +680,8 @@
 }
 
 .banner-card__combinada-title span {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.36;
@@ -644,29 +697,31 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .banner-card__combinada-stat-value {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.08;
+}
+
+.banner-card__combinada-stat-dot {
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 400;
   color: #ffffff;
   line-height: 1.08;
 }
 
-.banner-card__combinada-stat-dot {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  color: #ffffff;
-  line-height: 100%;
-}
-
 .banner-card__combinada-stat-label {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
   font-weight: 400;
-  color: #e3e3e3;
-  line-height: 1;
+  color: #ffffff;
+  line-height: 1.08;
 }
 
 .banner-card__combinada-btn {
@@ -674,8 +729,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 32px;
-  background-color: #123b24;
+  height: 40px;
+  background-color: #1A1A1A;
   border: none;
   border-radius: 10px;
   padding: 0 26px;
@@ -688,8 +743,8 @@
 }
 
 .banner-card__combinada-old-odd {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   text-decoration: line-through;
@@ -702,7 +757,7 @@
 }
 
 .banner-card__combinada-new-odd {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;

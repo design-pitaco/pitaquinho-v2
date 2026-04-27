@@ -1,0 +1,258 @@
+/* Body override: horizontal padding so content + scroll fade align */
+.bottom-sheet__body.competicao-bs__body {
+  padding: 0 20px 28px 20px;
+}
+
+.competicao-bs__title {
+  font-family: 'Red Hat Display', 'Red Hat Text', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+/* Search */
+.competicao-bs__search {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 48px;
+  margin-bottom: 20px;
+}
+
+.competicao-bs__search-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  background-color: #1a1a1a;
+  border: 1px solid #202020;
+  border-radius: 4px 0 0 4px;
+  margin-right: -1px;
+}
+
+.competicao-bs__search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.competicao-bs__search-input-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #202020;
+  border-radius: 0 4px 4px 0;
+  padding: 0 12px;
+}
+
+.competicao-bs__search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  color: #ffffff;
+  font-family: 'DM Sans', 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.competicao-bs__search-input::placeholder {
+  color: #a8a8a8;
+  opacity: 0.56;
+}
+
+/* Group "Principais escolhas" */
+.competicao-bs__group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.competicao-bs__group--open {
+  margin-bottom: 20px;
+}
+
+.competicao-bs__group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.competicao-bs__group-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.competicao-bs__group-label {
+  flex: 1;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #a8a8a8;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.competicao-bs__group-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.competicao-bs__group-chevron--open {
+  transform: rotate(0deg);
+}
+
+/* Competition rows */
+.competicao-bs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.competicao-bs__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: 40px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #202020;
+  cursor: pointer;
+}
+
+.competicao-bs__row--disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.competicao-bs__row--disabled .competicao-bs__row-label {
+  color: #a8a8a8;
+}
+
+.competicao-bs__row-label {
+  flex: 1;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.competicao-bs__row-arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  object-fit: contain;
+}
+
+/* Countries list */
+.competicao-bs__countries {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.competicao-bs__country {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.competicao-bs__country-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.competicao-bs__country-flag {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.competicao-bs__country-label {
+  flex: 1;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #a8a8a8;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.competicao-bs__country-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.competicao-bs__country-chevron--open {
+  transform: rotate(0deg);
+}
+
+.competicao-bs__list--nested {
+  padding-bottom: 4px;
+}
+
+.competicao-bs__empty {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  color: #a8a8a8;
+  text-align: center;
+  margin: 24px 0;
+}
+
+/* Footer button */
+.competicao-bs__footer-btn {
+  width: 100%;
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  border: 1px solid #f3f3f3;
+  border-radius: 100px;
+  color: #ffffff;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}

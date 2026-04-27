@@ -41,7 +41,7 @@
 }
 
 .mobile-only__title {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 32px;
   font-weight: 700;
   color: #ffffff;
@@ -49,7 +49,7 @@
 }
 
 .mobile-only__description {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.87);
@@ -58,7 +58,7 @@
 }
 
 .mobile-only__hint {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.5);

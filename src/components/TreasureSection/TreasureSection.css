@@ -1,16 +1,16 @@
 .treasure-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px 0;
+  gap: 12px;
+  padding: 0 0 24px 0;
   border-bottom: 2px solid #242424;
 }
 
 .treasure-section__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 18px 0 20px;
+  
+  padding: 0 12px;
   height: 20px;
 }
 
@@ -18,27 +18,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.4;
-}
-
-.treasure-section__icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
 }
 
 .treasure-section__arrow {
   width: 20px;
   height: 20px;
   cursor: pointer;
+  filter: brightness(0) invert(1);
 }
 
 .treasure-section__box-wrapper {
-  padding: 0 20px;
+  padding: 0 12px;
 }
 
 .treasure-section__box {
@@ -46,7 +41,7 @@
   align-items: center;
   height: 112px;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: #1e1e1e;
   background-size: auto 100%;
   background-position: right center;
@@ -57,7 +52,7 @@
 .treasure-section__content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  
   flex: 1;
   height: 100%;
 }
@@ -68,7 +63,7 @@
 }
 
 .treasure-section__label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 10px;
   font-weight: 400;
   color: #ffffff;
@@ -76,7 +71,7 @@
 }
 
 .treasure-section__value {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #32a866;
@@ -117,7 +112,7 @@
   border-radius: 1000px;
   cursor: pointer;
   width: fit-content;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 10px;
   font-weight: 700;
   color: #ffffff;

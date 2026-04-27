@@ -1,15 +1,14 @@
 import { useState, useRef } from 'react'
 import './EscadinhaSection.css'
 
-import iconEscadinha from '../../assets/iconEscadinha.png'
-import iconInfo from '../../assets/iconInfo.png'
+import iconDuvida from '../../assets/iconDuvida.png'
 import bgEscadinhaJoao from '../../assets/bgEscadinhaJoao.png'
 import bgEscadinhaMbape from '../../assets/bgEscadinhaMbape.png'
 import escudoChelsea from '../../assets/escudoChelsea.png'
 import escudoArsenal from '../../assets/escudoArsenal.png'
 import escudoReal from '../../assets/escudoReal.png'
 import escudoBarca from '../../assets/escudoBarca.png'
-import iconFutebol from '../../assets/iconFutebol.png'
+import iconEstatistica from '../../assets/iconEstatistica.png'
 
 interface StatChip {
   id: string
@@ -48,7 +47,7 @@ const escadinhaCards: EscadinhaCard[] = [
       name: 'João Pedro',
       position: 'Atacante',
       team: 'Chelsea',
-      image: iconFutebol,
+      image: iconEstatistica,
     },
     background: bgEscadinhaJoao,
     stats: [
@@ -80,7 +79,7 @@ const escadinhaCards: EscadinhaCard[] = [
       name: 'Mbappé',
       position: 'Atacante',
       team: 'Real Madrid',
-      image: iconFutebol,
+      image: iconEstatistica,
     },
     background: bgEscadinhaMbape,
     stats: [
@@ -173,11 +172,9 @@ export function EscadinhaSection() {
       {/* Header */}
       <div className="escadinha-section__header">
         <div className="escadinha-section__title">
-          <img src={iconEscadinha} alt="" className="escadinha-section__icon" />
           <span>Escadinha</span>
-          <div className="escadinha-section__tag">Novidade!</div>
+          <img src={iconDuvida} alt="Dúvidas" className="escadinha-section__help" />
         </div>
-        <img src={iconInfo} alt="Info" className="escadinha-section__info" />
       </div>
 
       {/* Cards List */}
@@ -303,8 +300,8 @@ export function EscadinhaSection() {
 
               {/* Button */}
               <button className="escadinha-card__button">
-                <span className="escadinha-card__button-text">Adicionar ao Betslip</span>
-                <span className="escadinha-card__button-odd">max. {card.maxOdd}</span>
+                <span className="escadinha-card__button-text">Adicionar</span>
+                <span className="escadinha-card__button-odd">Até {card.maxOdd}</span>
               </button>
             </div>
           </div>

@@ -2,8 +2,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #171717;
-  padding-top: 80px;
+  background-color: #131313;
+  padding-top: 148px;
   padding-bottom: 60px;
 }
 
@@ -12,7 +12,7 @@
   padding: 0;
 }
 
-/* Padrão e v2 - Sem dividers e padding reduzido (v3 mantém dividers originais) */
+/* Padrão e v2 - Sem dividers */
 .home--no-dividers .promotion-section,
 .home--no-dividers .offers-section,
 .home--no-dividers .live-section,
@@ -21,17 +21,6 @@
 .home--no-dividers .treasure-section,
 .home--no-dividers .winning-now-section {
   border-bottom: none;
-  padding: 24px 0;
-}
-
-/* Primeiro componente (após ContentTabs) mantém padding-top 28px */
-.home--no-dividers .content-tabs + .promotion-section,
-.home--no-dividers .content-tabs + .offers-section {
-  padding-top: 28px;
-}
-
-/* Último componente mantém padding-bottom 28px */
-.home--no-dividers .winning-now-section {
-  padding-bottom: 28px;
+  padding: 0 0 24px 0;
 }
 

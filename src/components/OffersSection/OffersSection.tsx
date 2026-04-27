@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import './OffersSection.css'
 
-import iconOfertasRei from '../../assets/iconOfertasRei.png'
-import setaLink from '../../assets/setaLink.png'
 import iconCombinada from '../../assets/iconCombinada.png'
 import iconSuperCombinada from '../../assets/iconSuperCombinada.png'
 import iconSuperAumentada from '../../assets/iconSuperAumentada.png'
@@ -62,6 +60,8 @@ interface OfferCard {
   id: string
   type: 'combinada' | 'super_combinada' | 'super_aumentada' | 'aumentada' | 'pechincha'
   category: 'melhores' | 'combinadas' | 'super-combinadas' | 'super-aumentada' | 'aumentada' | 'pechinchas'
+  sport?: string
+  sportOnly?: boolean
   title: string
   tagLabel: string
   tagColor: string
@@ -112,9 +112,10 @@ const allOffers: OfferCard[] = [
     id: '1',
     type: 'super_combinada',
     category: 'melhores',
+    sport: 'basquete',
     title: 'Favoritos!',
     tagLabel: 'Super Combinada',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'NBA está fervendo',
     oldOdd: '5.90x',
@@ -126,12 +127,122 @@ const allOffers: OfferCard[] = [
     ],
   },
   {
+    id: 'melh-bask-2',
+    type: 'super_aumentada',
+    category: 'melhores',
+    sport: 'basquete',
+    sportOnly: true,
+    title: 'O Rei domina!',
+    tagLabel: 'Super aumentada',
+    tagColor: '#60A5FA',
+    tagIcon: iconSuperAumentada,
+    subtitle: 'Warriors vs Lakers',
+    date: '14/09, 22:30',
+    oldOdd: '2.60x',
+    newOdd: '3.40x',
+    player: {
+      name: 'LeBron James',
+      team: 'LA Lakers',
+      image: playerLeBronJames,
+      stat: 'Pontos',
+      statValue: 'Mais de 29.5',
+      sportIcon: iconBasquete,
+    },
+  },
+  {
+    id: 'melh-bask-3',
+    type: 'aumentada',
+    category: 'melhores',
+    sport: 'basquete',
+    sportOnly: true,
+    title: 'Splash Brothers!',
+    tagLabel: 'Aumentada',
+    tagColor: '#EAB308',
+    tagIcon: iconAumentada,
+    subtitle: 'Warriors vs Lakers',
+    date: '14/09, 22:30',
+    oldOdd: '2.10x',
+    newOdd: '2.70x',
+    teamStat: {
+      teamName: 'Warriors',
+      teamIcon: escudoWarriorsGde,
+      sportIcon: iconBasquete,
+      stat: 'cestas de 3',
+      statValue: 'Mais de 14.5',
+    },
+  },
+  {
+    id: 'melh-bask-4',
+    type: 'pechincha',
+    category: 'melhores',
+    sport: 'basquete',
+    sportOnly: true,
+    title: 'Chef Curry!',
+    tagLabel: 'Pechincha',
+    tagColor: '#9730FF',
+    tagIcon: iconPechincha,
+    subtitle: 'Warriors vs Lakers',
+    date: '14/09, 22:30',
+    newOdd: '1.88x',
+    player: {
+      name: 'Stephen Curry',
+      team: 'Golden State',
+      image: playerStephenCurry,
+      stat: 'Cestas de 3',
+      statValue: 'Mais de 4.5',
+      oldStatValue: '6.5',
+      sportIcon: iconBasquete,
+    },
+  },
+  {
+    id: 'melh-bask-5',
+    type: 'combinada',
+    category: 'melhores',
+    sport: 'basquete',
+    sportOnly: true,
+    title: 'Noite de pontos!',
+    tagLabel: 'Combinadas',
+    tagColor: '#DC2626',
+    tagIcon: iconCombinada,
+    subtitle: 'NBA — rodada completa',
+    oldOdd: '6.10x',
+    newOdd: '7.80x',
+    playerEvents: [
+      { icon: escudoLakers, name: 'LeBron James', value: '30+', market: 'Pontos' },
+      { icon: escudoLakers, name: 'Luka Dončić', value: '28+', market: 'Pontos' },
+      { icon: escudoMiami, name: 'Jimmy Butler', value: '22+', market: 'Pontos' },
+    ],
+    showViewAll: 5,
+  },
+  {
+    id: 'melh-fut-5',
+    type: 'super_aumentada',
+    category: 'melhores',
+    sport: 'futebol',
+    sportOnly: true,
+    title: 'Mengão avassalador!',
+    tagLabel: 'Super aumentada',
+    tagColor: '#60A5FA',
+    tagIcon: iconSuperAumentada,
+    subtitle: 'Flamengo vs Cruzeiro',
+    date: '12/09, 19:00',
+    oldOdd: '2.70x',
+    newOdd: '3.40x',
+    teamStat: {
+      teamName: 'Flamengo',
+      teamIcon: escudoFlamengoGde,
+      stat: 'gols',
+      statValue: 'Mais de 2.5',
+    },
+  },
+  {
     id: '2',
     type: 'super_aumentada',
     category: 'melhores',
+    sport: 'futebol',
     title: 'Tá voando!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -149,9 +260,10 @@ const allOffers: OfferCard[] = [
     id: '3',
     type: 'aumentada',
     category: 'melhores',
+    sport: 'futebol',
     title: 'Artilheiro na área.',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -169,9 +281,10 @@ const allOffers: OfferCard[] = [
     id: '4',
     type: 'combinada',
     category: 'melhores',
+    sport: 'futebol',
     title: 'Jogo quente!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Flamengo vs Cruzeiro',
     date: '11/09, 16:00',
@@ -187,9 +300,10 @@ const allOffers: OfferCard[] = [
     id: '5',
     type: 'pechincha',
     category: 'melhores',
+    sport: 'futebol',
     title: 'Craque demais.',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -209,9 +323,10 @@ const allOffers: OfferCard[] = [
     id: 'comb-0a',
     type: 'combinada',
     category: 'combinadas',
+    sport: 'futebol',
     title: 'Chuva de gols!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Equipes matadoras',
     oldOdd: '5.82x',
@@ -226,9 +341,10 @@ const allOffers: OfferCard[] = [
     id: 'comb-0b',
     type: 'combinada',
     category: 'combinadas',
+    sport: 'futebol',
     title: 'Jogo quente!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Flamengo vs Cruzeiro',
     date: '11/09, 16:00',
@@ -244,9 +360,10 @@ const allOffers: OfferCard[] = [
     id: 'comb-1',
     type: 'combinada',
     category: 'combinadas',
+    sport: 'futebol',
     title: 'Clássico francês!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'PSG vs Lyon',
     date: '12/09, 16:00',
@@ -262,9 +379,10 @@ const allOffers: OfferCard[] = [
     id: 'comb-2',
     type: 'combinada',
     category: 'combinadas',
+    sport: 'futebol',
     title: 'Duelo brasileiro!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Palmeiras vs Fluminense',
     date: '12/09, 21:30',
@@ -280,9 +398,10 @@ const allOffers: OfferCard[] = [
     id: 'comb-3',
     type: 'combinada',
     category: 'combinadas',
+    sport: 'futebol',
     title: 'Tripla campeã!',
     tagLabel: 'Combinadas',
-    tagColor: '#f07d87',
+    tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Os favoritos para ganhar',
     oldOdd: '4.85x',
@@ -299,9 +418,10 @@ const allOffers: OfferCard[] = [
     id: 'super-0',
     type: 'super_aumentada',
     category: 'super-aumentada',
+    sport: 'futebol',
     title: 'Tá voando!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -319,9 +439,10 @@ const allOffers: OfferCard[] = [
     id: 'super-1',
     type: 'super_aumentada',
     category: 'super-aumentada',
+    sport: 'futebol',
     title: 'El Clásico!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -338,9 +459,10 @@ const allOffers: OfferCard[] = [
     id: 'super-2',
     type: 'super_aumentada',
     category: 'super-aumentada',
+    sport: 'futebol',
     title: 'Fogão em chamas!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Botafogo vs Bahia',
     date: '12/09, 21:00',
@@ -357,9 +479,10 @@ const allOffers: OfferCard[] = [
     id: 'super-3',
     type: 'super_aumentada',
     category: 'super-aumentada',
+    sport: 'futebol',
     title: 'Mengão avassalador!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
     date: '12/09, 19:00',
@@ -376,9 +499,10 @@ const allOffers: OfferCard[] = [
     id: 'super-4',
     type: 'super_aumentada',
     category: 'super-aumentada',
+    sport: 'futebol',
     title: 'Craque em ação!',
     tagLabel: 'Super aumentada',
-    tagColor: '#88deff',
+    tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
     date: '12/09, 19:00',
@@ -395,12 +519,35 @@ const allOffers: OfferCard[] = [
 
   // === AUMENTADA ===
   {
+    id: 'aum-arrascaeta',
+    type: 'aumentada',
+    category: 'aumentada',
+    sport: 'futebol',
+    sportOnly: true,
+    title: 'Maestro em campo!',
+    tagLabel: 'Aumentada',
+    tagColor: '#EAB308',
+    tagIcon: iconAumentada,
+    subtitle: 'Flamengo vs Cruzeiro',
+    date: '12/09, 19:00',
+    oldOdd: '2.20x',
+    newOdd: '2.90x',
+    player: {
+      name: 'Arrascaeta',
+      team: 'Flamengo',
+      image: playerArrascaeta,
+      stat: 'Finalizações ao gol',
+      statValue: 'Mais de 2.5',
+    },
+  },
+  {
     id: 'aum-1',
     type: 'aumentada',
     category: 'aumentada',
+    sport: 'futebol',
     title: 'Artilheiro na área.',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -418,9 +565,10 @@ const allOffers: OfferCard[] = [
     id: 'aum-2',
     type: 'aumentada',
     category: 'aumentada',
+    sport: 'basquete',
     title: 'Cestinha garantido!',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: '76ers vs Celtics',
     date: '13/09, 21:00',
@@ -438,9 +586,10 @@ const allOffers: OfferCard[] = [
     id: 'aum-3',
     type: 'aumentada',
     category: 'aumentada',
+    sport: 'basquete',
     title: 'Splash Brothers!',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Warriors vs Lakers',
     date: '14/09, 22:30',
@@ -458,9 +607,10 @@ const allOffers: OfferCard[] = [
     id: 'aum-4',
     type: 'aumentada',
     category: 'aumentada',
+    sport: 'basquete',
     title: 'Chicago Fire!',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Bulls vs Heat',
     date: '15/09, 20:00',
@@ -478,9 +628,10 @@ const allOffers: OfferCard[] = [
     id: 'aum-5',
     type: 'aumentada',
     category: 'aumentada',
+    sport: 'basquete',
     title: 'Motor City!',
     tagLabel: 'Aumentada',
-    tagColor: '#fff5cd',
+    tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Pistons vs Cavaliers',
     date: '16/09, 19:30',
@@ -500,9 +651,10 @@ const allOffers: OfferCard[] = [
     id: 'scomb-1',
     type: 'super_combinada',
     category: 'super-combinadas',
+    sport: 'basquete',
     title: 'Favoritos!',
     tagLabel: 'Super Combinada',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'NBA está fervendo',
     oldOdd: '5.90x',
@@ -517,9 +669,10 @@ const allOffers: OfferCard[] = [
     id: 'scomb-2',
     type: 'super_combinada',
     category: 'super-combinadas',
-    title: 'Pontos e mais pontos!',
+    sport: 'basquete',
+    title: 'Muitos pontos!',
     tagLabel: 'Super Combinada',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'Warrios vs Lakers',
     date: 'Amanhã, 21:30',
@@ -535,9 +688,10 @@ const allOffers: OfferCard[] = [
     id: 'scomb-3',
     type: 'super_combinada',
     category: 'super-combinadas',
+    sport: 'basquete',
     title: 'Rebotes!',
     tagLabel: 'Super Combinada',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'Warrios vs Lakers',
     date: 'Amanhã, 21:30',
@@ -553,9 +707,10 @@ const allOffers: OfferCard[] = [
     id: 'scomb-4',
     type: 'super_combinada',
     category: 'super-combinadas',
+    sport: 'basquete',
     title: 'Total de Pontos!',
     tagLabel: 'Super Combinadas',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'Só que faz mais de 100',
     oldOdd: '9.30x',
@@ -571,9 +726,10 @@ const allOffers: OfferCard[] = [
     id: 'scomb-5',
     type: 'super_combinada',
     category: 'super-combinadas',
+    sport: 'basquete',
     title: 'Garçom!',
     tagLabel: 'Super Combinadas',
-    tagColor: '#d4a5ff',
+    tagColor: '#9730FF',
     tagIcon: iconSuperCombinada,
     subtitle: 'Warrios vs Lakers',
     date: 'Amanhã, 21:30',
@@ -589,12 +745,35 @@ const allOffers: OfferCard[] = [
 
   // === PECHINCHAS ===
   {
+    id: 'pech-arrascaeta',
+    type: 'pechincha',
+    category: 'pechinchas',
+    sport: 'futebol',
+    sportOnly: true,
+    title: 'Uruguaio brilhando.',
+    tagLabel: 'Pechincha',
+    tagColor: '#9730FF',
+    tagIcon: iconPechincha,
+    subtitle: 'Flamengo vs Cruzeiro',
+    date: '12/09, 19:00',
+    newOdd: '1.68x',
+    player: {
+      name: 'Arrascaeta',
+      team: 'Flamengo',
+      image: playerArrascaeta,
+      stat: 'Assistências',
+      statValue: 'Mais de 0.5',
+      oldStatValue: '2.5',
+    },
+  },
+  {
     id: 'pech-1',
     type: 'pechincha',
     category: 'pechinchas',
+    sport: 'futebol',
     title: 'Craque demais.',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Barcelona vs Real Madrid',
     date: '11/09, 16:00',
@@ -612,9 +791,10 @@ const allOffers: OfferCard[] = [
     id: 'pech-2',
     type: 'pechincha',
     category: 'pechinchas',
+    sport: 'basquete',
     title: 'Bucket garantido!',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Bulls vs Heat',
     date: '15/09, 20:00',
@@ -633,9 +813,10 @@ const allOffers: OfferCard[] = [
     id: 'pech-3',
     type: 'pechincha',
     category: 'pechinchas',
+    sport: 'basquete',
     title: 'O Rei em quadra!',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Warriors vs Lakers',
     date: '14/09, 22:30',
@@ -654,9 +835,10 @@ const allOffers: OfferCard[] = [
     id: 'pech-4',
     type: 'pechincha',
     category: 'pechinchas',
+    sport: 'basquete',
     title: 'Mágica eslovena!',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Warriors vs Lakers',
     date: '14/09, 22:30',
@@ -675,9 +857,10 @@ const allOffers: OfferCard[] = [
     id: 'pech-5',
     type: 'pechincha',
     category: 'pechinchas',
+    sport: 'basquete',
     title: 'Chef Curry!',
     tagLabel: 'Pechincha',
-    tagColor: '#b1e8c9',
+    tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Warriors vs Lakers',
     date: '14/09, 22:30',
@@ -694,7 +877,11 @@ const allOffers: OfferCard[] = [
   },
 ]
 
-export function OffersSection() {
+interface OffersSectionProps {
+  sportFilter?: string | null
+}
+
+export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
   const [isDragging, setIsDragging] = useState(false)
   const [activeFilter, setActiveFilter] = useState('melhores')
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -703,15 +890,30 @@ export function OffersSection() {
   const startX = useRef(0)
   const scrollLeft = useRef(0)
 
-  // Filtra ofertas baseado no chip ativo
-  const filteredOffers = allOffers.filter(offer => offer.category === activeFilter)
+  const matchesSportFilter = (offer: OfferCard) => {
+    if (offer.sportOnly && !sportFilter) return false
+    if (sportFilter && offer.sport && offer.sport !== sportFilter) return false
+    return true
+  }
+
+  const visibleChips = filterChips.filter(chip =>
+    allOffers.some(offer => offer.category === chip.id && matchesSportFilter(offer))
+  )
+  const selectedFilter = visibleChips.some((chip) => chip.id === activeFilter)
+    ? activeFilter
+    : visibleChips[0]?.id ?? activeFilter
+
+  const filteredOffers = allOffers.filter(offer => {
+    if (offer.category !== selectedFilter) return false
+    return matchesSportFilter(offer)
+  })
 
   // Reset scroll position quando mudar o filtro
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft = 0
     }
-  }, [activeFilter])
+  }, [selectedFilter, sportFilter])
 
   // Centraliza no card mais próximo com sensibilidade ao arraste
   const snapToNearestCard = (dragDelta: number = 0) => {
@@ -779,19 +981,17 @@ export function OffersSection() {
       {/* Header */}
       <div className="offers-section__header">
         <div className="offers-section__title">
-          <img src={iconOfertasRei} alt="" className="offers-section__icon" />
           <span>Ofertas Imperdíveis</span>
         </div>
-        <img src={setaLink} alt="Ver mais" className="offers-section__arrow" />
       </div>
 
       {/* Filter Chips */}
       <div className="offers-section__filters" ref={filtersRef}>
-        {filterChips.map((chip, index) => (
+        {visibleChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { chipRefs.current[index] = el }}
-            className={`offers-section__chip ${activeFilter === chip.id ? 'offers-section__chip--active' : ''}`}
+            className={`offers-section__chip ${selectedFilter === chip.id ? 'offers-section__chip--active' : ''}`}
             onClick={() => {
               setActiveFilter(chip.id)
               // Scroll para deixar o chip selecionado visível
@@ -802,7 +1002,7 @@ export function OffersSection() {
                 const chipWidth = chipEl.offsetWidth
                 const containerWidth = containerEl.offsetWidth
                 const containerScroll = containerEl.scrollLeft
-                const padding = 20
+                const padding = 12
 
                 // Se o chip está fora da view à direita
                 if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
@@ -977,4 +1177,3 @@ export function OffersSection() {
     </section>
   )
 }
-

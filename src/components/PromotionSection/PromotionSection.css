@@ -1,16 +1,15 @@
 .promotion-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px 0;
+  gap: 12px;
+  padding: 0 0 24px 0;
   border-bottom: 2px solid #242424;
 }
 
 .promotion-section__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px 0 20px;
+  padding: 0 12px;
   height: 20px;
 }
 
@@ -18,23 +17,24 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.4;
 }
 
-.promotion-section__icon {
+.promotion-section__arrow {
   width: 20px;
   height: 20px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .promotion-section__list {
   display: flex;
   gap: 8px;
-  padding: 0 20px;
+  padding: 0 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
@@ -57,90 +57,78 @@
   flex-direction: column;
   flex-shrink: 0;
   width: 148px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.promo-card:active {
-  transform: scale(0.98);
+  height: 122px;
 }
 
 .promo-card__image-wrapper {
   width: 148px;
-  height: 40px;
+  height: 56px;
   overflow: hidden;
-  border-radius: 8px 8px 0 0;
-  background-color: #1e1e1e;
+  border-radius: 12px 12px 0 0;
+  background-color: #1A1A1A;
   position: relative;
+  flex-shrink: 0;
 }
 
 .promo-card__image {
   position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  min-height: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center top;
-  top: 0;
-  left: 0;
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+}
+
+.promo-card__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 12px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.promo-card__label p {
+  margin: 0;
 }
 
 .promo-card__content {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  flex: 1;
   padding: 12px;
-  background-color: #1e1e1e;
-  border-radius: 0 0 8px 8px;
+  background-color: #1A1A1A;
+  border-radius: 0 0 12px 12px;
+  min-height: 0;
 }
 
-.promo-card__header {
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #242424;
-  display: flex;
-  align-items: flex-start;
-}
-
-.promo-card__type {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-
-.promo-card__progress {
-  font-weight: 400;
-}
-
-.promo-card__progress strong {
-  font-weight: 700;
-}
-
-.promo-card__text {
-  display: flex;
-  flex-direction: column;
-}
-
-.promo-card__title {
-  font-family: 'DM Sans', sans-serif;
+.promo-card__description {
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   color: #ffffff;
   line-height: 1.2;
   margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 /* Vantagem Section Styles (from BottomSheet) */
 .vantagem-section {
-  padding: 0 20px;
+  padding: 0 12px;
 }
 
 .vantagem-section__title {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
@@ -158,7 +146,7 @@
   gap: 12px;
   padding: 16px;
   background-color: #242424;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .vantagem-card__number {
@@ -169,7 +157,7 @@
   height: 24px;
   background-color: #32a866;
   border-radius: 50%;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
@@ -177,7 +165,7 @@
 }
 
 .vantagem-card__text {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 12px;
   font-weight: 400;
   color: #b3b3b3;
@@ -186,6 +174,6 @@
 }
 
 .vantagem-faq {
-  padding: 0 20px;
+  padding: 0 12px;
   margin-top: 24px;
 }

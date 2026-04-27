@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import './LiveSection.css'
+import { LiveMatchCard } from '../LiveMatchCard'
+import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
+import { getTeamLogo } from '../../data/teamLogos'
 
-import iconAoVivo from '../../assets/iconAoVivo.png'
 import setaLink from '../../assets/setaLink.png'
 import iconFutebol from '../../assets/iconFutebol.png'
 import iconBasquete from '../../assets/iconBasquete.png'
@@ -48,7 +50,6 @@ import escudoJazz from '../../assets/escudoJazz.png'
 import escudoThunder from '../../assets/escudoThunder.png'
 import escudoKnicks from '../../assets/escudoKnics.png'
 import escudoMagic from '../../assets/escudoMagic.png'
-import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
 import escudoKennesaw from '../../assets/escudoKennesaw.png'
 import escudoWesleyan from '../../assets/escudoWesleyan.png'
 // Basketball Flags
@@ -171,8 +172,8 @@ const leagues: League[] = [
       {
         id: '1',
         time: '2T 22:12',
-        homeTeam: { name: 'Flamengo', icon: escudoFlamengo, score: 2 },
-        awayTeam: { name: 'Cruzeiro', icon: escudoCruzeiro, score: 1 },
+        homeTeam: { name: 'Flamengo', icon: getTeamLogo("Flamengo", escudoFlamengo), score: 2 },
+        awayTeam: { name: 'Cruzeiro', icon: getTeamLogo("Cruzeiro", escudoCruzeiro), score: 1 },
         odds: { home: '1.25x', draw: '5.50x', away: '9.00x' },
         doubleChanceOdds: { homeOrDraw: '1.10x', homeOrAway: '1.15x', awayOrDraw: '3.20x' },
         bothTeamsScoreOdds: { yes: '1.45x', no: '2.60x' },
@@ -183,8 +184,8 @@ const leagues: League[] = [
       {
         id: '2',
         time: '1T 38:45',
-        homeTeam: { name: 'Internacional', icon: escudoInter, score: 1 },
-        awayTeam: { name: 'Bragantino', icon: escudoBragantino, score: 1 },
+        homeTeam: { name: 'Internacional', icon: getTeamLogo("Internacional", escudoInter), score: 1 },
+        awayTeam: { name: 'Bragantino', icon: getTeamLogo("Bragantino", escudoBragantino), score: 1 },
         odds: { home: '2.10x', draw: '3.40x', away: '3.25x' },
         doubleChanceOdds: { homeOrDraw: '1.30x', homeOrAway: '1.28x', awayOrDraw: '1.65x' },
         bothTeamsScoreOdds: { yes: '1.55x', no: '2.30x' },
@@ -195,8 +196,8 @@ const leagues: League[] = [
         id: '11',
         time: 'Intervalo',
         status: 'halftime',
-        homeTeam: { name: 'Mirassol', icon: escudoMirasol, score: 0 },
-        awayTeam: { name: 'São Paulo', icon: escudoSaoPaulo, score: 1 },
+        homeTeam: { name: 'Mirassol', icon: getTeamLogo("Mirassol", escudoMirasol), score: 0 },
+        awayTeam: { name: 'São Paulo', icon: getTeamLogo("São Paulo", escudoSaoPaulo), score: 1 },
         odds: { home: '4.50x', draw: '3.80x', away: '1.70x' },
         doubleChanceOdds: { homeOrDraw: '2.05x', homeOrAway: '1.25x', awayOrDraw: '1.18x' },
         bothTeamsScoreOdds: { yes: '1.85x', no: '1.90x' },
@@ -216,8 +217,8 @@ const leagues: League[] = [
       {
         id: '3',
         time: '1T 12:23',
-        homeTeam: { name: 'Atlético Madrid', icon: escudoAtleticoMadrid, score: 0 },
-        awayTeam: { name: 'Inter', icon: escudoInterItalia, score: 0 },
+        homeTeam: { name: 'Atlético Madrid', icon: getTeamLogo("Atlético Madrid", escudoAtleticoMadrid), score: 0 },
+        awayTeam: { name: 'Inter', icon: getTeamLogo("Inter", escudoInterItalia), score: 0 },
         odds: { home: '2.35x', draw: '3.20x', away: '2.90x' },
         doubleChanceOdds: { homeOrDraw: '1.35x', homeOrAway: '1.30x', awayOrDraw: '1.52x' },
         bothTeamsScoreOdds: { yes: '1.70x', no: '2.05x' },
@@ -227,8 +228,8 @@ const leagues: League[] = [
       {
         id: '4',
         time: '2T 34:15',
-        homeTeam: { name: 'PSG', icon: escudoPSG, score: 2 },
-        awayTeam: { name: 'Lyon', icon: escudoLyon, score: 2 },
+        homeTeam: { name: 'PSG', icon: getTeamLogo("PSG", escudoPSG), score: 2 },
+        awayTeam: { name: 'Lyon', icon: getTeamLogo("Lyon", escudoLyon), score: 2 },
         odds: { home: '1.65x', draw: '4.00x', away: '4.75x' },
         doubleChanceOdds: { homeOrDraw: '1.18x', homeOrAway: '1.22x', awayOrDraw: '2.15x' },
         bothTeamsScoreOdds: { yes: '1.40x', no: '2.85x' },
@@ -238,8 +239,8 @@ const leagues: League[] = [
       {
         id: '12',
         time: '1T 08:47',
-        homeTeam: { name: 'Newcastle', icon: escudoNewcastle, score: 0 },
-        awayTeam: { name: 'Napoli', icon: escudoNapoli, score: 0 },
+        homeTeam: { name: 'Newcastle', icon: getTeamLogo("Newcastle", escudoNewcastle), score: 0 },
+        awayTeam: { name: 'Napoli', icon: getTeamLogo("Napoli", escudoNapoli), score: 0 },
         odds: { home: '2.60x', draw: '3.30x', away: '2.70x' },
         doubleChanceOdds: { homeOrDraw: '1.45x', homeOrAway: '1.32x', awayOrDraw: '1.48x' },
         bothTeamsScoreOdds: { yes: '1.75x', no: '2.00x' },
@@ -258,8 +259,8 @@ const leagues: League[] = [
       {
         id: '5',
         time: '2T 18:32',
-        homeTeam: { name: 'Boca Juniors', icon: escudoBocaJr, score: 3 },
-        awayTeam: { name: 'Argentinos Jrs', icon: escudoArgentinoJrs, score: 0 },
+        homeTeam: { name: 'Boca Juniors', icon: getTeamLogo("Boca Juniors", escudoBocaJr), score: 3 },
+        awayTeam: { name: 'Argentinos Jrs', icon: getTeamLogo("Argentinos Jrs", escudoArgentinoJrs), score: 0 },
         odds: { home: '1.15x', draw: '6.50x', away: '12.00x' },
         doubleChanceOdds: { homeOrDraw: '1.05x', homeOrAway: '1.10x', awayOrDraw: '4.50x' },
         bothTeamsScoreOdds: { yes: '2.20x', no: '1.60x' },
@@ -269,8 +270,8 @@ const leagues: League[] = [
       {
         id: '6',
         time: '2T 05:47',
-        homeTeam: { name: 'Racing', icon: escudoRacing, score: 0 },
-        awayTeam: { name: 'River Plate', icon: escudoRiverPlate, score: 0 },
+        homeTeam: { name: 'Racing', icon: getTeamLogo("Racing", escudoRacing), score: 0 },
+        awayTeam: { name: 'River Plate', icon: getTeamLogo("River Plate", escudoRiverPlate), score: 0 },
         odds: { home: '2.80x', draw: '3.10x', away: '2.45x' },
         doubleChanceOdds: { homeOrDraw: '1.48x', homeOrAway: '1.32x', awayOrDraw: '1.38x' },
         bothTeamsScoreOdds: { yes: '1.80x', no: '1.95x' },
@@ -280,8 +281,8 @@ const leagues: League[] = [
       {
         id: '13',
         time: '1T 25:18',
-        homeTeam: { name: 'San Lorenzo', icon: escudoSanLorenzo, score: 1 },
-        awayTeam: { name: 'Córdoba', icon: escudoCordoba, score: 0 },
+        homeTeam: { name: 'San Lorenzo', icon: getTeamLogo("San Lorenzo", escudoSanLorenzo), score: 1 },
+        awayTeam: { name: 'Córdoba', icon: getTeamLogo("Córdoba", escudoCordoba), score: 0 },
         odds: { home: '1.95x', draw: '3.40x', away: '3.90x' },
         doubleChanceOdds: { homeOrDraw: '1.25x', homeOrAway: '1.30x', awayOrDraw: '1.82x' },
         bothTeamsScoreOdds: { yes: '1.90x', no: '1.85x' },
@@ -300,8 +301,8 @@ const leagues: League[] = [
       {
         id: '7',
         time: '1T 28:14',
-        homeTeam: { name: 'Inter Miami', icon: escudoInterMiami, score: 1 },
-        awayTeam: { name: 'Whitecaps', icon: escudoWhitecaps, score: 0 },
+        homeTeam: { name: 'Inter Miami', icon: getTeamLogo("Inter Miami", escudoInterMiami), score: 1 },
+        awayTeam: { name: 'Whitecaps', icon: getTeamLogo("Whitecaps", escudoWhitecaps), score: 0 },
         odds: { home: '1.40x', draw: '4.50x', away: '6.25x' },
         doubleChanceOdds: { homeOrDraw: '1.12x', homeOrAway: '1.18x', awayOrDraw: '2.55x' },
         bothTeamsScoreOdds: { yes: '1.95x', no: '1.80x' },
@@ -311,8 +312,8 @@ const leagues: League[] = [
       {
         id: '8',
         time: '1T 03:22',
-        homeTeam: { name: 'Cincinnati', icon: escudoCincinnati, score: 0 },
-        awayTeam: { name: 'Chicago Fire', icon: escudoChicagoFire, score: 0 },
+        homeTeam: { name: 'Cincinnati', icon: getTeamLogo("Cincinnati", escudoCincinnati), score: 0 },
+        awayTeam: { name: 'Chicago Fire', icon: getTeamLogo("Chicago Fire", escudoChicagoFire), score: 0 },
         odds: { home: '1.95x', draw: '3.60x', away: '3.80x' },
         doubleChanceOdds: { homeOrDraw: '1.28x', homeOrAway: '1.30x', awayOrDraw: '1.85x' },
         bothTeamsScoreOdds: { yes: '1.85x', no: '1.90x' },
@@ -322,8 +323,8 @@ const leagues: League[] = [
       {
         id: '14',
         time: '1T 32:05',
-        homeTeam: { name: 'Nashville', icon: escudoNashville, score: 2 },
-        awayTeam: { name: 'New York City', icon: escudoNewYorkCity, score: 1 },
+        homeTeam: { name: 'Nashville', icon: getTeamLogo("Nashville", escudoNashville), score: 2 },
+        awayTeam: { name: 'New York City', icon: getTeamLogo("New York City", escudoNewYorkCity), score: 1 },
         odds: { home: '1.85x', draw: '3.70x', away: '4.00x' },
         doubleChanceOdds: { homeOrDraw: '1.25x', homeOrAway: '1.28x', awayOrDraw: '1.92x' },
         bothTeamsScoreOdds: { yes: '1.50x', no: '2.45x' },
@@ -342,8 +343,8 @@ const leagues: League[] = [
       {
         id: '9',
         time: '1T 15:08',
-        homeTeam: { name: 'Dinamo', icon: escudoDinamo, score: 0 },
-        awayTeam: { name: 'Aston Villa', icon: escudoAstonVila, score: 1 },
+        homeTeam: { name: 'Dinamo', icon: getTeamLogo("Dinamo", escudoDinamo), score: 0 },
+        awayTeam: { name: 'Aston Villa', icon: getTeamLogo("Aston Villa", escudoAstonVila), score: 1 },
         odds: { home: '4.20x', draw: '3.80x', away: '1.75x' },
         doubleChanceOdds: { homeOrDraw: '1.98x', homeOrAway: '1.25x', awayOrDraw: '1.20x' },
         bothTeamsScoreOdds: { yes: '1.75x', no: '2.00x' },
@@ -353,8 +354,8 @@ const leagues: League[] = [
       {
         id: '10',
         time: '2T 12:45',
-        homeTeam: { name: 'Fenerbahçe', icon: escudoFenerbahce, score: 2 },
-        awayTeam: { name: 'Porto', icon: escudoPorto, score: 1 },
+        homeTeam: { name: 'Fenerbahçe', icon: getTeamLogo("Fenerbahçe", escudoFenerbahce), score: 2 },
+        awayTeam: { name: 'Porto', icon: getTeamLogo("Porto", escudoPorto), score: 1 },
         odds: { home: '1.55x', draw: '4.50x', away: '5.00x' },
         doubleChanceOdds: { homeOrDraw: '1.15x', homeOrAway: '1.20x', awayOrDraw: '2.35x' },
         bothTeamsScoreOdds: { yes: '1.45x', no: '2.65x' },
@@ -364,8 +365,8 @@ const leagues: League[] = [
       {
         id: '15',
         time: '1T 18:33',
-        homeTeam: { name: 'Panathinaikos', icon: escudoPanathinaikos, score: 0 },
-        awayTeam: { name: 'Nottingham', icon: escudoNottinghamForest, score: 0 },
+        homeTeam: { name: 'Panathinaikos', icon: getTeamLogo("Panathinaikos", escudoPanathinaikos), score: 0 },
+        awayTeam: { name: 'Nottingham', icon: getTeamLogo("Nottingham", escudoNottinghamForest), score: 0 },
         odds: { home: '3.10x', draw: '3.20x', away: '2.30x' },
         doubleChanceOdds: { homeOrDraw: '1.58x', homeOrAway: '1.32x', awayOrDraw: '1.35x' },
         bothTeamsScoreOdds: { yes: '1.80x', no: '1.95x' },
@@ -385,8 +386,8 @@ const leagues: League[] = [
       {
         id: 'nba-1',
         time: 'Q1 08:22',
-        homeTeam: { name: 'Jazz', icon: escudoJazz, score: 8 },
-        awayTeam: { name: 'Thunder', icon: escudoThunder, score: 11 },
+        homeTeam: { name: 'Jazz', icon: getTeamLogo("Jazz", escudoJazz), score: 8 },
+        awayTeam: { name: 'Thunder', icon: getTeamLogo("Thunder", escudoThunder), score: 11 },
         odds: { home: '2.35x', away: '1.58x' },
         totalPointsOdds: { line: 218.5, under: '1.90x', over: '1.90x' },
         handicapOdds: { line: 6.5, home: '1.88x', away: '1.92x' },
@@ -397,8 +398,8 @@ const leagues: League[] = [
       {
         id: 'nba-2',
         time: 'Q2 05:00',
-        homeTeam: { name: 'Knicks', icon: escudoKnicks, score: 42 },
-        awayTeam: { name: 'Magic', icon: escudoMagic, score: 38 },
+        homeTeam: { name: 'Knicks', icon: getTeamLogo("Knicks", escudoKnicks), score: 42 },
+        awayTeam: { name: 'Magic', icon: getTeamLogo("Magic", escudoMagic), score: 38 },
         odds: { home: '1.72x', away: '2.15x' },
         totalPointsOdds: { line: 212.5, under: '1.85x', over: '1.95x' },
         handicapOdds: { line: -3.5, home: '1.90x', away: '1.90x' },
@@ -572,7 +573,11 @@ function updateTime(timeStr: string): string {
   }
 }
 
-export function LiveSection() {
+interface LiveSectionProps {
+  onMatchClick?: (payload: LiveEventOpenPayload) => void
+}
+
+export function LiveSection({ onMatchClick }: LiveSectionProps = {}) {
   const [activeSport, setActiveSport] = useState('futebol')
   const [activeMarket, setActiveMarket] = useState('resultado-final')
   const [openLeagues, setOpenLeagues] = useState<string[]>(
@@ -580,19 +585,15 @@ export function LiveSection() {
   )
   
   // Refs for auto-scroll chips
+  const [isChipsStuck, setIsChipsStuck] = useState(false)
+  const [isScrolling, setIsScrolling] = useState(false)
   const sportChipsRef = useRef<HTMLDivElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const sportChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
 
-  // Reset market when sport changes
+  // Reset market chips scroll position when sport changes
   useEffect(() => {
-    if (activeSport === 'basquete') {
-      setActiveMarket('vencedor')
-    } else {
-      setActiveMarket('resultado-final')
-    }
-    // Reset market chips scroll position
     if (marketChipsRef.current) {
       marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
     }
@@ -612,6 +613,33 @@ export function LiveSection() {
     })
     return times
   })
+
+  // Detect when market chips are stuck — observe sport chips going off screen
+  useEffect(() => {
+    const sportChips = sportChipsRef.current
+    if (!sportChips) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsChipsStuck(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(sportChips)
+    return () => observer.disconnect()
+  }, [])
+
+  // Elevate chip z-index while it's actively following the scroll (sticky engaged).
+  // When the chip releases at the bottom of the section (stops following), z-index drops back.
+  useEffect(() => {
+    const chipsEl = marketChipsRef.current
+    if (!chipsEl) return
+    const STICKY_TOP = 135
+    const update = () => {
+      const top = chipsEl.getBoundingClientRect().top
+      setIsScrolling(Math.abs(top - STICKY_TOP) < 1)
+    }
+    window.addEventListener('scroll', update, { passive: true })
+    update()
+    return () => window.removeEventListener('scroll', update)
+  }, [])
 
   // Update times every second
   useEffect(() => {
@@ -641,15 +669,50 @@ export function LiveSection() {
     return matchTimes[matchId] || defaultTime
   }
 
+  const toLiveEventMatch = (match: Match): LiveEventMatch => ({
+    id: match.id,
+    time: match.time,
+    currentTime: getMatchTime(match.id, match.time),
+    homeTeam: match.homeTeam,
+    awayTeam: match.awayTeam,
+    odds: match.odds,
+    doubleChanceOdds: match.doubleChanceOdds,
+    bothTeamsScoreOdds: match.bothTeamsScoreOdds,
+    totalGoalsOdds: match.totalGoalsOdds,
+    totalCornersOdds: match.totalCornersOdds,
+    totalPointsOdds: match.totalPointsOdds,
+    handicapOdds: match.handicapOdds,
+    q3TotalOdds: match.q3TotalOdds,
+    q4TotalOdds: match.q4TotalOdds,
+    extraBets: match.extraBets,
+  })
+
+  const openLiveEvent = (league: League, selectedIndex: number) => {
+    if (league.sport !== 'futebol') return
+
+    const currentTimes = league.matches.reduce<Record<string, string>>((times, match) => {
+      times[match.id] = getMatchTime(match.id, match.time)
+      return times
+    }, {})
+
+    onMatchClick?.({
+      matches: league.matches.map(toLiveEventMatch),
+      selectedIndex,
+      leagueName: league.name,
+      leagueFlag: league.flag,
+      sport: league.sport,
+      currentTimes,
+    })
+  }
+
   return (
     <section id="section-aovivo" className="live-section">
       {/* Header */}
       <div className="live-section__header">
         <div className="live-section__title">
-          <img src={iconAoVivo} alt="" className="live-section__icon" />
           <span>Ao Vivo</span>
+          <img src={setaLink} alt="Ver mais" className="live-section__arrow" />
         </div>
-        <img src={setaLink} alt="Ver mais" className="live-section__arrow" />
       </div>
 
       {/* Sport Chips */}
@@ -662,6 +725,7 @@ export function LiveSection() {
             onClick={() => {
               if (chip.disabled) return
               setActiveSport(chip.id)
+              setActiveMarket(chip.id === 'basquete' ? 'vencedor' : 'resultado-final')
               // Scroll to make chip visible
               const chipEl = sportChipRefs.current[index]
               const containerEl = sportChipsRef.current
@@ -670,7 +734,7 @@ export function LiveSection() {
                 const chipWidth = chipEl.offsetWidth
                 const containerWidth = containerEl.offsetWidth
                 const containerScroll = containerEl.scrollLeft
-                const padding = 20
+                const padding = 12
                 if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
                   containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
                 } else if (chipLeft < containerScroll + padding) {
@@ -687,7 +751,7 @@ export function LiveSection() {
       </div>
 
       {/* Market Chips */}
-      <div className="live-section__chips live-section__chips--sticky" ref={marketChipsRef}>
+      <div className={`live-section__chips live-section__chips--sticky${isChipsStuck ? ' live-section__chips--is-stuck' : ''}${isScrolling ? ' live-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
         {currentMarketChips.map((chip, index) => (
           <button
             key={chip.id}
@@ -703,7 +767,7 @@ export function LiveSection() {
                 const chipWidth = chipEl.offsetWidth
                 const containerWidth = containerEl.offsetWidth
                 const containerScroll = containerEl.scrollLeft
-                const padding = 20
+                const padding = 12
                 if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
                   containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
                 } else if (chipLeft < containerScroll + padding) {
@@ -746,196 +810,21 @@ export function LiveSection() {
               <div className={`live-section__matches-wrapper ${openLeagues.includes(league.id) ? 'live-section__matches-wrapper--open' : ''}`}>
                 <div className="live-section__matches-inner">
                   <div className="live-section__matches">
-                    {league.matches.map((match) => (
-                      <div key={match.id} className="live-section__match">
-                        {/* Match Header */}
-                        <div className="live-section__match-header">
-                          <div className="live-section__match-time">
-                            <div className="live-section__tag-aovivo">
-                              <div className="live-section__tag-icon-wrapper">
-                                <img src={iconAoVivo} alt="" className="live-section__tag-icon" />
-                              </div>
-                              <span>Ao Vivo</span>
-                            </div>
-                            <span>{getMatchTime(match.id, match.time)}</span>
-                          </div>
-                          <img src={setaLink} alt="" className="live-section__match-arrow" />
-                        </div>
-
-                        {/* Teams */}
-                        <div className="live-section__teams">
-                          <div className="live-section__team">
-                            <div className="live-section__team-info">
-                              {match.homeTeam.icon ? (
-                                <img src={match.homeTeam.icon} alt="" className="live-section__team-icon" />
-                              ) : league.sport === 'basquete' ? (
-                                <img 
-                                  src={escudoDefaultBasquete} 
-                                  alt="" 
-                                  className="live-section__team-icon--basketball-default live-section__team-icon--basketball-home" 
-                                />
-                              ) : (
-                                <div className="live-section__team-icon--placeholder" />
-                              )}
-                              <span className="live-section__team-name">{match.homeTeam.name}</span>
-                            </div>
-                            <div className="live-section__team-score">
-                              <span>{match.homeTeam.score}</span>
-                            </div>
-                          </div>
-                          <div className="live-section__team">
-                            <div className="live-section__team-info">
-                              {match.awayTeam.icon ? (
-                                <img src={match.awayTeam.icon} alt="" className="live-section__team-icon" />
-                              ) : league.sport === 'basquete' ? (
-                                <img 
-                                  src={escudoDefaultBasquete} 
-                                  alt="" 
-                                  className="live-section__team-icon--basketball-default live-section__team-icon--basketball-away" 
-                                />
-                              ) : (
-                                <div className="live-section__team-icon--placeholder" />
-                              )}
-                              <span className="live-section__team-name">{match.awayTeam.name}</span>
-                            </div>
-                            <div className="live-section__team-score">
-                              <span>{match.awayTeam.score}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Odds */}
-                        <div className="live-section__odds">
-                          {/* Football Markets */}
-                          {activeMarket === 'dupla-chance' && match.doubleChanceOdds ? (
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Casa ou Empate</span>
-                                <span className="live-section__odd-value">{match.doubleChanceOdds.homeOrDraw}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Casa ou Fora</span>
-                                <span className="live-section__odd-value">{match.doubleChanceOdds.homeOrAway}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Fora ou Empate</span>
-                                <span className="live-section__odd-value">{match.doubleChanceOdds.awayOrDraw}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'ambos-marcam' && match.bothTeamsScoreOdds ? (
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Sim</span>
-                                <span className="live-section__odd-value">{match.bothTeamsScoreOdds.yes}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Não</span>
-                                <span className="live-section__odd-value">{match.bothTeamsScoreOdds.no}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'total-gols' && match.totalGoalsOdds ? (
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Menos de {match.totalGoalsOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalGoalsOdds.under}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Mais de {match.totalGoalsOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalGoalsOdds.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'escanteios' && match.totalCornersOdds ? (
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Menos de {match.totalCornersOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalCornersOdds.under}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Mais de {match.totalCornersOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalCornersOdds.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'total-pontos' && match.totalPointsOdds ? (
-                            /* Basketball: Total de Pontos */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Menos de {match.totalPointsOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalPointsOdds.under}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Mais de {match.totalPointsOdds.line}</span>
-                                <span className="live-section__odd-value">{match.totalPointsOdds.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'handicap' && match.handicapOdds ? (
-                            /* Basketball: Handicap */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.homeTeam.name} {match.handicapOdds.line > 0 ? '+' : ''}{match.handicapOdds.line}</span>
-                                <span className="live-section__odd-value">{match.handicapOdds.home}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.awayTeam.name} {match.handicapOdds.line > 0 ? '' : '+'}{-match.handicapOdds.line}</span>
-                                <span className="live-section__odd-value">{match.handicapOdds.away}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'q3-total' && match.q3TotalOdds ? (
-                            /* Basketball: 3° Quarto - Total de Pontos */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Menos de {match.q3TotalOdds.line}</span>
-                                <span className="live-section__odd-value">{match.q3TotalOdds.under}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Mais de {match.q3TotalOdds.line}</span>
-                                <span className="live-section__odd-value">{match.q3TotalOdds.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'q4-total' && match.q4TotalOdds ? (
-                            /* Basketball: 4° Quarto - Total de Pontos */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Menos de {match.q4TotalOdds.line}</span>
-                                <span className="live-section__odd-value">{match.q4TotalOdds.under}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Mais de {match.q4TotalOdds.line}</span>
-                                <span className="live-section__odd-value">{match.q4TotalOdds.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'vencedor' || activeSport === 'basquete' ? (
-                            /* Basketball: Vencedor (no draw) */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.homeTeam.name}</span>
-                                <span className="live-section__odd-value">{match.odds.home}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.awayTeam.name}</span>
-                                <span className="live-section__odd-value">{match.odds.away}</span>
-                              </button>
-                            </>
-                          ) : (
-                            /* Football: Resultado Final (default) */
-                            <>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.homeTeam.name}</span>
-                                <span className="live-section__odd-value">{match.odds.home}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">Empate</span>
-                                <span className="live-section__odd-value">{match.odds.draw}</span>
-                              </button>
-                              <button className="live-section__odd-btn">
-                                <span className="live-section__odd-team">{match.awayTeam.name}</span>
-                                <span className="live-section__odd-value">{match.odds.away}</span>
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                    {league.matches.map((match, matchIndex) => (
+                      <LiveMatchCard
+                        key={match.id}
+                        match={match}
+                        sport={league.sport}
+                        activeMarket={activeMarket}
+                        currentTime={getMatchTime(match.id, match.time)}
+                        onClick={league.sport === 'futebol' ? () => openLiveEvent(league, matchIndex) : undefined}
+                      />
                     ))}
                   </div>
+                  <button className="live-section__league-more">
+                    <span>Veja mais do {league.name}</span>
+                    <img src={setaLink} alt="" className="live-section__league-more-icon" />
+                  </button>
                 </div>
               </div>
             )}
@@ -953,4 +842,3 @@ export function LiveSection() {
     </section>
   )
 }
-

@@ -1,0 +1,256 @@
+.competition-players {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 0 24px 0;
+}
+
+.competition-players__header {
+  padding: 0 12px;
+  font-family: 'Red Hat Display', 'Red Hat Text', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.competition-players__chips {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.competition-players__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.competition-players__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 16px;
+  background-color: #1a1a1a;
+  border: none;
+  border-radius: 160px;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a8a8a8;
+  white-space: nowrap;
+}
+
+.competition-players__chip--active {
+  background:
+    linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%),
+    #131313;
+  color: #ffffff;
+}
+
+.competition-players__chip--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 160px;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.competition-players__list {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.competition-players__list::-webkit-scrollbar {
+  display: none;
+}
+
+.competition-players__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 148px;
+  padding-bottom: 12px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.competition-players__card-header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12px;
+  border-bottom: 1px solid #242424;
+  overflow: hidden;
+}
+
+.competition-players__card-header::before {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: 50%;
+  width: 63px;
+  height: 63px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  filter: blur(20px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.competition-players__match-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 12px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 8px;
+  font-weight: 500;
+  color: #a8a8a8;
+  text-transform: uppercase;
+}
+
+.competition-players__match-label {
+  color: #a8a8a8;
+  font-weight: 500;
+}
+
+.competition-players__match-team--active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.competition-players__match-separator {
+  color: #a8a8a8;
+  font-weight: 500;
+}
+
+.competition-players__match-time {
+  color: #a8a8a8;
+}
+
+.competition-players__player-image-wrapper {
+  position: relative;
+  margin-top: 0;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+}
+
+.competition-players__player-image {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.competition-players__card-name {
+  padding: 0 12px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.competition-players__card-options {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+}
+
+.competition-players__options-scroll {
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.competition-players__card-options::before,
+.competition-players__card-options::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.competition-players__card-options::before {
+  left: 0;
+  background: linear-gradient(90deg, #1a1a1a 0%, rgba(26, 26, 26, 0) 100%);
+}
+
+.competition-players__card-options::after {
+  right: 0;
+  background: linear-gradient(270deg, #1a1a1a 0%, rgba(26, 26, 26, 0) 100%);
+}
+
+.competition-players__options-track {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateX(calc(-28px - (var(--active-index) * 64px)));
+  transition: transform 0.2s ease;
+}
+
+.competition-players__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 40px;
+  padding: 0 8px;
+  background-color: #242424;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 0 0 56px;
+  opacity: 0.56;
+  transition: opacity 0.18s ease;
+}
+
+.competition-players__option--active {
+  opacity: 1;
+}
+
+.competition-players__option-label {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.competition-players__option-odd {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}

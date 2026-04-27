@@ -1,0 +1,41 @@
+.competition-calendar {
+  padding-top: 16px;
+}
+
+.competition-calendar__matches {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.competition-calendar__match--live .prematch-section__match-header {
+  align-items: flex-start;
+}
+
+.competition-calendar__live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.competition-calendar__live-time {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.competition-calendar__score {
+  margin-left: auto;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.competition-calendar__live-arrow {
+  align-self: flex-start;
+  margin-top: 4px;
+}

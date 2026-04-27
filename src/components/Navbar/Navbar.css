@@ -3,50 +3,100 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: rgba(23, 23, 23, 1);
-  border-top: 1px solid #242424;
+  background-color: #131313;
+  border-top: 1px solid #202020;
+  padding-bottom: 8px;
   z-index: 1000;
 }
 
 .navbar__container {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
+  align-items: flex-start;
+  justify-content: center;
   width: 100%;
 }
 
 .navbar__item {
   flex: 1;
+  min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  height: 56px;
-  padding: 0 8px;
+  height: 54px;
+  padding: 8px;
+  overflow: hidden;
   background: none;
   border: none;
   cursor: pointer;
 }
 
-.navbar__icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+.navbar__item--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40px;
+  height: 4px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, #4b20ff 0%, #9730ff 100%);
+  transform: translateX(-50%);
 }
 
-.navbar__label {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: #d9d9d9;
-  line-height: 1;
+.navbar__active-blur {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  width: 93px;
+  height: 93px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.navbar__icon-slot {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  overflow: hidden;
+}
+
+.navbar__icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.navbar__balance-slot {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar__balance {
+  position: relative;
+  display: block;
+  font-family: 'Red Hat Display', 'Red Hat Text', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+  text-align: center;
   white-space: nowrap;
 }
 
-/* Item ativo */
-.navbar__item--active .navbar__label {
-  color: #19954f;
-  font-weight: 700;
+.navbar__label {
+  position: relative;
+  font-family: 'Red Hat Display', 'Red Hat Text', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.2;
+  white-space: nowrap;
 }
-

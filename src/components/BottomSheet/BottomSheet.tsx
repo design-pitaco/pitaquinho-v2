@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import './BottomSheet.css'
 
 import iconAccordion from '../../assets/iconAccordion.png'
@@ -7,10 +8,13 @@ import iconFechar from '../../assets/iconFechar.svg'
 interface BottomSheetProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title?: string
   titleIcon?: string
   children: ReactNode
   footerContent?: ReactNode
+  blurBackdrop?: boolean
+  bodyClassName?: string
+  hideScrollIndicator?: boolean
 }
 
 export function BottomSheet({
@@ -20,11 +24,15 @@ export function BottomSheet({
   titleIcon,
   children,
   footerContent,
+  blurBackdrop = false,
+  bodyClassName = '',
+  hideScrollIndicator = false,
 }: BottomSheetProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
   const [showScrollIndicator, setShowScrollIndicator] = useState(true)
   const bodyRef = useRef<HTMLDivElement>(null)
+  const closeTimerRef = useRef<number | null>(null)
 
   // Check scroll position
   const handleScroll = () => {
@@ -45,27 +53,39 @@ export function BottomSheet({
 
   // Handle open/close with animation
   useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true)
-      setIsClosing(false)
-    } else if (shouldRender && !isClosing) {
-      // Trigger closing animation when isOpen becomes false
-      setIsClosing(true)
-      setTimeout(() => {
-        setShouldRender(false)
+    const timer = window.setTimeout(() => {
+      if (isOpen && !isClosing) {
+        if (closeTimerRef.current !== null) {
+          window.clearTimeout(closeTimerRef.current)
+          closeTimerRef.current = null
+        }
+        setShouldRender(true)
         setIsClosing(false)
-      }, 300)
-    }
-  }, [isOpen])
+      } else if (shouldRender && !isClosing) {
+        setIsClosing(true)
+        closeTimerRef.current = window.setTimeout(() => {
+          setShouldRender(false)
+          setIsClosing(false)
+          closeTimerRef.current = null
+        }, 300)
+      }
+    }, 0)
 
-  const handleClose = () => {
+    return () => window.clearTimeout(timer)
+  }, [isOpen, shouldRender, isClosing])
+
+  const handleClose = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+    }
     setIsClosing(true)
-    setTimeout(() => {
+    closeTimerRef.current = window.setTimeout(() => {
       setShouldRender(false)
       setIsClosing(false)
+      closeTimerRef.current = null
       onClose()
     }, 300) // Match animation duration
-  }
+  }, [onClose])
 
   // Prevent body scroll when bottom sheet is open
   useEffect(() => {
@@ -77,7 +97,7 @@ export function BottomSheet({
     return () => {
       document.body.style.overflow = ''
     }
-  }, [shouldRender])
+  }, [shouldRender, handleClose])
 
   // Calculate real viewport height for mobile
   useEffect(() => {
@@ -109,31 +129,35 @@ export function BottomSheet({
     return () => {
       window.removeEventListener('keydown', handleEscape)
     }
-  }, [shouldRender])
+  }, [shouldRender, handleClose])
 
   if (!shouldRender) return null
 
-  return (
+  return createPortal(
     <div className="bottom-sheet__container">
       {/* Overlay - separate from bottom sheet for independent animation */}
-      <div 
-        className={`bottom-sheet__overlay ${isClosing ? 'bottom-sheet__overlay--closing' : ''}`} 
+      <div
+        className={`bottom-sheet__overlay ${blurBackdrop ? 'bottom-sheet__overlay--blur' : ''} ${isClosing ? 'bottom-sheet__overlay--closing' : ''}`}
         onClick={handleClose}
       />
-      
+
       {/* Bottom Sheet */}
       <div
         className={`bottom-sheet ${isClosing ? 'bottom-sheet--closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Fixed */}
-        <div className="bottom-sheet__header">
-          <div className="bottom-sheet__title">
-            {titleIcon && (
-              <img src={titleIcon} alt="" className="bottom-sheet__title-icon" />
-            )}
-            <span>{title}</span>
-          </div>
+        <div className={`bottom-sheet__header ${!title ? 'bottom-sheet__header--no-title' : ''}`}>
+          {title ? (
+            <div className="bottom-sheet__title">
+              {titleIcon && (
+                <img src={titleIcon} alt="" className="bottom-sheet__title-icon" />
+              )}
+              <span>{title}</span>
+            </div>
+          ) : (
+            <span className="bottom-sheet__title-spacer" />
+          )}
           <button className="bottom-sheet__close" onClick={handleClose}>
             <img src={iconFechar} alt="Fechar" className="bottom-sheet__close-icon" />
           </button>
@@ -141,16 +165,18 @@ export function BottomSheet({
 
         {/* Body - Scrollable */}
         <div className="bottom-sheet__body-wrapper">
-          <div 
-            className="bottom-sheet__body"
+          <div
+            className={`bottom-sheet__body ${bodyClassName}`}
             ref={bodyRef}
             onScroll={handleScroll}
           >
             {children}
           </div>
-          <div 
-            className={`bottom-sheet__scroll-indicator ${showScrollIndicator ? '' : 'bottom-sheet__scroll-indicator--hidden'}`}
-          />
+          {!hideScrollIndicator && (
+            <div
+              className={`bottom-sheet__scroll-indicator ${showScrollIndicator ? '' : 'bottom-sheet__scroll-indicator--hidden'}`}
+            />
+          )}
         </div>
 
         {/* Footer - Fixed */}
@@ -160,7 +186,8 @@ export function BottomSheet({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

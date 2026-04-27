@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import './WinningNowSection.css'
 
-import iconGanhandoAgora from '../../assets/iconGanhandoAgora.png'
 import setaLink from '../../assets/setaLink.png'
 import imgAviator from '../../assets/imgAviator.png'
 import imgRoletaSorte from '../../assets/imgRoletaSorte.png'
@@ -202,10 +201,9 @@ export function WinningNowSection() {
       {/* Header */}
       <div className="winning-now-section__header">
         <div className="winning-now-section__title">
-          <img src={iconGanhandoAgora} alt="" className="winning-now-section__icon" />
           <span>Ganhando agora no nosso Cassino</span>
+          <img src={setaLink} alt="Ver mais" className="winning-now-section__arrow" />
         </div>
-        <img src={setaLink} alt="Ver mais" className="winning-now-section__arrow" />
       </div>
 
       {/* Winners Cards */}

@@ -1,13 +1,9 @@
 .trilho-e-banner {
   display: flex;
   flex-direction: column;
-  padding-bottom: 28px;
-  background: linear-gradient(
-    180deg,
-    rgba(22, 76, 46, 0.6) 0%,
-    rgba(22, 76, 46, 0.6) 54%,
-    rgba(18, 59, 36, 0.6) 100%
-  ),
-  linear-gradient(90deg, #164c2e 0%, #164c2e 100%);
+  padding-bottom: 24px;
+  background: transparent;
+  position: relative;
 }
+
 

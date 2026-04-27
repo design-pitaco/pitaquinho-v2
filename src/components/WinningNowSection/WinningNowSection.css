@@ -1,8 +1,8 @@
 .winning-now-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px 0;
+  gap: 12px;
+  padding: 0 0 24px 0;
   background-color: #171717;
 }
 
@@ -10,8 +10,8 @@
 .winning-now-section__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  
+  padding: 0 12px;
   height: 20px;
 }
 
@@ -22,36 +22,31 @@
 }
 
 .winning-now-section__title span {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.4;
-}
-
-.winning-now-section__icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
 }
 
 .winning-now-section__arrow {
   width: 20px;
   height: 20px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 /* Cards */
 .winning-now-section__cards {
   display: flex;
   gap: 8px;
-  padding: 0 20px;
+  padding: 0 12px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  scroll-padding-left: 20px;
+  scroll-padding-left: 12px;
   cursor: grab;
   user-select: none;
   touch-action: pan-x pan-y;
@@ -78,7 +73,7 @@
   padding: 8px;
   padding-right: 12px;
   background-color: #1e1e1e;
-  border-radius: 8px;
+  border-radius: 12px;
   flex-shrink: 0;
   scroll-snap-align: start;
 }
@@ -94,14 +89,14 @@
 .winning-now-section__card-content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  
   flex: 1;
   height: 54px;
   min-width: 0;
 }
 
 .winning-now-section__card-game {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
@@ -119,7 +114,7 @@
 }
 
 .winning-now-section__card-winner {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 10px;
   font-weight: 400;
   color: #e3e3e3;
@@ -132,7 +127,7 @@
 }
 
 .winning-now-section__card-amount {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #32a866;
