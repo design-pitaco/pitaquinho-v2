@@ -84,6 +84,7 @@ const detailTabs: Array<{ id: DetailTabId; label: string }> = [
 interface ShotOutcome {
   label: string
   odd: string
+  labelParts?: [string, string]
 }
 
 interface PlayerShotMarket {
@@ -107,6 +108,34 @@ interface ThreeWayMarketRow {
 
 const shotOutcomes = (values: Array<[string, string]>): ShotOutcome[] =>
   values.map(([label, odd]) => ({ label, odd }))
+
+const doubleChanceDisplayNames: Record<string, string> = {
+  Internacional: 'Inter',
+  Bragantino: 'Braga',
+  'Red Bull Bragantino': 'Braga',
+  'Atlético Madrid': 'Atl. Madrid',
+  'Boca Juniors': 'Boca',
+  'Argentinos Jrs': 'Argentinos',
+  'River Plate': 'River',
+  'New York City': 'NYC',
+  'Chicago Fire': 'Chicago',
+  Panathinaikos: 'Panath.',
+}
+
+function getDoubleChanceDisplayName(teamName: string): string {
+  const trimmedName = teamName.trim()
+
+  if (doubleChanceDisplayNames[trimmedName]) {
+    return doubleChanceDisplayNames[trimmedName]
+  }
+
+  const [firstWord] = trimmedName.split(/\s+/)
+  if (trimmedName.length > 10 && firstWord.length >= 4 && firstWord.length <= 9) {
+    return firstWord
+  }
+
+  return trimmedName
+}
 
 const teamShotMarkets: Record<string, PlayerShotMarket[]> = {
   Flamengo: [
@@ -327,13 +356,28 @@ function getTotalCardsRows(): TotalGoalsMarketRow[] {
 }
 
 function getDoubleChanceRows(match: LiveEventMatch): ThreeWayMarketRow[] {
+  const homeDisplayName = getDoubleChanceDisplayName(match.homeTeam.name)
+  const awayDisplayName = getDoubleChanceDisplayName(match.awayTeam.name)
+
   return [
     {
       id: 'double-chance-main',
       options: [
-        { label: `${match.homeTeam.name} ou Empate`, odd: match.doubleChanceOdds?.homeOrDraw ?? '1.30x' },
-        { label: `${match.homeTeam.name} ou ${match.awayTeam.name}`, odd: match.doubleChanceOdds?.homeOrAway ?? '1.28x' },
-        { label: `Empate ou ${match.awayTeam.name}`, odd: match.doubleChanceOdds?.awayOrDraw ?? '1.65x' },
+        {
+          label: `${match.homeTeam.name} ou Empate`,
+          labelParts: [homeDisplayName, 'Empate'],
+          odd: match.doubleChanceOdds?.homeOrDraw ?? '1.30x',
+        },
+        {
+          label: `${match.homeTeam.name} ou ${match.awayTeam.name}`,
+          labelParts: [homeDisplayName, awayDisplayName],
+          odd: match.doubleChanceOdds?.homeOrAway ?? '1.28x',
+        },
+        {
+          label: `Empate ou ${match.awayTeam.name}`,
+          labelParts: ['Empate', awayDisplayName],
+          odd: match.doubleChanceOdds?.awayOrDraw ?? '1.65x',
+        },
       ],
     },
   ]
@@ -540,7 +584,7 @@ function buildFallbackEvents(teamName: string, score: number): MatchEvent[] {
   return events.sort((a, b) => a.minute - b.minute)
 }
 
-const SHEET_EXPAND_SCROLL_RANGE = 240
+const SHEET_EXPAND_SCROLL_RANGE = 80
 
 function LiveEventContent({
   onRequestClose,
@@ -1274,7 +1318,15 @@ function LiveEventContent({
                 <div key={row.id} className="live-event-page__market-odds">
                   {row.options.map((option) => (
                     <button key={option.label} className="live-event-page__market-odd">
-                      <span>{option.label}</span>
+                      {option.labelParts ? (
+                        <span className="live-event-page__market-odd-label live-event-page__market-odd-label--split" aria-label={option.label}>
+                          <span>{option.labelParts[0]}</span>
+                          <span className="live-event-page__market-odd-label-separator">ou</span>
+                          <span>{option.labelParts[1]}</span>
+                        </span>
+                      ) : (
+                        <span className="live-event-page__market-odd-label">{option.label}</span>
+                      )}
                       <strong>{option.odd}</strong>
                     </button>
                   ))}
@@ -1519,11 +1571,15 @@ export function LiveEventPage({
       pointerId: event.pointerId,
     }
 
-    isCarouselDraggingRef.current = true
-    setIsCarouselDragging(true)
     carouselStartXRef.current = event.pageX - carouselElement.offsetLeft
     carouselStartScrollLeftRef.current = carouselElement.scrollLeft
-    event.currentTarget.setPointerCapture(event.pointerId)
+
+    if (event.pointerType === 'mouse') {
+      verticalGestureRef.current.axis = 'horizontal'
+      isCarouselDraggingRef.current = true
+      setIsCarouselDragging(true)
+      event.currentTarget.setPointerCapture(event.pointerId)
+    }
   }
 
   const handleCarouselPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -1538,6 +1594,11 @@ export function LiveEventPage({
       if (gesture.axis === 'undecided') {
         if (Math.abs(dx) > AXIS_LOCK_THRESHOLD || Math.abs(dy) > AXIS_LOCK_THRESHOLD) {
           gesture.axis = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+          if (gesture.axis === 'horizontal') {
+            isCarouselDraggingRef.current = true
+            setIsCarouselDragging(true)
+            event.currentTarget.setPointerCapture(event.pointerId)
+          }
         }
       }
     }
