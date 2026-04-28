@@ -679,6 +679,17 @@ function LiveEventContent({
     event.currentTarget.scrollLeft += horizontalDelta
   }, [])
 
+  const syncPlayerOddsRowScrollState = useCallback((rowId: string, element: HTMLDivElement) => {
+    const isScrolled = element.scrollLeft > 0
+    setScrolledOddsRows((current) => (
+      current[rowId] === isScrolled ? current : { ...current, [rowId]: isScrolled }
+    ))
+  }, [])
+
+  const schedulePlayerOddsRowScrollStateSync = useCallback((rowId: string, element: HTMLDivElement) => {
+    window.requestAnimationFrame(() => syncPlayerOddsRowScrollState(rowId, element))
+  }, [syncPlayerOddsRowScrollState])
+
   const handleContentScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     if (isResettingCompactScrollRef.current) return
 
@@ -1195,12 +1206,11 @@ function LiveEventContent({
                       <div
                         className="live-event-page__player-odds-row"
                         onWheel={handlePlayerOddsWheel}
-                        onScroll={(event) => {
-                          const isScrolled = event.currentTarget.scrollLeft > 0
-                          setScrolledOddsRows((current) => (
-                            current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
-                          ))
-                        }}
+                        onScroll={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                        onTouchMove={(event) => schedulePlayerOddsRowScrollStateSync(row.id, event.currentTarget)}
+                        onTouchEnd={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                        onTouchCancel={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                        onPointerUp={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
                       >
                         {row.outcomes.map((outcome) => (
                           <button key={outcome.label} className="live-event-page__player-odd">
@@ -1221,12 +1231,11 @@ function LiveEventContent({
                           <div
                             className="live-event-page__player-odds-row"
                             onWheel={handlePlayerOddsWheel}
-                            onScroll={(event) => {
-                              const isScrolled = event.currentTarget.scrollLeft > 0
-                              setScrolledOddsRows((current) => (
-                                current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
-                              ))
-                            }}
+                            onScroll={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                            onTouchMove={(event) => schedulePlayerOddsRowScrollStateSync(row.id, event.currentTarget)}
+                            onTouchEnd={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                            onTouchCancel={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
+                            onPointerUp={(event) => syncPlayerOddsRowScrollState(row.id, event.currentTarget)}
                           >
                             {row.outcomes.map((outcome) => (
                               <button key={outcome.label} className="live-event-page__player-odd">
