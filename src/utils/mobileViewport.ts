@@ -1,6 +1,6 @@
 const MOBILE_MEDIA_QUERY = '(max-width: 499px)'
-const MOBILE_FIRST_RELOAD_KEY = 'pitaquinho:mobile-first-reload:v1'
-const MOBILE_FIRST_RELOAD_DELAY_MS = 120
+const MOBILE_AFTER_LOAD_RELOAD_KEY = 'pitaquinho:mobile-after-load-reload:v2'
+const MOBILE_AFTER_LOAD_RELOAD_DELAY_MS = 700
 
 const isMobileViewport = () => (
   window.matchMedia?.(MOBILE_MEDIA_QUERY).matches ?? window.innerWidth <= 499
@@ -24,26 +24,28 @@ const markReloadedThisSession = (key: string) => {
   return true
 }
 
-const scheduleReloadAfterFirstPaint = () => {
+const scheduleReloadAfterLoad = () => {
   const reload = () => {
     window.setTimeout(() => {
       window.location.reload()
-    }, MOBILE_FIRST_RELOAD_DELAY_MS)
+    }, MOBILE_AFTER_LOAD_RELOAD_DELAY_MS)
   }
 
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(reload)
-  })
+  if (document.readyState === 'complete') {
+    reload()
+    return
+  }
+
+  window.addEventListener('load', reload, { once: true })
 }
 
-export function reloadOnceOnMobileFirstLoad() {
-  if (typeof window === 'undefined' || !isMobileViewport()) return false
+export function reloadOnceAfterMobileLoad() {
+  if (typeof window === 'undefined' || !isMobileViewport()) return
 
-  const storageKey = `${MOBILE_FIRST_RELOAD_KEY}:${window.location.pathname}`
+  const storageKey = `${MOBILE_AFTER_LOAD_RELOAD_KEY}:${window.location.pathname}`
 
-  if (hasReloadedThisSession(storageKey)) return false
-  if (!markReloadedThisSession(storageKey)) return false
+  if (hasReloadedThisSession(storageKey)) return
+  if (!markReloadedThisSession(storageKey)) return
 
-  scheduleReloadAfterFirstPaint()
-  return true
+  scheduleReloadAfterLoad()
 }
