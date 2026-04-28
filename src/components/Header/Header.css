@@ -173,29 +173,3 @@
   padding: 0 2px;
   line-height: 1;
 }
-
-@media (max-width: 499px) {
-  .header {
-    top: var(--app-visual-viewport-top);
-    transform: translateZ(0);
-    will-change: top;
-  }
-
-  .header__bg-dark {
-    top: calc(-72px - var(--app-safe-area-top));
-    height: calc(221px + var(--app-safe-area-top));
-  }
-
-  .header--sport-active .header__bg-dark {
-    height: calc(270px + var(--app-safe-area-top));
-  }
-
-  .header__bg-gradient {
-    top: calc(-1 * var(--app-safe-area-top));
-    height: calc(100px + var(--app-safe-area-top));
-  }
-
-  .header__top {
-    padding-top: calc(20px + var(--app-safe-area-top));
-  }
-}
