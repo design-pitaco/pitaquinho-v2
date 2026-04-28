@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useRef, useState, useEffect } from 'react'
 import { Header } from '../../components/Header'
 import { TrilhoEBanner } from '../../components/TrilhoEBanner'
 import { PromotionSection } from '../../components/PromotionSection'
@@ -15,6 +15,7 @@ import type { CompetitionLinkTarget } from '../../utils/competitionNavigation'
 import './Home.css'
 
 export function Home() {
+  const homeRef = useRef<HTMLDivElement>(null)
   const [isVariant2, setIsVariant2] = useState(false)
   const [isVariant3, setIsVariant3] = useState(false)
   const [activeSport, setActiveSport] = useState<string | null>(null)
@@ -25,6 +26,13 @@ export function Home() {
 
   const handleLiveMatchClick = (payload: LiveEventOpenPayload) => {
     setSelectedLiveMatch(payload)
+  }
+
+  const scrollToTop = () => {
+    window.requestAnimationFrame(() => {
+      homeRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    })
   }
 
   useEffect(() => {
@@ -50,34 +58,26 @@ export function Home() {
       setActiveSport(sportId)
     }
 
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-    })
+    scrollToTop()
   }
 
   const handleSelectCompetition = (id: string, name: string) => {
     setSelectedCompetition({ id, name })
     setContentResetKey((c) => c + 1)
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-    })
+    scrollToTop()
   }
 
   const handleClearCompetition = () => {
     setSelectedCompetition(null)
     setContentResetKey((c) => c + 1)
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-    })
+    scrollToTop()
   }
 
   const handleOpenCompetition = (target: CompetitionLinkTarget) => {
     setActiveSport(target.sport)
     setSelectedCompetition({ id: target.id, name: target.name })
     setContentResetKey((c) => c + 1)
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-    })
+    scrollToTop()
   }
 
   const homeClasses = [
@@ -89,7 +89,7 @@ export function Home() {
     .join(' ')
 
   return (
-    <div className={homeClasses}>
+    <div className={homeClasses} ref={homeRef}>
       <Header activeSport={activeSport} onSportChange={handleSportChange}>
         {activeSport && (
           <SportFilterBar

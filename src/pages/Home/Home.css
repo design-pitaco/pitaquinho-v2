@@ -16,6 +16,20 @@
   padding: 0;
 }
 
+@media (max-width: 499px) {
+  .home {
+    position: fixed;
+    inset: 0;
+    height: var(--app-viewport-height);
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* Padrão e v2 - Sem dividers */
 .home--no-dividers .promotion-section,
 .home--no-dividers .offers-section,

@@ -75,7 +75,15 @@ body {
   html,
   body,
   #root {
-    min-height: var(--app-viewport-height);
+    width: 100%;
+    height: var(--app-viewport-height);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body {
+    position: fixed;
+    inset: 0;
   }
 }
 

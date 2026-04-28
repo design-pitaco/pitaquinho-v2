@@ -100,3 +100,11 @@
   line-height: 1.2;
   white-space: nowrap;
 }
+
+@media (max-width: 499px) {
+  .navbar {
+    bottom: 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    transform: translateZ(0);
+  }
+}
