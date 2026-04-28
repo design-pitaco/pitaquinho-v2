@@ -1,13 +1,18 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
-import { installMobileViewportFix } from './utils/mobileViewport'
+import { prepareMobileViewportForFirstRender } from './utils/mobileViewport'
 import App from './App.tsx'
 
-installMobileViewportFix()
+const rootElement = document.getElementById('root')!
+const root = createRoot(rootElement)
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+prepareMobileViewportForFirstRender()
+  .catch(() => undefined)
+  .finally(() => {
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  })

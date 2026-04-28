@@ -20,7 +20,7 @@
   .home {
     min-height: var(--app-viewport-height);
     padding-top: calc(148px + var(--app-safe-area-top) + var(--app-visual-viewport-top));
-    padding-bottom: calc(var(--app-bottom-nav-height) + var(--app-visual-viewport-bottom) + 24px);
+    padding-bottom: calc(var(--app-bottom-nav-height) + var(--app-fixed-bottom-offset) + 24px);
   }
 
   .home--sport-active {

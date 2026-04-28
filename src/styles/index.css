@@ -12,6 +12,7 @@
   --app-viewport-height: 100vh;
   --app-visual-viewport-top: 0px;
   --app-visual-viewport-bottom: 0px;
+  --app-fixed-bottom-offset: 0px;
   --app-safe-area-top: env(safe-area-inset-top, 0px);
   --app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --app-bottom-nav-height: calc(54px + max(8px, var(--app-safe-area-bottom)));
@@ -81,6 +82,10 @@ body {
   body,
   #root {
     min-height: var(--app-viewport-height);
+  }
+
+  html.app-viewport-stabilizing #root {
+    visibility: hidden;
   }
 }
 

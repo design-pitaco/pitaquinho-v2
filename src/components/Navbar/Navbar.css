@@ -103,7 +103,7 @@
 
 @media (max-width: 499px) {
   .navbar {
-    bottom: var(--app-visual-viewport-bottom);
+    bottom: var(--app-fixed-bottom-offset);
     padding-bottom: max(8px, var(--app-safe-area-bottom));
     transform: translateZ(0);
     will-change: bottom;
