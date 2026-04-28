@@ -666,6 +666,8 @@ function LiveEventContent({
   const totalCornersRows = getTotalCornersRows(match)
   const totalCardsRows = getTotalCardsRows()
   const doubleChanceRows = getDoubleChanceRows(match)
+  const homeEvents = getTeamEvents(match.homeTeam.name, match.homeTeam.score)
+  const awayEvents = getTeamEvents(match.awayTeam.name, match.awayTeam.score)
 
   const handlePlayerOddsWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
     const horizontalDelta = getHorizontalWheelDelta(event.deltaX, event.deltaY, event.shiftKey)
@@ -943,33 +945,37 @@ function LiveEventContent({
 
           {/* Eventos da partida */}
           <div className="live-event-page__events">
-            <div className="live-event-page__events-side live-event-page__events-side--home">
-              {getTeamEvents(match.homeTeam.name, match.homeTeam.score).map((event, i) => (
-                <div key={i} className="live-event-page__event">
-                  {event.type === 'goal' ? (
-                    <img src={iconFutebol} alt="" className="live-event-page__event-ball" />
-                  ) : (
-                    <div className={`live-event-page__event-icon live-event-page__event-icon--${event.type}`} />
-                  )}
-                  <span className="live-event-page__event-text">
-                    {event.player} {event.minute}'
-                  </span>
-                </div>
-              ))}
+            <div className={`live-event-page__events-side-frame${homeEvents.length > 1 ? ' live-event-page__events-side-frame--has-more' : ''}`}>
+              <div className="live-event-page__events-side live-event-page__events-side--home">
+                {homeEvents.map((event, i) => (
+                  <div key={i} className="live-event-page__event">
+                    {event.type === 'goal' ? (
+                      <img src={iconFutebol} alt="" className="live-event-page__event-ball" />
+                    ) : (
+                      <div className={`live-event-page__event-icon live-event-page__event-icon--${event.type}`} />
+                    )}
+                    <span className="live-event-page__event-text">
+                      {event.player} {event.minute}'
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="live-event-page__events-side live-event-page__events-side--away">
-              {getTeamEvents(match.awayTeam.name, match.awayTeam.score).map((event, i) => (
-                <div key={i} className="live-event-page__event">
-                  <span className="live-event-page__event-text">
-                    {event.player} {event.minute}'
-                  </span>
-                  {event.type === 'goal' ? (
-                    <img src={iconFutebol} alt="" className="live-event-page__event-ball" />
-                  ) : (
-                    <div className={`live-event-page__event-icon live-event-page__event-icon--${event.type}`} />
-                  )}
-                </div>
-              ))}
+            <div className={`live-event-page__events-side-frame live-event-page__events-side-frame--away${awayEvents.length > 1 ? ' live-event-page__events-side-frame--has-more' : ''}`}>
+              <div className="live-event-page__events-side live-event-page__events-side--away">
+                {awayEvents.map((event, i) => (
+                  <div key={i} className="live-event-page__event">
+                    <span className="live-event-page__event-text">
+                      {event.player} {event.minute}'
+                    </span>
+                    {event.type === 'goal' ? (
+                      <img src={iconFutebol} alt="" className="live-event-page__event-ball" />
+                    ) : (
+                      <div className={`live-event-page__event-icon live-event-page__event-icon--${event.type}`} />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1184,21 +1190,25 @@ function LiveEventContent({
                   {primaryShotsOnGoalRows.map((row) => (
                     <div
                       key={row.id}
-                      className={`live-event-page__player-odds-row${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row--scrolled' : ''}`}
-                      onWheel={handlePlayerOddsWheel}
-                      onScroll={(event) => {
-                        const isScrolled = event.currentTarget.scrollLeft > 0
-                        setScrolledOddsRows((current) => (
-                          current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
-                        ))
-                      }}
+                      className={`live-event-page__player-odds-row-frame${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row-frame--scrolled' : ''}`}
                     >
-                      {row.outcomes.map((outcome) => (
-                        <button key={outcome.label} className="live-event-page__player-odd">
-                          <span>{outcome.label}</span>
-                          <strong>{outcome.odd}</strong>
-                        </button>
-                      ))}
+                      <div
+                        className="live-event-page__player-odds-row"
+                        onWheel={handlePlayerOddsWheel}
+                        onScroll={(event) => {
+                          const isScrolled = event.currentTarget.scrollLeft > 0
+                          setScrolledOddsRows((current) => (
+                            current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
+                          ))
+                        }}
+                      >
+                        {row.outcomes.map((outcome) => (
+                          <button key={outcome.label} className="live-event-page__player-odd">
+                            <span>{outcome.label}</span>
+                            <strong>{outcome.odd}</strong>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ))}
                   <div className={`live-event-page__player-extra live-event-page__player-extra--odds${isShotsExpanded ? ' live-event-page__player-extra--open' : ''}`}>
@@ -1206,21 +1216,25 @@ function LiveEventContent({
                       {extraShotsOnGoalRows.map((row) => (
                         <div
                           key={row.id}
-                          className={`live-event-page__player-odds-row${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row--scrolled' : ''}`}
-                          onWheel={handlePlayerOddsWheel}
-                          onScroll={(event) => {
-                            const isScrolled = event.currentTarget.scrollLeft > 0
-                            setScrolledOddsRows((current) => (
-                              current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
-                            ))
-                          }}
+                          className={`live-event-page__player-odds-row-frame${scrolledOddsRows[row.id] ? ' live-event-page__player-odds-row-frame--scrolled' : ''}`}
                         >
-                          {row.outcomes.map((outcome) => (
-                            <button key={outcome.label} className="live-event-page__player-odd">
-                              <span>{outcome.label}</span>
-                              <strong>{outcome.odd}</strong>
-                            </button>
-                          ))}
+                          <div
+                            className="live-event-page__player-odds-row"
+                            onWheel={handlePlayerOddsWheel}
+                            onScroll={(event) => {
+                              const isScrolled = event.currentTarget.scrollLeft > 0
+                              setScrolledOddsRows((current) => (
+                                current[row.id] === isScrolled ? current : { ...current, [row.id]: isScrolled }
+                              ))
+                            }}
+                          >
+                            {row.outcomes.map((outcome) => (
+                              <button key={outcome.label} className="live-event-page__player-odd">
+                                <span>{outcome.label}</span>
+                                <strong>{outcome.odd}</strong>
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1405,7 +1419,7 @@ function LiveEventContent({
         </div>
 
         {/* ── Market card (Dupla Chance) ── */}
-        <div className={`live-event-page__market-card${isDoubleChanceMarketOpen ? '' : ' live-event-page__market-card--closed'}`}>
+        <div className={`live-event-page__market-card live-event-page__market-card--double-chance${isDoubleChanceMarketOpen ? '' : ' live-event-page__market-card--closed'}`}>
           <div className="live-event-page__market-header">
             <span className="live-event-page__market-title">Dupla Chance</span>
             <div className="live-event-page__market-actions">
@@ -1440,18 +1454,12 @@ function LiveEventContent({
           <div className={`live-event-page__market-collapse${isDoubleChanceMarketOpen ? ' live-event-page__market-collapse--open' : ''}`}>
             <div className="live-event-page__market-collapse-inner">
               {doubleChanceRows.map((row) => (
-                <div key={row.id} className="live-event-page__market-odds">
+                <div key={row.id} className="live-event-page__market-odds live-event-page__market-odds--double-chance">
                   {row.options.map((option) => (
-                    <button key={option.label} className="live-event-page__market-odd">
-                      {option.labelParts ? (
-                        <span className="live-event-page__market-odd-label live-event-page__market-odd-label--split" aria-label={option.label}>
-                          <span>{option.labelParts[0]}</span>
-                          <span className="live-event-page__market-odd-label-separator">ou</span>
-                          <span>{option.labelParts[1]}</span>
-                        </span>
-                      ) : (
-                        <span className="live-event-page__market-odd-label">{option.label}</span>
-                      )}
+                    <button key={option.label} className="live-event-page__market-odd live-event-page__market-odd--double-chance">
+                      <span className="live-event-page__market-odd-label" aria-label={option.label}>
+                        {option.labelParts ? `${option.labelParts[0]} ou ${option.labelParts[1]}` : option.label}
+                      </span>
                       <strong>{option.odd}</strong>
                     </button>
                   ))}

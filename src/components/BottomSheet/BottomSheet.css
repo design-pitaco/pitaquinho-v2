@@ -61,8 +61,8 @@
   max-height: calc(100vh - 80px);
   /* Dynamic viewport height for modern browsers */
   max-height: calc(100dvh - 80px);
-  /* JavaScript calculated viewport height for maximum compatibility */
-  max-height: calc(var(--vh, 1vh) * 100 - 80px);
+  /* JavaScript calculated viewport height for mobile browser chrome changes */
+  max-height: calc(var(--app-viewport-height, 100dvh) - 80px);
   display: flex;
   flex-direction: column;
   animation: slideUp 0.3s ease-out;

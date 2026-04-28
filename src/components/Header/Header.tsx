@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import './Header.css'
 import { SportRail } from '../SportRail'
 import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
@@ -11,8 +11,11 @@ interface HeaderProps {
   children?: ReactNode
 }
 
+type HeaderToggleOption = 'apostas' | 'cassino'
+
 export function Header({ activeSport, onSportChange, children }: HeaderProps = {}) {
   const isSportPage = !!activeSport && activeSport !== 'destaques'
+  const [activeToggle, setActiveToggle] = useState<HeaderToggleOption>('apostas')
 
   return (
     <header className={`header${isSportPage ? ' header--sport-active' : ''}`}>
@@ -24,11 +27,25 @@ export function Header({ activeSport, onSportChange, children }: HeaderProps = {
           <img src={logoReidoPitaco} alt="Rei do Pitaco" />
         </div>
 
-        <div className="header__toggle">
-          <button className="header__toggle-btn header__toggle-btn--active">
+        <div
+          className={`header__toggle header__toggle--${activeToggle}`}
+          role="group"
+          aria-label="Alternar entre apostas e cassino"
+        >
+          <button
+            type="button"
+            className={`header__toggle-btn${activeToggle === 'apostas' ? ' header__toggle-btn--active' : ''}`}
+            aria-pressed={activeToggle === 'apostas'}
+            onClick={() => setActiveToggle('apostas')}
+          >
             APOSTAS
           </button>
-          <button className="header__toggle-btn">
+          <button
+            type="button"
+            className={`header__toggle-btn${activeToggle === 'cassino' ? ' header__toggle-btn--active' : ''}`}
+            aria-pressed={activeToggle === 'cassino'}
+            onClick={() => setActiveToggle('cassino')}
+          >
             CASSINO
           </button>
         </div>

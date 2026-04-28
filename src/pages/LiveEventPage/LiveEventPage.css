@@ -450,19 +450,43 @@
   gap: 24px;
   align-items: flex-start;
   width: 100%;
-  height: 20px;
+  height: 28px;
+  overflow: visible;
+}
+
+.live-event-page__events-side-frame {
+  position: relative;
+  flex: 1 0 0;
+  min-width: 0;
+  height: 28px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 58%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0, #000 58%, transparent 100%);
+}
+
+.live-event-page__events-side-frame::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 18px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0) 0%, rgba(26, 26, 26, 0.74) 58%, #1a1a1a 100%);
+}
+
+.live-event-page__events-side-frame--has-more::after {
+  opacity: 1;
 }
 
 .live-event-page__events-side {
-  flex: 1 0 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
   align-items: flex-start;
+  overflow: visible;
 }
 
 .live-event-page__events-side--away {
@@ -881,9 +905,10 @@
 
 /* ── Market card (mercado-default) ── */
 .live-event-page__market-card {
+  --live-event-market-card-padding: 12px;
   background-color: #1a1a1a;
   border-radius: 12px;
-  padding: 12px;
+  padding: var(--live-event-market-card-padding);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -991,6 +1016,7 @@
 .live-event-page__market-collapse--open {
   grid-template-rows: 1fr;
   opacity: 1;
+  overflow: visible;
 }
 
 .live-event-page__market-collapse-inner {
@@ -1003,6 +1029,7 @@
 
 .live-event-page__market-collapse--open .live-event-page__market-collapse-inner {
   transform: translateY(0);
+  overflow: visible;
 }
 
 .live-event-page__market-tag {
@@ -1129,12 +1156,28 @@
   white-space: nowrap;
 }
 
+.live-event-page__market-odds--double-chance {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.live-event-page__market-odd--double-chance {
+  flex: 0 0 auto;
+  width: 100%;
+  height: 44px;
+}
+
+.live-event-page__market-odd--double-chance > .live-event-page__market-odd-label {
+  line-height: 1.25;
+}
+
 .live-event-page__market-card--player-props {
   overflow: hidden;
 }
 
 .live-event-page__player-market {
-  display: flex;
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr);
   width: 100%;
   padding-top: 0;
   overflow: visible;
@@ -1147,8 +1190,7 @@
 }
 
 .live-event-page__player-list {
-  width: 124px;
-  flex: 0 0 124px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -1274,16 +1316,40 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
-  width: calc(100% + 12px);
+  width: calc(100% + var(--live-event-market-card-padding));
   min-width: 0;
-  margin-right: -12px;
   border-left: none;
   overflow: visible;
 }
 
 .live-event-page__player-odds-list::-webkit-scrollbar {
   display: none;
+}
+
+.live-event-page__player-odds-row-frame {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  overflow: hidden;
+}
+
+.live-event-page__player-odds-row-frame::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  z-index: 2;
+  width: 34px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  background: linear-gradient(90deg, #1a1a1a 0%, rgba(26, 26, 26, 0.76) 38%, rgba(26, 26, 26, 0) 100%);
+}
+
+.live-event-page__player-odds-row-frame--scrolled::before {
+  opacity: 1;
 }
 
 .live-event-page__player-odds-row {
@@ -1308,11 +1374,6 @@
 .live-event-page__player-odds-row,
 .live-event-page__player-odds-row * {
   touch-action: pan-x pan-y;
-}
-
-.live-event-page__player-odds-row--scrolled {
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 100%);
 }
 
 .live-event-page__player-odds-row::-webkit-scrollbar {

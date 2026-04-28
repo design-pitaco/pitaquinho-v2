@@ -4,6 +4,10 @@ import './CalendarSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import {
+  getCompetitionLinkTarget,
+  type CompetitionLinkTarget,
+} from '../../utils/competitionNavigation'
 
 import setaLink from '../../assets/setaLink.png'
 import iconAccordion from '../../assets/iconAccordion.png'
@@ -991,10 +995,18 @@ const competitionToChampionship: Record<string, string> = {
 interface CalendarSectionProps {
   sportFilter?: string | null
   competitionId?: string | null
+  liveOnly?: boolean
   onLiveMatchClick?: (payload: LiveEventOpenPayload) => void
+  onOpenCompetition?: (target: CompetitionLinkTarget) => void
 }
 
-export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }: CalendarSectionProps = {}) {
+export function CalendarSection({
+  sportFilter,
+  competitionId,
+  liveOnly = false,
+  onLiveMatchClick,
+  onOpenCompetition,
+}: CalendarSectionProps = {}) {
   const [activeDateChip, setActiveDateChip] = useState('agora')
   const [activeMarket, setActiveMarket] = useState('resultado-final')
   const dateChips = buildDateChips()
@@ -1021,7 +1033,15 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
   const filtered = mappedCompetitionId
     ? filteredBySport.filter((c) => c.id === mappedCompetitionId)
     : filteredBySport
-  const topFive = filtered.slice(0, mappedCompetitionId ? filtered.length : 5)
+  const filteredByLive = liveOnly
+    ? filtered
+        .map((championship) => ({
+          ...championship,
+          events: championship.events.filter((event) => event.isLive),
+        }))
+        .filter((championship) => championship.events.length > 0)
+    : filtered
+  const topFive = filteredByLive.slice(0, mappedCompetitionId ? filteredByLive.length : 5)
   const isCompetitionPage = !!mappedCompetitionId
 
   const [openLeagues, setOpenLeagues] = useState<string[]>(
@@ -1030,11 +1050,14 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
 
   useEffect(() => {
     setOpenLeagues(topFive.map((c) => c.id))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sportFilter, competitionId, liveOnly])
+
+  useEffect(() => {
     setActiveMarket(sportFilter === 'basquete' ? 'vencedor' : 'resultado-final')
     if (marketChipsRef.current) {
       marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sportFilter, competitionId])
 
   const toggleLeague = (id: string) => {
@@ -1045,6 +1068,12 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
 
   const currentSport = topFive[0]?.sport ?? sportFilter
   const currentMarketChips = currentSport === 'basquete' ? basketballMarketChips : footballMarketChips
+
+  const openCompetitionFromLeague = (leagueId: string) => {
+    const target = getCompetitionLinkTarget(leagueId)
+    if (!target) return
+    onOpenCompetition?.(target)
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1173,6 +1202,15 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
         {topFive.map((league) => {
           const isOpen = openLeagues.includes(league.id)
           const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
+          const eventsToDisplay = liveOnly
+            ? league.events.filter((event) => event.isLive)
+            : isCompetitionPage
+              ? [
+                  ...league.events.filter((event) => event.isLive).slice(0, 3),
+                  ...league.events.filter((event) => !event.isLive).slice(0, 5),
+                ]
+              : league.events.slice(0, 3)
+
           return (
             <div key={league.id} className={`prematch-section__league ${isOpen ? 'prematch-section__league--open' : ''}`}>
               {!isCompetitionPage && (
@@ -1192,13 +1230,7 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
               <div className={`prematch-section__matches-wrapper ${isOpen || isCompetitionPage ? 'prematch-section__matches-wrapper--open' : ''}`}>
                 <div className="prematch-section__matches-inner">
                   <div className="prematch-section__matches">
-                    {(isCompetitionPage
-                      ? [
-                          ...league.events.filter((event) => event.isLive).slice(0, 3),
-                          ...league.events.filter((event) => !event.isLive).slice(0, 5),
-                        ]
-                      : league.events.slice(0, 3)
-                    ).map((event) => {
+                    {eventsToDisplay.map((event) => {
                       const marketOdds = getMarketOdds(event, league.sport)
                       const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
                       const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
@@ -1416,8 +1448,12 @@ export function CalendarSection({ sportFilter, competitionId, onLiveMatchClick }
                   </div>
 
                   {!isCompetitionPage && (
-                    <button className="prematch-section__league-more">
-                      <span>Veja mais do {league.name}</span>
+                    <button
+                      type="button"
+                      className="prematch-section__league-more"
+                      onClick={() => openCompetitionFromLeague(league.id)}
+                    >
+                      <span>Veja mais {league.name}</span>
                       <img src={setaLink} alt="" className="prematch-section__league-more-icon" />
                     </button>
                   )}

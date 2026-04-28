@@ -16,6 +16,18 @@
   padding: 0;
 }
 
+@media (max-width: 499px) {
+  .home {
+    min-height: var(--app-viewport-height);
+    padding-top: calc(148px + var(--app-safe-area-top) + var(--app-visual-viewport-top));
+    padding-bottom: calc(var(--app-bottom-nav-height) + var(--app-visual-viewport-bottom) + 24px);
+  }
+
+  .home--sport-active {
+    padding-top: calc(204px + var(--app-safe-area-top) + var(--app-visual-viewport-top));
+  }
+}
+
 /* Padrão e v2 - Sem dividers */
 .home--no-dividers .promotion-section,
 .home--no-dividers .offers-section,

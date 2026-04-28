@@ -3,6 +3,10 @@ import './LiveSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import {
+  getCompetitionLinkTarget,
+  type CompetitionLinkTarget,
+} from '../../utils/competitionNavigation'
 
 import setaLink from '../../assets/setaLink.png'
 import iconFutebol from '../../assets/iconFutebol.png'
@@ -575,9 +579,10 @@ function updateTime(timeStr: string): string {
 
 interface LiveSectionProps {
   onMatchClick?: (payload: LiveEventOpenPayload) => void
+  onOpenCompetition?: (target: CompetitionLinkTarget) => void
 }
 
-export function LiveSection({ onMatchClick }: LiveSectionProps = {}) {
+export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProps = {}) {
   const [activeSport, setActiveSport] = useState('futebol')
   const [activeMarket, setActiveMarket] = useState('resultado-final')
   const [openLeagues, setOpenLeagues] = useState<string[]>(
@@ -602,6 +607,12 @@ export function LiveSection({ onMatchClick }: LiveSectionProps = {}) {
   // Get current market chips and filtered leagues based on sport
   const currentMarketChips = activeSport === 'basquete' ? basketballMarketChips : footballMarketChips
   const filteredLeagues = leagues.filter((l) => l.sport === activeSport)
+
+  const openCompetitionFromLeague = (leagueId: string) => {
+    const target = getCompetitionLinkTarget(leagueId)
+    if (!target) return
+    onOpenCompetition?.(target)
+  }
 
   // State for match times
   const [matchTimes, setMatchTimes] = useState<Record<string, string>>(() => {
@@ -821,8 +832,12 @@ export function LiveSection({ onMatchClick }: LiveSectionProps = {}) {
                       />
                     ))}
                   </div>
-                  <button className="live-section__league-more">
-                    <span>Veja mais do {league.name}</span>
+                  <button
+                    type="button"
+                    className="live-section__league-more"
+                    onClick={() => openCompetitionFromLeague(league.id)}
+                  >
+                    <span>Veja mais {league.name}</span>
                     <img src={setaLink} alt="" className="live-section__league-more-icon" />
                   </button>
                 </div>

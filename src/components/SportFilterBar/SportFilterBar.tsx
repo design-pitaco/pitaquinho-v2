@@ -14,18 +14,21 @@ interface SportFilterBarProps {
   selectLabel?: string
   sport?: string | null
   selectedCompetitionId?: string | null
+  liveOnly?: boolean
   onSelectCompetition?: (id: string, name: string) => void
   onClearCompetition?: () => void
+  onLiveOnlyChange?: (liveOnly: boolean) => void
 }
 
 export function SportFilterBar({
   selectLabel = 'Escolha a competição',
   sport,
   selectedCompetitionId,
+  liveOnly = false,
   onSelectCompetition,
   onClearCompetition,
+  onLiveOnlyChange,
 }: SportFilterBarProps) {
-  const [liveOnly, setLiveOnly] = useState(false)
   const [showCompeticao, setShowCompeticao] = useState(false)
 
   const config =
@@ -41,6 +44,10 @@ export function SportFilterBar({
     if (!comp) return
     onSelectCompetition?.(id, comp.name)
     setShowCompeticao(false)
+  }
+
+  const handleToggleLiveOnly = () => {
+    onLiveOnlyChange?.(!liveOnly)
   }
 
   return (
@@ -66,12 +73,17 @@ export function SportFilterBar({
         </button>
       </div>
 
-      <label className="sport-filter-bar__toggle">
+      <label className="sport-filter-bar__toggle" onClick={handleToggleLiveOnly}>
         <span
           className={`sport-filter-bar__switch ${liveOnly ? 'sport-filter-bar__switch--on' : ''}`}
-          onClick={() => setLiveOnly((v) => !v)}
           role="switch"
           aria-checked={liveOnly}
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return
+            event.preventDefault()
+            handleToggleLiveOnly()
+          }}
         >
           <span className="sport-filter-bar__switch-thumb" />
         </span>

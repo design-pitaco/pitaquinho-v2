@@ -106,6 +106,73 @@ interface OfferCard {
   }
 }
 
+interface LiveOfferFixture {
+  home: string
+  away: string
+  time: string
+}
+
+const liveOfferFixtures: LiveOfferFixture[] = [
+  { home: 'Flamengo', away: 'Cruzeiro', time: '2T 22:12' },
+  { home: 'Internacional', away: 'Bragantino', time: '1T 38:45' },
+  { home: 'Mirassol', away: 'São Paulo', time: 'Intervalo' },
+  { home: 'Atlético Madrid', away: 'Inter', time: '1T 12:23' },
+  { home: 'PSG', away: 'Lyon', time: '2T 34:15' },
+  { home: 'Newcastle', away: 'Napoli', time: '1T 08:47' },
+  { home: 'Boca Juniors', away: 'Argentinos Jrs', time: '2T 18:32' },
+  { home: 'Racing', away: 'River Plate', time: '2T 05:47' },
+  { home: 'San Lorenzo', away: 'Córdoba', time: '1T 25:18' },
+  { home: 'Inter Miami', away: 'Whitecaps', time: '1T 28:14' },
+  { home: 'Cincinnati', away: 'Chicago Fire', time: '1T 03:22' },
+  { home: 'Nashville', away: 'New York City', time: '1T 32:05' },
+  { home: 'Dinamo', away: 'Aston Villa', time: '1T 15:08' },
+  { home: 'Fenerbahçe', away: 'Porto', time: '2T 12:45' },
+  { home: 'Panathinaikos', away: 'Nottingham', time: '1T 18:33' },
+  { home: 'Jazz', away: 'Thunder', time: 'Q1 08:22' },
+  { home: 'Knicks', away: 'Magic', time: 'Q2 05:00' },
+  { home: 'AEPS Machitis', away: 'ASA Koroivos', time: 'Q3 06:43' },
+  { home: 'Southern Wesleyan', away: 'Kennesaw State', time: 'Q1 00:21' },
+  { home: 'Vanoli Cremona', away: 'Varese', time: 'Q3 08:32' },
+  { home: 'Virtus Bologna', away: 'Tortona', time: 'Q1 03:24' },
+  { home: 'Beroe', away: 'Balkan Botevgrad', time: 'Q2 04:43' },
+]
+
+const buildLiveOfferTimes = () => liveOfferFixtures.reduce<Record<string, string>>((times, fixture) => {
+  times[`${fixture.home} vs ${fixture.away}`] = fixture.time
+  times[`${fixture.away} vs ${fixture.home}`] = fixture.time
+  return times
+}, {})
+
+const updateLiveOfferTime = (time: string): string => {
+  if (time === 'Intervalo' || time === 'INT') return time
+
+  const basketballMatch = time.match(/^Q(\d) (\d+):(\d+)$/)
+  const footballMatch = time.match(/^(\d)T (\d+):(\d+)$/)
+  const match = basketballMatch || footballMatch
+  if (!match) return time
+
+  const period = Number(match[1])
+  let minutes = Number(match[2])
+  let seconds = Number(match[3])
+
+  if (basketballMatch) {
+    seconds -= 1
+    if (seconds < 0) {
+      seconds = 59
+      minutes -= 1
+    }
+    if (minutes <= 0 && seconds <= 0) return 'Intervalo'
+  } else {
+    seconds += 1
+    if (seconds >= 60) {
+      seconds = 0
+      minutes += 1
+    }
+  }
+
+  return `${basketballMatch ? `Q${period}` : `${period}T`} ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
 const allOffers: OfferCard[] = [
   // === AS MELHORES (default) ===
   {
@@ -225,7 +292,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '12/09, 19:00',
     oldOdd: '2.70x',
     newOdd: '3.40x',
     teamStat: {
@@ -287,7 +353,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '11/09, 16:00',
     newOdd: '4.25x',
     playerEvents: [
       { icon: iconPechincha, name: 'M. Pereira', value: '7+ → 0.5+', market: 'Passes Certos' },
@@ -347,7 +412,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '11/09, 16:00',
     newOdd: '4.25x',
     playerEvents: [
       { icon: iconPechincha, name: 'M. Pereira', value: '7+ → 0.5+', market: 'Passes Certos' },
@@ -366,7 +430,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#DC2626',
     tagIcon: iconCombinada,
     subtitle: 'PSG vs Lyon',
-    date: '12/09, 16:00',
     oldOdd: '6.35x',
     newOdd: '7.50x',
     playerEvents: [
@@ -485,7 +548,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '12/09, 19:00',
     oldOdd: '2.70x',
     newOdd: '3.40x',
     teamStat: {
@@ -505,7 +567,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#60A5FA',
     tagIcon: iconSuperAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '12/09, 19:00',
     oldOdd: '3.20x',
     newOdd: '4.00x',
     player: {
@@ -529,7 +590,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#EAB308',
     tagIcon: iconAumentada,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '12/09, 19:00',
     oldOdd: '2.20x',
     newOdd: '2.90x',
     player: {
@@ -755,7 +815,6 @@ const allOffers: OfferCard[] = [
     tagColor: '#9730FF',
     tagIcon: iconPechincha,
     subtitle: 'Flamengo vs Cruzeiro',
-    date: '12/09, 19:00',
     newOdd: '1.68x',
     player: {
       name: 'Arrascaeta',
@@ -879,11 +938,13 @@ const allOffers: OfferCard[] = [
 
 interface OffersSectionProps {
   sportFilter?: string | null
+  liveOnly?: boolean
 }
 
-export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
+export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionProps = {}) {
   const [isDragging, setIsDragging] = useState(false)
   const [activeFilter, setActiveFilter] = useState('melhores')
+  const [liveOfferTimes, setLiveOfferTimes] = useState<Record<string, string>>(buildLiveOfferTimes)
   const scrollRef = useRef<HTMLDivElement>(null)
   const filtersRef = useRef<HTMLDivElement>(null)
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -896,8 +957,11 @@ export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
     return true
   }
 
+  const matchesLiveFilter = (offer: OfferCard) =>
+    !liveOnly || !!(offer.subtitle && liveOfferTimes[offer.subtitle])
+
   const visibleChips = filterChips.filter(chip =>
-    allOffers.some(offer => offer.category === chip.id && matchesSportFilter(offer))
+    allOffers.some(offer => offer.category === chip.id && matchesSportFilter(offer) && matchesLiveFilter(offer))
   )
   const selectedFilter = visibleChips.some((chip) => chip.id === activeFilter)
     ? activeFilter
@@ -906,14 +970,37 @@ export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
   const filteredOffers = allOffers.filter(offer => {
     if (offer.category !== selectedFilter) return false
     return matchesSportFilter(offer)
+      && matchesLiveFilter(offer)
   })
+
+  const getOfferLiveTime = (offer: OfferCard) => {
+    if (!offer.subtitle) return undefined
+    return liveOfferTimes[offer.subtitle]
+  }
 
   // Reset scroll position quando mudar o filtro
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft = 0
     }
-  }, [selectedFilter, sportFilter])
+  }, [selectedFilter, sportFilter, liveOnly])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveOfferTimes((currentTimes) => Object.fromEntries(
+        Object.entries(currentTimes).map(([matchLabel, time]) => [
+          matchLabel,
+          updateLiveOfferTime(time),
+        ])
+      ))
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  if (filteredOffers.length === 0) {
+    return null
+  }
 
   // Centraliza no card mais próximo com sensibilidade ao arraste
   const snapToNearestCard = (dragDelta: number = 0) => {
@@ -1035,7 +1122,10 @@ export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {filteredOffers.map((offer) => (
+        {filteredOffers.map((offer) => {
+          const liveTime = getOfferLiveTime(offer)
+
+          return (
           <div key={offer.id} className={`offer-card offer-card--${offer.type.replace('_', '-')}`}>
             {/* Card Header */}
             <div className="offer-card__header">
@@ -1049,7 +1139,13 @@ export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
             {/* Card Subheader */}
             <div className="offer-card__subheader">
               <span className="offer-card__subtitle">{offer.subtitle}</span>
-              {offer.date && <span className="offer-card__date">{offer.date}</span>}
+              {liveTime ? (
+                <span className="offer-card__live-time" aria-label={`Ao vivo, ${liveTime}`}>
+                  <span>{liveTime}</span>
+                </span>
+              ) : offer.date ? (
+                <span className="offer-card__date">{offer.date}</span>
+              ) : null}
             </div>
 
             {/* Card Content - Events (for combinada type with teams) */}
@@ -1172,7 +1268,8 @@ export function OffersSection({ sportFilter }: OffersSectionProps = {}) {
               </div>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )

@@ -11,6 +11,7 @@ import { CalendarSection } from '../../components/CalendarSection'
 import { CompetitionPage } from '../../components/CompetitionPage'
 import { LiveEventPage } from '../LiveEventPage'
 import type { LiveEventOpenPayload } from '../LiveEventPage'
+import type { CompetitionLinkTarget } from '../../utils/competitionNavigation'
 import './Home.css'
 
 export function Home() {
@@ -20,6 +21,7 @@ export function Home() {
   const [contentResetKey, setContentResetKey] = useState(0)
   const [selectedCompetition, setSelectedCompetition] = useState<{ id: string; name: string } | null>(null)
   const [selectedLiveMatch, setSelectedLiveMatch] = useState<LiveEventOpenPayload | null>(null)
+  const [liveOnly, setLiveOnly] = useState(false)
 
   const handleLiveMatchClick = (payload: LiveEventOpenPayload) => {
     setSelectedLiveMatch(payload)
@@ -45,7 +47,7 @@ export function Home() {
     if (sportId === 'destaques') {
       setActiveSport(null)
     } else {
-      setActiveSport((current) => (current === sportId ? null : sportId))
+      setActiveSport(sportId)
     }
 
     window.requestAnimationFrame(() => {
@@ -69,6 +71,15 @@ export function Home() {
     })
   }
 
+  const handleOpenCompetition = (target: CompetitionLinkTarget) => {
+    setActiveSport(target.sport)
+    setSelectedCompetition({ id: target.id, name: target.name })
+    setContentResetKey((c) => c + 1)
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    })
+  }
+
   const homeClasses = [
     'home',
     isVariant3 ? '' : 'home--no-dividers',
@@ -84,8 +95,10 @@ export function Home() {
           <SportFilterBar
             sport={activeSport}
             selectedCompetitionId={selectedCompetition?.id ?? null}
+            liveOnly={liveOnly}
             onSelectCompetition={handleSelectCompetition}
             onClearCompetition={handleClearCompetition}
+            onLiveOnlyChange={setLiveOnly}
           />
         )}
       </Header>
@@ -96,12 +109,18 @@ export function Home() {
             <CompetitionPage
               sport={activeSport}
               competitionId={selectedCompetition.id}
+              liveOnly={liveOnly}
               onLiveMatchClick={handleLiveMatchClick}
             />
           ) : (
             <>
-              <OffersSection sportFilter={activeSport} />
-              <CalendarSection sportFilter={activeSport} onLiveMatchClick={handleLiveMatchClick} />
+              <OffersSection sportFilter={activeSport} liveOnly={liveOnly} />
+              <CalendarSection
+                sportFilter={activeSport}
+                liveOnly={liveOnly}
+                onLiveMatchClick={handleLiveMatchClick}
+                onOpenCompetition={handleOpenCompetition}
+              />
             </>
           )}
         </Fragment>
@@ -119,9 +138,12 @@ export function Home() {
               <OffersSection />
             </>
           )}
-          <LiveSection onMatchClick={handleLiveMatchClick} />
+          <LiveSection
+            onMatchClick={handleLiveMatchClick}
+            onOpenCompetition={handleOpenCompetition}
+          />
           <EscadinhaSection />
-          <PreMatchSection />
+          <PreMatchSection onOpenCompetition={handleOpenCompetition} />
           {/* <TreasureSection /> */}
           {/* <WinningNowSection /> */}
         </Fragment>

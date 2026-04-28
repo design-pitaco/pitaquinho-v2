@@ -9,6 +9,12 @@
   --color-white: #ffffff;
   --color-text: rgba(255, 255, 255, 0.87);
   --color-text-muted: rgba(255, 255, 255, 0.6);
+  --app-viewport-height: 100vh;
+  --app-visual-viewport-top: 0px;
+  --app-visual-viewport-bottom: 0px;
+  --app-safe-area-top: env(safe-area-inset-top, 0px);
+  --app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --app-bottom-nav-height: calc(54px + max(8px, var(--app-safe-area-bottom)));
 
   /* Tipografia */
   font-family: 'Red Hat Text', system-ui, sans-serif;
@@ -23,6 +29,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-viewport-height: 100dvh;
+  }
 }
 
 * {
@@ -62,6 +74,14 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+@media (max-width: 499px) {
+  html,
+  body,
+  #root {
+    min-height: var(--app-viewport-height);
+  }
 }
 
 a {
