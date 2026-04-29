@@ -22,7 +22,7 @@
 
 /* Esporte ativo: estende o fundo escuro até cobrir o SportFilterBar */
 .header--sport-active .header__bg-dark {
-  height: 270px;
+  height: 262px;
 }
 
 /* Layer 2: glow roxo — blur 50px cria o fade natural nas bordas */

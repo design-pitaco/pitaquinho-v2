@@ -11,32 +11,40 @@ import {
 } from './competicaoData'
 
 interface SportFilterBarProps {
-  selectLabel?: string
   sport?: string | null
   selectedCompetitionId?: string | null
-  liveOnly?: boolean
   onSelectCompetition?: (id: string, name: string) => void
   onClearCompetition?: () => void
-  onLiveOnlyChange?: (liveOnly: boolean) => void
 }
 
 export function SportFilterBar({
-  selectLabel = 'Escolha a competição',
   sport,
   selectedCompetitionId,
-  liveOnly = false,
   onSelectCompetition,
   onClearCompetition,
-  onLiveOnlyChange,
 }: SportFilterBarProps) {
   const [showCompeticao, setShowCompeticao] = useState(false)
 
   const config =
     (sport && competicaoConfigBySport[sport]) || defaultCompeticaoConfig
 
-  const selectedName = selectedCompetitionId
+  const selectedCompetition = selectedCompetitionId
     ? findCompetition(config, selectedCompetitionId)?.name ?? null
     : null
+  const featuredCompetitions = config.featuredCompetitions.slice(0, 4)
+  const isSelectedCompetition = (id: string, name: string) =>
+    !!selectedCompetitionId &&
+    (selectedCompetitionId === id || selectedCompetition === name)
+  const selectedInFeatured = featuredCompetitions.some((competition) =>
+    isSelectedCompetition(competition.id, competition.name)
+  )
+  const chipCompetitions =
+    selectedCompetitionId && selectedCompetition && !selectedInFeatured
+      ? [
+          ...featuredCompetitions.slice(0, 3),
+          { id: selectedCompetitionId, name: selectedCompetition },
+        ]
+      : featuredCompetitions
 
   const handleSelectCompetition = (id: string) => {
     if (!isCompetitionEnabled(id)) return
@@ -46,14 +54,10 @@ export function SportFilterBar({
     setShowCompeticao(false)
   }
 
-  const handleToggleLiveOnly = () => {
-    onLiveOnlyChange?.(!liveOnly)
-  }
-
   return (
     <div className="sport-filter-bar">
-      <div className="sport-filter-bar__left">
-        {selectedName && (
+      <div className="sport-filter-bar__chips" aria-label={`Campeonatos de ${config.sportLabel}`}>
+        {selectedCompetitionId && onClearCompetition && (
           <button
             type="button"
             className="sport-filter-bar__clear"
@@ -63,32 +67,31 @@ export function SportFilterBar({
             <img src={iconFecharPeq} alt="" className="sport-filter-bar__clear-icon" />
           </button>
         )}
+
+        {chipCompetitions.map((competition) => {
+          const active = isSelectedCompetition(competition.id, competition.name)
+          return (
+            <button
+              key={competition.id}
+              type="button"
+              className={`sport-filter-bar__chip${active ? ' sport-filter-bar__chip--active' : ''}`}
+              aria-pressed={active}
+              onClick={() => handleSelectCompetition(competition.id)}
+            >
+              <span className="sport-filter-bar__chip-label">{competition.name}</span>
+            </button>
+          )
+        })}
+
         <button
           type="button"
-          className={`sport-filter-bar__select ${selectedName ? 'sport-filter-bar__select--selected' : ''}`}
+          className="sport-filter-bar__chip sport-filter-bar__chip--more"
           onClick={() => setShowCompeticao(true)}
+          aria-label="Escolha a competição"
         >
-          <span className="sport-filter-bar__select-label">{selectedName ?? selectLabel}</span>
-          <img src={arrowDown} alt="" className="sport-filter-bar__select-icon" />
+          <img src={arrowDown} alt="" className="sport-filter-bar__chip-icon" />
         </button>
       </div>
-
-      <label className="sport-filter-bar__toggle" onClick={handleToggleLiveOnly}>
-        <span
-          className={`sport-filter-bar__switch ${liveOnly ? 'sport-filter-bar__switch--on' : ''}`}
-          role="switch"
-          aria-checked={liveOnly}
-          tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter' && event.key !== ' ') return
-            event.preventDefault()
-            handleToggleLiveOnly()
-          }}
-        >
-          <span className="sport-filter-bar__switch-thumb" />
-        </span>
-        <span className="sport-filter-bar__toggle-label">Só Ao Vivo</span>
-      </label>
 
       <CompeticaoBottomSheet
         isOpen={showCompeticao}

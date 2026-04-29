@@ -21,6 +21,7 @@ import type { Competition, CompetitionCountry } from '../BottomSheet/CompeticaoB
 export interface CompeticaoConfig {
   sportLabel: string
   sportIcon: string
+  featuredCompetitions: Competition[]
   topCompetitions: Competition[]
   countries: CompetitionCountry[]
 }
@@ -28,6 +29,12 @@ export interface CompeticaoConfig {
 const futebolConfig: CompeticaoConfig = {
   sportLabel: 'Futebol',
   sportIcon: iconFutebol,
+  featuredCompetitions: [
+    { id: 'fut-brasileiro', name: 'Brasileirão Série A' },
+    { id: 'fut-champions', name: 'Champions League' },
+    { id: 'fut-premier-league', name: 'Premier League' },
+    { id: 'fut-laliga', name: 'LaLiga' },
+  ],
   topCompetitions: [
     { id: 'fut-brasileiro', name: 'Brasileirão Série A' },
     { id: 'fut-libertadores', name: 'Libertadores' },
@@ -118,11 +125,17 @@ const futebolConfig: CompeticaoConfig = {
 const basqueteConfig: CompeticaoConfig = {
   sportLabel: 'Basquete',
   sportIcon: iconBasquete,
+  featuredCompetitions: [
+    { id: 'bsq-nba', name: 'NBA' },
+    { id: 'bsq-ncaab', name: 'NCAAB' },
+    { id: 'bsq-nbb', name: 'NBB' },
+    { id: 'bsq-euro-cup', name: 'Euro Cup' },
+  ],
   topCompetitions: [
     { id: 'bsq-nba', name: 'NBA' },
-    { id: 'bsq-euroleague', name: 'EuroLeague' },
+    { id: 'bsq-ncaab', name: 'NCAAB' },
     { id: 'bsq-nbb', name: 'NBB' },
-    { id: 'bsq-acb', name: 'Liga ACB' },
+    { id: 'bsq-euro-cup', name: 'Euro Cup' },
   ],
   countries: [
     {
@@ -171,6 +184,11 @@ const basqueteConfig: CompeticaoConfig = {
 const tenisConfig: CompeticaoConfig = {
   sportLabel: 'Tênis',
   sportIcon: iconTenis,
+  featuredCompetitions: [
+    { id: 'ten-atp-finals', name: 'ATP Finals' },
+    { id: 'ten-wimbledon', name: 'Wimbledon' },
+    { id: 'ten-roland-garros', name: 'Roland Garros' },
+  ],
   topCompetitions: [
     { id: 'ten-atp-finals', name: 'ATP Finals' },
     { id: 'ten-wimbledon', name: 'Wimbledon' },
@@ -182,6 +200,10 @@ const tenisConfig: CompeticaoConfig = {
 const voleiConfig: CompeticaoConfig = {
   sportLabel: 'Vôlei',
   sportIcon: iconVolei,
+  featuredCompetitions: [
+    { id: 'vol-superliga', name: 'Superliga' },
+    { id: 'vol-vnl', name: 'VNL' },
+  ],
   topCompetitions: [
     { id: 'vol-superliga', name: 'Superliga' },
     { id: 'vol-vnl', name: 'VNL' },
@@ -192,6 +214,10 @@ const voleiConfig: CompeticaoConfig = {
 const esoccerConfig: CompeticaoConfig = {
   sportLabel: 'Esoccer',
   sportIcon: iconEsoccer,
+  featuredCompetitions: [
+    { id: 'eso-fifa-cup', name: 'FIFA Cup' },
+    { id: 'eso-efl-cup', name: 'EFL Cup' },
+  ],
   topCompetitions: [
     { id: 'eso-fifa-cup', name: 'FIFA Cup' },
     { id: 'eso-efl-cup', name: 'EFL Cup' },
@@ -212,8 +238,15 @@ export const defaultCompeticaoConfig = futebolConfig
 const enabledCompetitionIds = new Set([
   'fut-brasileiro',
   'fut-brasileirao-a',
+  'fut-champions',
+  'fut-premier-league',
+  'fut-laliga',
   'bsq-nba',
   'bsq-nba-2',
+  'bsq-ncaab',
+  'bsq-nbb',
+  'bsq-br-nbb',
+  'bsq-euro-cup',
 ])
 
 export function isCompetitionEnabled(id: string): boolean {
@@ -224,6 +257,8 @@ export function findCompetition(
   config: CompeticaoConfig,
   id: string
 ): Competition | null {
+  const featured = config.featuredCompetitions.find((c) => c.id === id)
+  if (featured) return featured
   const top = config.topCompetitions.find((c) => c.id === id)
   if (top) return top
   for (const country of config.countries) {

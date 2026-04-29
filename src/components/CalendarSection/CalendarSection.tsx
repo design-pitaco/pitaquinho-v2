@@ -11,6 +11,7 @@ import {
 
 import setaLink from '../../assets/setaLink.png'
 import iconAccordion from '../../assets/iconAccordion.png'
+import iconAoVivo from '../../assets/iconAoVivo.png'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
 import iconFutebol from '../../assets/iconFutebol.png'
@@ -83,14 +84,18 @@ import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
 interface DateChip {
   id: string
   topLabel: string    // bold top line — "Em alta", "Sex", "Sáb"...
-  bottomLabel: string // regular bottom line — "Agora", "19 Mar"...
+  bottomLabel?: string // regular bottom line — "Agora", "19 Mar"...
+  liveIcon?: boolean
 }
 
 const PT_WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
 function buildDateChips(): DateChip[] {
-  const chips: DateChip[] = [{ id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' }]
+  const chips: DateChip[] = [
+    { id: 'ao-vivo', topLabel: 'Ao Vivo', liveIcon: true },
+    { id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' },
+  ]
   const today = new Date()
   for (let i = 0; i < 5; i++) {
     const d = new Date(today)
@@ -988,8 +993,15 @@ const championships: Championship[] = [
 const competitionToChampionship: Record<string, string> = {
   'fut-brasileiro': 'brasil-serie-a',
   'fut-brasileirao-a': 'brasil-serie-a',
+  'fut-champions': 'champions-league',
+  'fut-premier-league': 'premier-league',
+  'fut-laliga': 'la-liga',
   'bsq-nba': 'nba',
   'bsq-nba-2': 'nba',
+  'bsq-ncaab': 'ncaab',
+  'bsq-nbb': 'brasil-nbb',
+  'bsq-br-nbb': 'brasil-nbb',
+  'bsq-euro-cup': 'euro-cup',
 }
 
 interface CalendarSectionProps {
@@ -1033,7 +1045,8 @@ export function CalendarSection({
   const filtered = mappedCompetitionId
     ? filteredBySport.filter((c) => c.id === mappedCompetitionId)
     : filteredBySport
-  const filteredByLive = liveOnly
+  const shouldFilterLive = liveOnly || activeDateChip === 'ao-vivo'
+  const filteredByLive = shouldFilterLive
     ? filtered
         .map((championship) => ({
           ...championship,
@@ -1051,7 +1064,7 @@ export function CalendarSection({
   useEffect(() => {
     setOpenLeagues(topFive.map((c) => c.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sportFilter, competitionId, liveOnly])
+  }, [sportFilter, competitionId, shouldFilterLive])
 
   useEffect(() => {
     setActiveMarket(sportFilter === 'basquete' ? 'vencedor' : 'resultado-final')
@@ -1175,7 +1188,13 @@ export function CalendarSection({
             }}
           >
             <span className="calendar-date-chip__top">{chip.topLabel}</span>
-            <span className="calendar-date-chip__bottom">{chip.bottomLabel}</span>
+            {chip.liveIcon ? (
+              <span className="calendar-date-chip__live-icon-wrapper" aria-hidden="true">
+                <img src={iconAoVivo} alt="" className="calendar-date-chip__live-icon" />
+              </span>
+            ) : (
+              <span className="calendar-date-chip__bottom">{chip.bottomLabel}</span>
+            )}
           </button>
         ))}
       </div>
@@ -1202,7 +1221,7 @@ export function CalendarSection({
         {topFive.map((league) => {
           const isOpen = openLeagues.includes(league.id)
           const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
-          const eventsToDisplay = liveOnly
+          const eventsToDisplay = shouldFilterLive
             ? league.events.filter((event) => event.isLive)
             : isCompetitionPage
               ? [

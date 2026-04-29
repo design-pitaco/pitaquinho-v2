@@ -22,7 +22,6 @@ export function Home() {
   const [contentResetKey, setContentResetKey] = useState(0)
   const [selectedCompetition, setSelectedCompetition] = useState<{ id: string; name: string } | null>(null)
   const [selectedLiveMatch, setSelectedLiveMatch] = useState<LiveEventOpenPayload | null>(null)
-  const [liveOnly, setLiveOnly] = useState(false)
 
   const handleLiveMatchClick = (payload: LiveEventOpenPayload) => {
     setSelectedLiveMatch(payload)
@@ -95,10 +94,8 @@ export function Home() {
           <SportFilterBar
             sport={activeSport}
             selectedCompetitionId={selectedCompetition?.id ?? null}
-            liveOnly={liveOnly}
             onSelectCompetition={handleSelectCompetition}
             onClearCompetition={handleClearCompetition}
-            onLiveOnlyChange={setLiveOnly}
           />
         )}
       </Header>
@@ -109,15 +106,13 @@ export function Home() {
             <CompetitionPage
               sport={activeSport}
               competitionId={selectedCompetition.id}
-              liveOnly={liveOnly}
               onLiveMatchClick={handleLiveMatchClick}
             />
           ) : (
             <>
-              <OffersSection sportFilter={activeSport} liveOnly={liveOnly} />
+              <OffersSection sportFilter={activeSport} />
               <CalendarSection
                 sportFilter={activeSport}
-                liveOnly={liveOnly}
                 onLiveMatchClick={handleLiveMatchClick}
                 onOpenCompetition={handleOpenCompetition}
               />

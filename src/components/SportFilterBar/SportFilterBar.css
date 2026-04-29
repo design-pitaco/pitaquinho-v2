@@ -1,56 +1,42 @@
 .sport-filter-bar {
   position: relative;
   z-index: 1;
+  width: 100%;
+  padding: 0 0 24px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.sport-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.sport-filter-bar__chips {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 12px 24px;
-  width: 100%;
+  gap: 8px;
+  width: max-content;
+  min-width: 100%;
+  padding: 0 12px;
   box-sizing: border-box;
-}
-
-.sport-filter-bar__left {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.sport-filter-bar__select {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px 0 16px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid #ffffff;
-  border-radius: 100px;
-  color: #ffffff;
-  font-family: 'Red Hat Text', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  max-width: 240px;
-}
-
-.sport-filter-bar__select--selected .sport-filter-bar__select-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .sport-filter-bar__clear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   padding: 0;
+  border: 1px solid #f3f3f3;
+  border-radius: 160px;
   background: transparent;
-  border: 1px solid #ffffff;
-  border-radius: 50%;
   cursor: pointer;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .sport-filter-bar__clear-icon {
@@ -59,61 +45,61 @@
   filter: brightness(0) invert(1);
 }
 
-.sport-filter-bar__select-label {
-  white-space: nowrap;
-}
-
-.sport-filter-bar__select-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  filter: brightness(0) invert(1);
-}
-
-.sport-filter-bar__toggle {
+.sport-filter-bar__chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 8px;
+  height: 24px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 160px;
+  background-color: #1A1A1A;
+  color: #a8a8a8;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
-  user-select: none;
-  flex-shrink: 0;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
-.sport-filter-bar__toggle-label {
-  font-family: 'Red Hat Text', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
+.sport-filter-bar__chip--active {
+  position: relative;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
   color: #ffffff;
+}
+
+.sport-filter-bar__chip--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 160px;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.sport-filter-bar__chip--more {
+  width: 32px;
+  padding: 0;
+}
+
+.sport-filter-bar__chip-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sport-filter-bar__switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 24px;
-  background-color: #333333;
-  border-radius: 100px;
-  transition: background-color 0.2s ease;
+.sport-filter-bar__chip-icon {
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
-}
-
-.sport-filter-bar__switch--on {
-  background: linear-gradient(90deg, #D2FF72 0%, #56DEEA 100%);
-}
-
-.sport-filter-bar__switch-thumb {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  transition: transform 0.2s ease;
-}
-
-.sport-filter-bar__switch--on .sport-filter-bar__switch-thumb {
-  background-color: #131313;
-  transform: translateX(16px);
+  filter: brightness(0) invert(1);
 }
