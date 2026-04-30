@@ -27,7 +27,7 @@
 .mobile-only__icon {
   width: 64px;
   height: 64px;
-  background-color: #4a9d6b;
+  background: linear-gradient(45.09deg, rgb(75, 32, 255) 0%, rgb(151, 48, 255) 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -63,4 +63,3 @@
   font-weight: 400;
   color: rgba(255, 255, 255, 0.5);
 }
-
