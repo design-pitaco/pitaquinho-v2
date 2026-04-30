@@ -93,8 +93,8 @@ const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'
 
 function buildDateChips(): DateChip[] {
   const chips: DateChip[] = [
-    { id: 'ao-vivo', topLabel: 'Ao Vivo', liveIcon: true },
     { id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' },
+    { id: 'ao-vivo', topLabel: 'Ao Vivo', liveIcon: true },
   ]
   const today = new Date()
   for (let i = 0; i < 5; i++) {
@@ -130,7 +130,7 @@ const basketballMarketChips: MarketChip[] = [
   { id: 'q4-total', label: '4° Quarto - Total de Pontos' },
 ]
 
-interface Event {
+export interface CompetitionEvent {
   id: string
   dateTime: string
   isLive?: boolean
@@ -187,19 +187,19 @@ interface Event {
   }
 }
 
-interface Championship {
+export interface Championship {
   id: string
   name: string
   flag: string
   sport: string
-  events: Event[]
+  events: CompetitionEvent[]
 }
 
 const oddNumber = (odd: string) => Number(odd.replace('x', ''))
 
 const formatOdd = (odd: number) => `${Math.max(1.05, odd).toFixed(2)}x`
 
-const eventSeed = (event: Event) =>
+const eventSeed = (event: CompetitionEvent) =>
   event.id.split('').reduce((total, char) => total + char.charCodeAt(0), 0)
 
 interface MarketOdds {
@@ -245,7 +245,7 @@ interface MarketOdds {
   }
 }
 
-const getMarketOdds = (event: Event, sport: string): MarketOdds => {
+const getMarketOdds = (event: CompetitionEvent, sport: string): MarketOdds => {
   const seed = eventSeed(event)
   const homeOdd = oddNumber(event.odds.home)
   const drawOdd = event.odds.draw ? oddNumber(event.odds.draw) : 0
@@ -339,7 +339,8 @@ const parseMatchTime = (time: string) => {
   return null
 }
 
-const updateMatchTime = (time: string) => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const updateCompetitionMatchTime = (time: string) => {
   const parsed = parseMatchTime(time)
   if (!parsed) return time
 
@@ -365,7 +366,8 @@ const updateMatchTime = (time: string) => {
   return isQuarter ? `Q${period} ${mins}:${secs}` : `${period}T ${mins}:${secs}`
 }
 
-const championships: Championship[] = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const championships: Championship[] = [
   // Futebol
   {
     id: 'brasil-serie-a',
@@ -990,7 +992,8 @@ const championships: Championship[] = [
   },
 ]
 
-const competitionToChampionship: Record<string, string> = {
+// eslint-disable-next-line react-refresh/only-export-components
+export const competitionToChampionship: Record<string, string> = {
   'fut-brasileiro': 'brasil-serie-a',
   'fut-brasileirao-a': 'brasil-serie-a',
   'fut-champions': 'champions-league',
@@ -1008,14 +1011,59 @@ interface CalendarSectionProps {
   sportFilter?: string | null
   competitionId?: string | null
   liveOnly?: boolean
+  matchTimesOverride?: Record<string, string>
   onLiveMatchClick?: (payload: LiveEventOpenPayload) => void
   onOpenCompetition?: (target: CompetitionLinkTarget) => void
+}
+
+export interface DisplayedCompetitionEvent {
+  league: Championship
+  event: CompetitionEvent
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getCalendarChampionships(
+  sportFilter?: string | null,
+  competitionId?: string | null
+) {
+  const mappedCompetitionId = competitionId
+    ? competitionToChampionship[competitionId] ?? competitionId
+    : null
+  const filteredBySport = sportFilter
+    ? championships.filter((c) => c.sport === sportFilter)
+    : championships
+  const filtered = mappedCompetitionId
+    ? filteredBySport.filter((c) => c.id === mappedCompetitionId)
+    : filteredBySport
+
+  return { mappedCompetitionId, championships: filtered }
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getCompetitionPageEvents(
+  sportFilter?: string | null,
+  competitionId?: string | null,
+  liveOnly = false
+): DisplayedCompetitionEvent[] {
+  const { championships: filtered } = getCalendarChampionships(sportFilter, competitionId)
+
+  return filtered.flatMap((league) => {
+    const eventsToDisplay = liveOnly
+      ? league.events.filter((event) => event.isLive)
+      : [
+          ...league.events.filter((event) => event.isLive).slice(0, 3),
+          ...league.events.filter((event) => !event.isLive).slice(0, 5),
+        ]
+
+    return eventsToDisplay.map((event) => ({ league, event }))
+  })
 }
 
 export function CalendarSection({
   sportFilter,
   competitionId,
   liveOnly = false,
+  matchTimesOverride,
   onLiveMatchClick,
   onOpenCompetition,
 }: CalendarSectionProps = {}) {
@@ -1026,7 +1074,7 @@ export function CalendarSection({
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const dateChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const [matchTimes, setMatchTimes] = useState<Record<string, string>>(() => {
+  const [internalMatchTimes, setInternalMatchTimes] = useState<Record<string, string>>(() => {
     const times: Record<string, string> = {}
     championships.forEach((championship) => {
       championship.events.forEach((event) => {
@@ -1036,15 +1084,9 @@ export function CalendarSection({
     return times
   })
 
-  const mappedCompetitionId = competitionId
-    ? competitionToChampionship[competitionId] ?? competitionId
-    : null
-  const filteredBySport = sportFilter
-    ? championships.filter((c) => c.sport === sportFilter)
-    : championships
-  const filtered = mappedCompetitionId
-    ? filteredBySport.filter((c) => c.id === mappedCompetitionId)
-    : filteredBySport
+  const hasMatchTimesOverride = Boolean(matchTimesOverride)
+  const matchTimes = matchTimesOverride ?? internalMatchTimes
+  const { mappedCompetitionId, championships: filtered } = getCalendarChampionships(sportFilter, competitionId)
   const shouldFilterLive = liveOnly || activeDateChip === 'ao-vivo'
   const filteredByLive = shouldFilterLive
     ? filtered
@@ -1089,18 +1131,20 @@ export function CalendarSection({
   }
 
   useEffect(() => {
+    if (hasMatchTimesOverride) return
+
     const interval = setInterval(() => {
-      setMatchTimes((current) => {
+      setInternalMatchTimes((current) => {
         const next: Record<string, string> = {}
         Object.keys(current).forEach((id) => {
-          next[id] = updateMatchTime(current[id])
+          next[id] = updateCompetitionMatchTime(current[id])
         })
         return next
       })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [hasMatchTimesOverride])
 
   const scrollChipIntoView = (_index: number, chipsRef: RefObject<HTMLDivElement | null>, chipEl: HTMLButtonElement | null) => {
     const containerEl = chipsRef.current
@@ -1117,7 +1161,7 @@ export function CalendarSection({
     }
   }
 
-  const toLiveEventMatch = (event: Event, sport: string): LiveEventMatch => {
+  const toLiveEventMatch = (event: CompetitionEvent, sport: string): LiveEventMatch => {
     const marketOdds = getMarketOdds(event, sport)
 
     return {

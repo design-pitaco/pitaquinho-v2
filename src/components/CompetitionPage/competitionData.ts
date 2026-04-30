@@ -45,6 +45,12 @@ export interface PlayerPropOption {
   active?: boolean
 }
 
+export interface PlayerImageAdjustment {
+  scale: number
+  x: number
+  y: number
+}
+
 export interface PlayerPropCard {
   id: string
   matchLabel: string
@@ -52,6 +58,7 @@ export interface PlayerPropCard {
   matchTime: string
   playerName: string
   playerImage: string
+  playerImageAdjustment?: PlayerImageAdjustment
   optionsByStat: Record<string, PlayerPropOption[]>
 }
 
@@ -167,6 +174,13 @@ const basePlayerStats = [
   { id: 'finalizacao-total', label: 'Finalização Total' },
   { id: 'gols', label: 'Gols' },
   { id: 'assistencias', label: 'Assistências' },
+]
+
+const basketballPlayerStats = [
+  { id: 'pontos', label: 'Pontos' },
+  { id: 'rebotes', label: 'Rebotes' },
+  { id: 'assistencias', label: 'Assistências' },
+  { id: 'bolas-3', label: 'Bolas de 3' },
 ]
 
 const options = (values: Array<[string, string]>): PlayerPropOption[] =>
@@ -301,6 +315,7 @@ export function getCompetitionData(
   if (sport === 'basquete' || nbaCompetitionIds.has(competitionId)) {
     return {
       ...defaultData,
+      playerStatChips: basketballPlayerStats,
       longTermOddsByTab: nbaLongTermOddsByTab,
     }
   }

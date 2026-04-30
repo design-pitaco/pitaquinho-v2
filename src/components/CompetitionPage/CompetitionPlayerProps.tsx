@@ -35,6 +35,16 @@ const renderMatchLabel = (card: PlayerPropCard) => {
   )
 }
 
+const getPlayerImageStyle = (card: PlayerPropCard) => {
+  const adjustment = card.playerImageAdjustment ?? { scale: 1, x: 0, y: 0 }
+
+  return {
+    '--player-scale': adjustment.scale,
+    '--player-x': `${adjustment.x}px`,
+    '--player-y': `${adjustment.y}px`,
+  } as CSSProperties
+}
+
 export function CompetitionPlayerProps({ statChips, cards }: CompetitionPlayerPropsProps) {
   const [activeStat, setActiveStat] = useState(statChips[0]?.id ?? '')
   const [activeOptionByKey, setActiveOptionByKey] = useState<Record<string, number>>(() =>
@@ -167,7 +177,12 @@ export function CompetitionPlayerProps({ statChips, cards }: CompetitionPlayerPr
                 <span className="competition-players__match-time">{card.matchTime}</span>
               </div>
               <div className="competition-players__player-image-wrapper">
-                <img src={card.playerImage} alt="" className="competition-players__player-image" />
+                <img
+                  src={card.playerImage}
+                  alt=""
+                  className="competition-players__player-image"
+                  style={getPlayerImageStyle(card)}
+                />
               </div>
             </div>
             <div className="competition-players__card-name">{card.playerName}</div>

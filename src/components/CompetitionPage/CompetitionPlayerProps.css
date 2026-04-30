@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 0 24px 0;
+  padding: 0;
 }
 
 .competition-players__header {
@@ -150,16 +150,21 @@
 .competition-players__player-image-wrapper {
   position: relative;
   margin-top: 0;
-  width: 52px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 92px;
   height: 52px;
   overflow: hidden;
 }
 
 .competition-players__player-image {
   position: relative;
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
+  width: auto;
+  height: 92px;
+  max-width: none;
+  transform: translate(var(--player-x, 0), var(--player-y, 0)) scale(var(--player-scale, 1));
+  transform-origin: top center;
   z-index: 1;
 }
 

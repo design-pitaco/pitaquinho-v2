@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './SportFilterBar.css'
 import arrowDown from '../../assets/arrowDown.png'
 import iconFecharPeq from '../../assets/iconFecharPeq.svg'
@@ -24,6 +24,8 @@ export function SportFilterBar({
   onClearCompetition,
 }: SportFilterBarProps) {
   const [showCompeticao, setShowCompeticao] = useState(false)
+  const chipsContainerRef = useRef<HTMLDivElement>(null)
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const config =
     (sport && competicaoConfigBySport[sport]) || defaultCompeticaoConfig
@@ -54,14 +56,60 @@ export function SportFilterBar({
     setShowCompeticao(false)
   }
 
+  const scrollChipIntoView = useCallback((chipEl: HTMLButtonElement | null) => {
+    const containerEl = chipsContainerRef.current
+    if (!chipEl || !containerEl) return
+
+    const chipLeft = chipEl.offsetLeft
+    const chipWidth = chipEl.offsetWidth
+    const containerWidth = containerEl.offsetWidth
+    const containerScroll = containerEl.scrollLeft
+    const padding = 20
+
+    if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+    } else if (chipLeft < containerScroll + padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+    }
+  }, [])
+
+  const resetChipScroll = useCallback(() => {
+    chipsContainerRef.current?.scrollTo({ left: 0, behavior: 'auto' })
+  }, [])
+
+  const handleChipSelect = (id: string) => {
+    scrollChipIntoView(chipRefs.current[id])
+    handleSelectCompetition(id)
+  }
+
+  const handleClearCompetition = () => {
+    resetChipScroll()
+    onClearCompetition?.()
+
+    window.requestAnimationFrame(resetChipScroll)
+  }
+
+  useEffect(() => {
+    if (!selectedCompetitionId) {
+      resetChipScroll()
+      return
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollChipIntoView(chipRefs.current[selectedCompetitionId])
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [resetChipScroll, scrollChipIntoView, selectedCompetitionId])
+
   return (
-    <div className="sport-filter-bar">
+    <div className="sport-filter-bar" ref={chipsContainerRef}>
       <div className="sport-filter-bar__chips" aria-label={`Campeonatos de ${config.sportLabel}`}>
         {selectedCompetitionId && onClearCompetition && (
           <button
             type="button"
             className="sport-filter-bar__clear"
-            onClick={onClearCompetition}
+            onClick={handleClearCompetition}
             aria-label="Limpar competição"
           >
             <img src={iconFecharPeq} alt="" className="sport-filter-bar__clear-icon" />
@@ -73,10 +121,11 @@ export function SportFilterBar({
           return (
             <button
               key={competition.id}
+              ref={(el) => { chipRefs.current[competition.id] = el }}
               type="button"
               className={`sport-filter-bar__chip${active ? ' sport-filter-bar__chip--active' : ''}`}
               aria-pressed={active}
-              onClick={() => handleSelectCompetition(competition.id)}
+              onClick={() => handleChipSelect(competition.id)}
             >
               <span className="sport-filter-bar__chip-label">{competition.name}</span>
             </button>
