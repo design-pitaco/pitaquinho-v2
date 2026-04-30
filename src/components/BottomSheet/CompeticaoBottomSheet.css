@@ -14,11 +14,26 @@
 
 /* Search */
 .competicao-bs__search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: stretch;
   width: 100%;
   height: 48px;
   margin-bottom: 20px;
+  background-color: #1a1a1a;
+}
+
+.competicao-bs__search::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 8px;
+  background-color: #1a1a1a;
+  pointer-events: none;
 }
 
 .competicao-bs__search-icon-box {
