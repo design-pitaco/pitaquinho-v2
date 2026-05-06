@@ -16,6 +16,8 @@ import {
 } from '../../services/theSportsDbPlayers'
 import type { LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import playerYamal from '../../assets/playerYamal.png'
+import avatarFutebol from '../../assets/avatarFutebol.png'
+import avatarBasquete from '../../assets/avatarBasquete.png'
 
 interface CompetitionPageProps {
   sport: string
@@ -144,6 +146,9 @@ const starPlayer = (
   imageUrl,
   imageAdjustment,
 })
+
+const getPlayerCardAvatar = (sport: SportsDbPlayerSport) =>
+  sport === 'basketball' ? avatarBasquete : avatarFutebol
 
 const GAME_STAR_PLAYERS_BY_EVENT_ID: Record<string, GameStarPlayer> = {
   '3': {
@@ -463,8 +468,7 @@ const buildPlayerCard = (
     highlightedTeam: getTeamCode(teamName),
     matchTime: event.isLive ? matchTimes[event.id] ?? event.dateTime : event.dateTime,
     playerName: player.name,
-    playerImage: player.imageUrl,
-    playerImageAdjustment: player.imageAdjustment,
+    playerImage: getPlayerCardAvatar(candidate.sport),
     optionsByStat: buildOptionsByStat(seed, candidate.sport),
   }
 }

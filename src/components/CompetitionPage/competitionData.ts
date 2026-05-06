@@ -4,6 +4,7 @@ import arrascaetaProps from '../../assets/arrascaetaProps.png'
 import depayProps from '../../assets/depayProps.png'
 import pedroProps from '../../assets/pedroProps.png'
 import yuriProps from '../../assets/yuriProps.png'
+import avatarFutebol from '../../assets/avatarFutebol.png'
 import escudoPalmeiras from '../../assets/escudoPalmeiras.png'
 import escudoFlamengo from '../../assets/escudoFlamengo.png'
 import escudoFluminense from '../../assets/escudoFluminense.png'
@@ -193,7 +194,7 @@ const basePlayerProps: PlayerPropCard[] = [
     highlightedTeam: 'PAL',
     matchTime: 'Hoje, 21:30',
     playerName: 'Flaco Lopez',
-    playerImage: flacoLopezProps,
+    playerImage: avatarFutebol,
     optionsByStat: {
       'finalizacao-gol': options([['1.0+', '1.42x'], ['2.0+', '1.88x'], ['3.0+', '3.25x']]),
       'finalizacao-total': options([['2.0+', '1.45x'], ['3.0+', '1.82x'], ['4.0+', '2.55x']]),
@@ -207,7 +208,7 @@ const basePlayerProps: PlayerPropCard[] = [
     highlightedTeam: 'FLA',
     matchTime: '2T 22:12',
     playerName: 'Arrascaeta',
-    playerImage: arrascaetaProps,
+    playerImage: avatarFutebol,
     optionsByStat: {
       'finalizacao-gol': options([['0.5+', '1.55x'], ['1.5+', '2.05x'], ['2.5+', '3.80x']]),
       'finalizacao-total': options([['1.5+', '1.48x'], ['2.5+', '1.92x'], ['3.5+', '2.85x']]),
@@ -221,7 +222,7 @@ const basePlayerProps: PlayerPropCard[] = [
     highlightedTeam: 'COR',
     matchTime: '1T 18:34',
     playerName: 'Memphis Depay',
-    playerImage: depayProps,
+    playerImage: avatarFutebol,
     optionsByStat: {
       'finalizacao-gol': options([['1.0+', '1.62x'], ['2.0+', '2.18x'], ['3.0+', '4.10x']]),
       'finalizacao-total': options([['2.0+', '1.52x'], ['3.0+', '1.94x'], ['4.0+', '2.70x']]),
@@ -235,7 +236,7 @@ const basePlayerProps: PlayerPropCard[] = [
     highlightedTeam: 'FLA',
     matchTime: '2T 22:12',
     playerName: 'Pedro',
-    playerImage: pedroProps,
+    playerImage: avatarFutebol,
     optionsByStat: {
       'finalizacao-gol': options([['1.0+', '1.45x'], ['2.0+', '1.95x'], ['3.0+', '3.55x']]),
       'finalizacao-total': options([['2.0+', '1.38x'], ['3.0+', '1.74x'], ['4.0+', '2.42x']]),
@@ -249,7 +250,7 @@ const basePlayerProps: PlayerPropCard[] = [
     highlightedTeam: 'COR',
     matchTime: '1T 18:34',
     playerName: 'Yuri Alberto',
-    playerImage: yuriProps,
+    playerImage: avatarFutebol,
     optionsByStat: {
       'finalizacao-gol': options([['1.0+', '1.58x'], ['2.0+', '2.12x'], ['3.0+', '3.95x']]),
       'finalizacao-total': options([['2.0+', '1.50x'], ['3.0+', '1.88x'], ['4.0+', '2.62x']]),

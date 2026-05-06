@@ -36,7 +36,7 @@ const renderMatchLabel = (card: PlayerPropCard) => {
 }
 
 const getPlayerImageStyle = (card: PlayerPropCard) => {
-  const adjustment = card.playerImageAdjustment ?? { scale: 1, x: 0, y: 0 }
+  const adjustment = card.playerImageAdjustment ?? { scale: 0.6, x: 0, y: 0 }
 
   return {
     '--player-scale': adjustment.scale,
