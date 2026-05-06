@@ -15,6 +15,7 @@ import {
   type SportsDbPlayerSport,
 } from '../../services/theSportsDbPlayers'
 import type { LiveEventOpenPayload } from '../../pages/LiveEventPage'
+import playerYamal from '../../assets/playerYamal.png'
 
 interface CompetitionPageProps {
   sport: string
@@ -122,6 +123,154 @@ interface ResolvedPlayerCandidate extends PlayerCandidate {
 interface ResolvedPlayersState {
   key: string
   players: ResolvedPlayerCandidate[]
+}
+
+interface GameStarPlayer {
+  teamName: string
+  sport: SportsDbPlayerSport
+  player: SportsDbPlayer
+}
+
+const starPlayer = (
+  id: string,
+  name: string,
+  teamName: string,
+  imageUrl: string,
+  imageAdjustment = { scale: 1, x: 0, y: 0 }
+): SportsDbPlayer => ({
+  id,
+  name,
+  teamName,
+  imageUrl,
+  imageAdjustment,
+})
+
+const GAME_STAR_PLAYERS_BY_EVENT_ID: Record<string, GameStarPlayer> = {
+  '3': {
+    teamName: 'Inter',
+    sport: 'football',
+    player: starPlayer(
+      '34145987',
+      'Lautaro Martínez',
+      'Inter',
+      'https://r2.thesportsdb.com/images/media/player/render/2wnzkh1697901372.png'
+    ),
+  },
+  '4': {
+    teamName: 'PSG',
+    sport: 'football',
+    player: starPlayer(
+      '34146370',
+      'Mbappé',
+      'PSG',
+      'https://r2.thesportsdb.com/images/media/player/render/3dlkuh1691420623.png'
+    ),
+  },
+  '12': {
+    teamName: 'Newcastle',
+    sport: 'football',
+    player: starPlayer(
+      '34163447',
+      'Alexander Isak',
+      'Newcastle',
+      'https://r2.thesportsdb.com/images/media/player/render/hjbdio1603376434.png'
+    ),
+  },
+  'cal-f-4': {
+    teamName: 'Barcelona',
+    sport: 'football',
+    player: starPlayer('star-yamal', 'Lamine Yamal', 'Barcelona', playerYamal, { scale: 1.08, x: 0, y: 0 }),
+  },
+  'cal-f-5': {
+    teamName: 'Liverpool',
+    sport: 'football',
+    player: starPlayer(
+      '34145952',
+      'Mohamed Salah',
+      'Liverpool',
+      'https://r2.thesportsdb.com/images/media/player/render/6dt1zp1621197815.png'
+    ),
+  },
+  'cal-f-6': {
+    teamName: 'Benfica',
+    sport: 'football',
+    player: starPlayer(
+      '34202599',
+      'Andreas Schjelderup',
+      'Benfica',
+      'https://r2.thesportsdb.com/images/media/player/render/899lr51758216296.png'
+    ),
+  },
+  'premier-live-1': {
+    teamName: 'Arsenal',
+    sport: 'football',
+    player: starPlayer(
+      '34169884',
+      'Bukayo Saka',
+      'Arsenal',
+      'https://r2.thesportsdb.com/images/media/player/render/yi7tho1735798582.png'
+    ),
+  },
+  'cal-f-7': {
+    teamName: 'Tottenham',
+    sport: 'football',
+    player: starPlayer(
+      '34145996',
+      'Son Heung-min',
+      'Tottenham',
+      'https://r2.thesportsdb.com/images/media/player/render/lb7ljx1647184879.png'
+    ),
+  },
+  'cal-f-8': {
+    teamName: 'West Ham',
+    sport: 'football',
+    player: starPlayer(
+      '34174533',
+      'Mohammed Kudus',
+      'West Ham',
+      'https://r2.thesportsdb.com/images/media/player/render/w07buy1718880131.png'
+    ),
+  },
+  'cal-f-9': {
+    teamName: 'Leeds',
+    sport: 'football',
+    player: starPlayer(
+      '34174227',
+      'Brenden Aaronson',
+      'Leeds',
+      'https://r2.thesportsdb.com/images/media/player/render/o2z82x1634809591.png'
+    ),
+  },
+  'laliga-live-1': {
+    teamName: 'Getafe',
+    sport: 'football',
+    player: starPlayer(
+      '34161354',
+      'Borja Mayoral',
+      'Getafe',
+      'https://r2.thesportsdb.com/images/media/player/render/kq4wo71723634349.png'
+    ),
+  },
+  'cal-f-10': {
+    teamName: 'Sevilla',
+    sport: 'football',
+    player: starPlayer(
+      '34145656',
+      'Adnan Januzaj',
+      'Sevilla',
+      'https://r2.thesportsdb.com/images/media/player/render/5uzpmt1669058924.png'
+    ),
+  },
+  'cal-f-12': {
+    teamName: 'Mallorca',
+    sport: 'football',
+    player: starPlayer(
+      '34170266',
+      'Abdón Prats',
+      'Mallorca',
+      'https://r2.thesportsdb.com/images/media/player/render/rt1gji1724408964.png'
+    ),
+  },
 }
 
 const getTeamCode = (teamName: string) =>
@@ -241,6 +390,21 @@ const getInitialMatchTimes = (events: DisplayedCompetitionEvent[]) =>
 const getPlayerCandidateKey = (candidate: PlayerCandidate) =>
   `${candidate.eventData.event.id}:${candidate.teamName}`
 
+const getCuratedResolvedPlayers = (events: DisplayedCompetitionEvent[]): ResolvedPlayerCandidate[] =>
+  events.reduce<ResolvedPlayerCandidate[]>((players, eventData, order) => {
+    const star = GAME_STAR_PLAYERS_BY_EVENT_ID[eventData.event.id]
+    if (!star) return players
+
+    players.push({
+      eventData,
+      teamName: star.teamName,
+      sport: star.sport,
+      order,
+      player: star.player,
+    })
+    return players
+  }, [])
+
 const getFallbackResolvedPlayers = (events: DisplayedCompetitionEvent[]): ResolvedPlayerCandidate[] => {
   const uniquePlayers = new Set<string>()
 
@@ -255,24 +419,30 @@ const getFallbackResolvedPlayers = (events: DisplayedCompetitionEvent[]): Resolv
 }
 
 const mergeResolvedPlayers = (
+  curatedPlayers: ResolvedPlayerCandidate[],
   apiPlayers: ResolvedPlayerCandidate[],
   fallbackPlayers: ResolvedPlayerCandidate[]
 ) => {
   const usedCandidateKeys = new Set<string>()
+  const curatedEventIds = new Set<string>()
   const usedPlayerIds = new Set<string>()
   const merged: ResolvedPlayerCandidate[] = []
 
-  const addPlayer = (candidate: ResolvedPlayerCandidate) => {
+  const addPlayer = (candidate: ResolvedPlayerCandidate, isCurated = false) => {
+    if (!isCurated && curatedEventIds.has(candidate.eventData.event.id)) return
+
     const candidateKey = getPlayerCandidateKey(candidate)
     if (usedCandidateKeys.has(candidateKey) || usedPlayerIds.has(candidate.player.id)) return
 
+    if (isCurated) curatedEventIds.add(candidate.eventData.event.id)
     usedCandidateKeys.add(candidateKey)
     usedPlayerIds.add(candidate.player.id)
     merged.push(candidate)
   }
 
-  apiPlayers.forEach(addPlayer)
-  fallbackPlayers.forEach(addPlayer)
+  curatedPlayers.forEach((candidate) => addPlayer(candidate, true))
+  apiPlayers.forEach((candidate) => addPlayer(candidate))
+  fallbackPlayers.forEach((candidate) => addPlayer(candidate))
 
   return merged
     .sort((a, b) => a.order - b.order)
@@ -324,6 +494,14 @@ export function CompetitionPage({ sport, competitionId, liveOnly = false, onLive
     () => resolvedPlayersState.key === eventsKey ? resolvedPlayersState.players : [],
     [eventsKey, resolvedPlayersState]
   )
+  const curatedResolvedPlayers = useMemo(
+    () => getCuratedResolvedPlayers(displayedEvents),
+    [displayedEvents]
+  )
+  const curatedEventIds = useMemo(
+    () => new Set(curatedResolvedPlayers.map(({ eventData }) => eventData.event.id)),
+    [curatedResolvedPlayers]
+  )
   const fallbackResolvedPlayers = useMemo(
     () => getFallbackResolvedPlayers(displayedEvents),
     [displayedEvents]
@@ -331,7 +509,9 @@ export function CompetitionPage({ sport, competitionId, liveOnly = false, onLive
 
   useEffect(() => {
     let cancelled = false
-    const candidates = getPlayerCandidates(displayedEvents).slice(0, PLAYER_CARD_LIMIT * 3)
+    const candidates = getPlayerCandidates(displayedEvents)
+      .filter((candidate) => !curatedEventIds.has(candidate.eventData.event.id))
+      .slice(0, PLAYER_CARD_LIMIT * 3)
 
     candidates.forEach((candidate, order) => {
       getSportsDbPlayerForTeam(candidate.teamName, candidate.sport).then((player) => {
@@ -358,7 +538,7 @@ export function CompetitionPage({ sport, competitionId, liveOnly = false, onLive
     return () => {
       cancelled = true
     }
-  }, [displayedEvents, eventsKey])
+  }, [curatedEventIds, displayedEvents, eventsKey])
 
   useEffect(() => {
     if (!hasLiveEvents) return
@@ -378,9 +558,9 @@ export function CompetitionPage({ sport, competitionId, liveOnly = false, onLive
   }, [eventsKey, hasLiveEvents, initialMatchTimes])
 
   const playerProps = useMemo(
-    () => mergeResolvedPlayers(resolvedPlayers, fallbackResolvedPlayers)
+    () => mergeResolvedPlayers(curatedResolvedPlayers, resolvedPlayers, fallbackResolvedPlayers)
       .map((candidate) => buildPlayerCard(candidate, matchTimes)),
-    [fallbackResolvedPlayers, resolvedPlayers, matchTimes]
+    [curatedResolvedPlayers, fallbackResolvedPlayers, resolvedPlayers, matchTimes]
   )
 
   return (

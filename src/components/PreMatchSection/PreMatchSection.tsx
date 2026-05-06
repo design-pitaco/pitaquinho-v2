@@ -234,7 +234,7 @@ const leagues: League[] = [
     matches: [
       {
         id: '4',
-        dateTime: 'Terça, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeTeam: { name: 'Real Madrid', icon: getTeamLogo("Real Madrid", escudoReal) },
         awayTeam: { name: 'Barcelona', icon: getTeamLogo("Barcelona", escudoBarca) },
         odds: { home: '2.20x', draw: '3.40x', away: '3.10x' },
@@ -246,7 +246,7 @@ const leagues: League[] = [
       },
       {
         id: '5',
-        dateTime: 'Terça, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeTeam: { name: 'Liverpool', icon: getTeamLogo("Liverpool", escudoLiverpool) },
         awayTeam: { name: 'Man. City', icon: getTeamLogo("Man. City", escudoManchesterCity) },
         odds: { home: '2.40x', draw: '3.50x', away: '2.80x' },
@@ -258,7 +258,7 @@ const leagues: League[] = [
       },
       {
         id: '6',
-        dateTime: 'Quarta, 16:00',
+        dateTime: 'Amanhã, 16:00',
         homeTeam: { name: 'Benfica', icon: getTeamLogo("Benfica", escudoBenfica) },
         awayTeam: { name: 'Ajax', icon: getTeamLogo("Ajax", escudoAjax) },
         odds: { home: '2.10x', draw: '3.40x', away: '3.30x' },
@@ -278,7 +278,7 @@ const leagues: League[] = [
     matches: [
       {
         id: '6',
-        dateTime: 'Sábado, 12:30',
+        dateTime: 'Hoje, 12:30',
         homeTeam: { name: 'Arsenal', icon: getTeamLogo("Arsenal", escudoArsenal) },
         awayTeam: { name: 'Chelsea', icon: getTeamLogo("Chelsea", escudoChelsea) },
         odds: { home: '1.90x', draw: '3.60x', away: '3.80x' },
@@ -290,7 +290,7 @@ const leagues: League[] = [
       },
       {
         id: '7',
-        dateTime: 'Sábado, 15:00',
+        dateTime: 'Amanhã, 15:00',
         homeTeam: { name: 'Brighton', icon: getTeamLogo("Brighton", escudoBrighton) },
         awayTeam: { name: 'West Ham', icon: getTeamLogo("West Ham", escudoWestHam) },
         odds: { home: '2.00x', draw: '3.50x', away: '3.60x' },
@@ -301,7 +301,7 @@ const leagues: League[] = [
       },
       {
         id: '8',
-        dateTime: 'Sábado, 17:00',
+        dateTime: 'Amanhã, 17:00',
         homeTeam: { name: 'Leeds', icon: getTeamLogo("Leeds", escudoLeeds) },
         awayTeam: { name: 'Burnley', icon: getTeamLogo("Burnley", escudoBurnley) },
         odds: { home: '2.20x', draw: '3.30x', away: '3.20x' },
@@ -321,7 +321,7 @@ const leagues: League[] = [
     matches: [
       {
         id: '9',
-        dateTime: 'Domingo, 14:00',
+        dateTime: 'Hoje, 14:00',
         homeTeam: { name: 'Getafe', icon: getTeamLogo("Getafe", escudoGetafe) },
         awayTeam: { name: 'Elche', icon: getTeamLogo("Elche", escudoElche) },
         odds: { home: '2.10x', draw: '3.20x', away: '3.50x' },
@@ -332,7 +332,7 @@ const leagues: League[] = [
       },
       {
         id: '10',
-        dateTime: 'Domingo, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeTeam: { name: 'Alavés', icon: getTeamLogo("Alavés", escudoAlaves) },
         awayTeam: { name: 'Espanyol', icon: getTeamLogo("Espanyol", escudoEspanyol) },
         odds: { home: '2.40x', draw: '3.10x', away: '2.95x' },
@@ -343,7 +343,7 @@ const leagues: League[] = [
       },
       {
         id: '11',
-        dateTime: 'Domingo, 18:30',
+        dateTime: 'Amanhã, 18:30',
         homeTeam: { name: 'Mallorca', icon: getTeamLogo("Mallorca", escudoMallorca) },
         awayTeam: { name: 'Levante', icon: getTeamLogo("Levante", escudoLevante) },
         odds: { home: '2.25x', draw: '3.30x', away: '3.15x' },
@@ -363,7 +363,7 @@ const leagues: League[] = [
     matches: [
       {
         id: '12',
-        dateTime: 'Sábado, 16:30',
+        dateTime: 'Hoje, 16:30',
         homeTeam: { name: 'B. Leverkusen', icon: getTeamLogo("B. Leverkusen", escudoBayerLeverkusen) },
         awayTeam: { name: 'Bayern', icon: getTeamLogo("Bayern", escudoBayerMunique) },
         odds: { home: '2.40x', draw: '3.40x', away: '2.80x' },
@@ -375,7 +375,7 @@ const leagues: League[] = [
       },
       {
         id: '13',
-        dateTime: 'Sábado, 13:30',
+        dateTime: 'Amanhã, 13:30',
         homeTeam: { name: 'Wolfsburg', icon: getTeamLogo("Wolfsburg", escudoWolfsburg) },
         awayTeam: { name: 'Eintracht', icon: getTeamLogo("Eintracht", escudoEintracht) },
         odds: { home: '2.70x', draw: '3.30x', away: '2.55x' },
@@ -386,7 +386,7 @@ const leagues: League[] = [
       },
       {
         id: '14',
-        dateTime: 'Domingo, 15:30',
+        dateTime: 'Amanhã, 15:30',
         homeTeam: { name: 'Augsburg', icon: getTeamLogo("Augsburg", escudoAugsburg) },
         awayTeam: { name: 'Hamburger', icon: getTeamLogo("Hamburger", escudoHamburger) },
         odds: { home: '2.50x', draw: '3.20x', away: '2.85x' },

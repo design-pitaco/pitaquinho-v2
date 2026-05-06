@@ -4,11 +4,12 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 0 24px 12px;
+  padding: 0 0 var(--sport-rail-padding-bottom, 20px) 12px;
+  transition: padding-bottom var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }
 
 .sport-rail--sport-active {
-  padding-bottom: 20px;
+  padding-bottom: var(--sport-rail-padding-bottom, 20px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -30,13 +31,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sport-rail-item-gap, 4px);
   width: 56px;
   flex-shrink: 0;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
+  transition: gap var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }
 
 .sport-rail__list::after {
@@ -141,9 +143,17 @@
   font-weight: 500;
   color: #ffffff;
   text-align: center;
+  max-height: var(--sport-rail-label-max-height, 14px);
+  opacity: var(--sport-rail-label-opacity, 1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transform: translateY(var(--sport-rail-label-translate-y, 0));
   width: 100%;
   line-height: 1;
+  will-change: opacity, transform, max-height;
+  transition:
+    max-height var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1)),
+    opacity 120ms ease,
+    transform var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }

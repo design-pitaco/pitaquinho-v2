@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const basePath = '/pitaquinho'
+const basePath = '/pitaquinho-v2'
 
 export default defineConfig({
   base: `${basePath}/`,

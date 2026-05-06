@@ -10,30 +10,6 @@ import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
 
 import type { CompetitionMatch } from './competitionData'
 
-interface DateChip {
-  id: string
-  topLabel: string
-  bottomLabel: string
-}
-
-const PT_WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-
-function buildDateChips(): DateChip[] {
-  const chips: DateChip[] = [{ id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' }]
-  const today = new Date()
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    chips.push({
-      id: `day-${i}`,
-      topLabel: PT_WEEKDAYS[d.getDay()],
-      bottomLabel: `${d.getDate()} ${PT_MONTHS[d.getMonth()]}`,
-    })
-  }
-  return chips
-}
-
 const footballMarketChips = [
   { id: 'resultado-final', label: 'Resultado Final' },
   { id: 'dupla-chance', label: 'Dupla Chance' },
@@ -71,15 +47,11 @@ const tickLive = (time: string) => {
 }
 
 export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps) {
-  const dateChips = buildDateChips()
   const marketChips = sport === 'basquete' ? basketballMarketChips : footballMarketChips
 
-  const [activeDateChip, setActiveDateChip] = useState('agora')
   const [activeMarket, setActiveMarket] = useState(marketChips[0].id)
 
-  const dateChipsRef = useRef<HTMLDivElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
-  const dateChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   const [liveTimes, setLiveTimes] = useState<Record<string, string>>(() => {
@@ -159,25 +131,8 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
     <section className="prematch-section calendar-section competition-calendar">
       <div className="prematch-section__header">
         <div className="prematch-section__title">
-          <span>Calendário</span>
+          <span>Melhores Jogos</span>
         </div>
-      </div>
-
-      <div className="calendar-section__date-chips" ref={dateChipsRef}>
-        {dateChips.map((chip, index) => (
-          <button
-            key={chip.id}
-            ref={(el) => { dateChipRefs.current[index] = el }}
-            className={`calendar-date-chip ${activeDateChip === chip.id ? 'calendar-date-chip--active' : ''}`}
-            onClick={() => {
-              setActiveDateChip(chip.id)
-              scrollChipIntoView(dateChipsRef, dateChipRefs.current[index])
-            }}
-          >
-            <span className="calendar-date-chip__top">{chip.topLabel}</span>
-            <span className="calendar-date-chip__bottom">{chip.bottomLabel}</span>
-          </button>
-        ))}
       </div>
 
       <div className="prematch-section__chips" ref={marketChipsRef}>

@@ -17,4 +17,5 @@ export { BottomSheet, MissionObjective, MissionInfoRow, MissionFaqItem, MissionT
 export { Toast } from './Toast'
 export { SportFilterBar } from './SportFilterBar'
 export { CalendarSection } from './CalendarSection'
+export { SportsMatchCarousel } from './SportsMatchCarousel'
 export { CompetitionPage } from './CompetitionPage'

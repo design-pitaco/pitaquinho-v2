@@ -163,7 +163,7 @@ const baseMatches: CompetitionMatch[] = [
     homeIcon: defaultFlag,
     awayName: 'Time Visitante',
     awayIcon: defaultFlag,
-    dateTime: 'Sábado, 16:30',
+    dateTime: 'Amanhã, 16:30',
     earlyPayout: false,
     odds: { home: '2.40x', draw: '3.20x', away: '2.85x' },
   },

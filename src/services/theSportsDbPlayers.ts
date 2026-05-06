@@ -93,15 +93,21 @@ const PLAYER_IMAGE_ADJUSTMENTS: Record<string, PlayerImageAdjustment> = {
   '34200399': { scale: 1.08, x: 0, y: 0 }, // José Manuel López
   '34182604': { scale: 1.18, x: 0, y: 0 }, // Jefferson Savarino
   '34161149': { scale: 1.12, x: 0, y: -3 }, // Ademola Lookman
+  '34146370': { scale: 1, x: 0, y: 0 }, // Mbappé
+  '34145987': { scale: 1, x: 0, y: 0 }, // Lautaro Martínez
+  '34162072': { scale: 1, x: 0, y: 0 }, // Antoine Griezmann
   '34181129': { scale: 1.08, x: 0, y: -2 }, // Gonçalo Ramos
   '34194505': { scale: 0.96, x: 0, y: 0 }, // Arda Güler
   '34163447': { scale: 1, x: 0, y: 0 }, // Alexander Isak
   '34202599': { scale: 1, x: 0, y: 0 }, // Andreas Schjelderup
   '34169884': { scale: 0.78, x: 0, y: 0 }, // Bukayo Saka
+  '34145996': { scale: 1, x: 0, y: 0 }, // Son Heung-min
   '34169203': { scale: 1, x: 0, y: 0 }, // Dejan Kulusevski
   '34174227': { scale: 0.98, x: 0, y: 0 }, // Brenden Aaronson
+  '34174533': { scale: 1, x: 0, y: 0 }, // Mohammed Kudus
   '34222119': { scale: 1.08, x: 0, y: -2 }, // Abu Kamara
   '34145656': { scale: 0.98, x: 0, y: 0 }, // Adnan Januzaj
+  '34161354': { scale: 1, x: 0, y: 0 }, // Borja Mayoral
   '34170266': { scale: 0.98, x: 0, y: 0 }, // Abdón Prats
   '34165361': { scale: 1.12, x: 0, y: 0 }, // Lauri Markkanen
   '34164224': { scale: 1.16, x: 0, y: 0 }, // Shai Gilgeous-Alexander
@@ -159,6 +165,84 @@ const FOOTBALL_SCORER_PLAYERS_BY_TEAM: Record<string, Omit<SportsDbPlayer, 'imag
     name: 'Eduardo Sasha',
     teamName: 'Bragantino',
     imageUrl: 'https://r2.thesportsdb.com/images/media/player/cutout/ifjyhc1766835102.png',
+  },
+  'Atlético Madrid': {
+    id: '34162072',
+    name: 'Antoine Griezmann',
+    teamName: 'Atlético Madrid',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/qtvw6m1635798175.png',
+  },
+  Inter: {
+    id: '34145987',
+    name: 'Lautaro Martínez',
+    teamName: 'Inter',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/2wnzkh1697901372.png',
+  },
+  PSG: {
+    id: '34146370',
+    name: 'Mbappé',
+    teamName: 'PSG',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/3dlkuh1691420623.png',
+  },
+  'Real Madrid': {
+    id: '34194505',
+    name: 'Arda Güler',
+    teamName: 'Real Madrid',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/37bswv1751450280.png',
+  },
+  Newcastle: {
+    id: '34163447',
+    name: 'Alexander Isak',
+    teamName: 'Newcastle United',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/hjbdio1603376434.png',
+  },
+  Benfica: {
+    id: '34202599',
+    name: 'Andreas Schjelderup',
+    teamName: 'Benfica',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/899lr51758216296.png',
+  },
+  Arsenal: {
+    id: '34169884',
+    name: 'Bukayo Saka',
+    teamName: 'Arsenal',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/yi7tho1735798582.png',
+  },
+  Tottenham: {
+    id: '34145996',
+    name: 'Son Heung-min',
+    teamName: 'Tottenham Hotspur',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/lb7ljx1647184879.png',
+  },
+  'West Ham': {
+    id: '34174533',
+    name: 'Mohammed Kudus',
+    teamName: 'West Ham',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/w07buy1718880131.png',
+  },
+  Leeds: {
+    id: '34174227',
+    name: 'Brenden Aaronson',
+    teamName: 'Leeds United',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/o2z82x1634809591.png',
+  },
+  Getafe: {
+    id: '34161354',
+    name: 'Borja Mayoral',
+    teamName: 'Getafe',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/kq4wo71723634349.png',
+  },
+  Sevilla: {
+    id: '34145656',
+    name: 'Adnan Januzaj',
+    teamName: 'Sevilla',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/5uzpmt1669058924.png',
+  },
+  Mallorca: {
+    id: '34170266',
+    name: 'Abdón Prats',
+    teamName: 'Mallorca',
+    imageUrl: 'https://r2.thesportsdb.com/images/media/player/render/rt1gji1724408964.png',
   },
 }
 

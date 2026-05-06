@@ -7,11 +7,11 @@
 
 .competition-players__header {
   padding: 0 12px;
-  font-family: 'Red Hat Display', 'Red Hat Text', sans-serif;
+  font-family: 'Red Hat Text', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.4;
 }
 
 .competition-players__chips {
@@ -83,12 +83,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 148px;
+  flex: 0 0 calc((100% - 40px) / 2.5);
+  width: calc((100% - 40px) / 2.5);
+  min-width: 0;
   padding-bottom: 12px;
   background-color: #1a1a1a;
   border-radius: 8px;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .competition-players__card-header {
@@ -99,23 +100,27 @@
   padding-top: 12px;
   border-bottom: 1px solid #242424;
   overflow: hidden;
+  isolation: isolate;
+  contain: paint;
 }
 
 .competition-players__card-header::before {
   content: '';
   position: absolute;
-  top: 27px;
+  top: 4px;
   left: 50%;
-  width: 63px;
-  height: 63px;
+  width: 116px;
+  height: 116px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  filter: blur(20px);
-  transform: translateX(-50%);
+  background: url('../../assets/brilhoBGJogador.png') center / contain no-repeat;
+  transform: translate3d(-50%, 0, 0);
+  z-index: 0;
   pointer-events: none;
 }
 
 .competition-players__match-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -149,6 +154,7 @@
 
 .competition-players__player-image-wrapper {
   position: relative;
+  z-index: 1;
   margin-top: 0;
   display: flex;
   align-items: flex-start;
@@ -187,41 +193,60 @@
 }
 
 .competition-players__options-scroll {
+  --competition-player-option-width: 56px;
+  --competition-player-option-gap: 8px;
+  --competition-player-option-fade: 24px;
+  display: flex;
   width: 100%;
   height: 40px;
-  overflow: hidden;
-  touch-action: pan-y;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  overscroll-behavior-x: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--competition-player-option-fade),
+    #000 calc(100% - var(--competition-player-option-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--competition-player-option-fade),
+    #000 calc(100% - var(--competition-player-option-fade)),
+    transparent 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
-.competition-players__card-options::before,
-.competition-players__card-options::after {
+.competition-players__options-scroll--dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.competition-players__options-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.competition-players__options-scroll::before,
+.competition-players__options-scroll::after {
   content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 24px;
-  z-index: 2;
+  flex: 0 0 calc((100% - var(--competition-player-option-width)) / 2);
   pointer-events: none;
-}
-
-.competition-players__card-options::before {
-  left: 0;
-  background: linear-gradient(90deg, #1a1a1a 0%, rgba(26, 26, 26, 0) 100%);
-}
-
-.competition-players__card-options::after {
-  right: 0;
-  background: linear-gradient(270deg, #1a1a1a 0%, rgba(26, 26, 26, 0) 100%);
-}
-
-.competition-players__options-track {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  display: flex;
-  gap: 8px;
-  transform: translateX(calc(-28px - (var(--active-index) * 64px)));
-  transition: transform 0.2s ease;
 }
 
 .competition-players__option {
@@ -229,16 +254,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 56px;
+  width: var(--competition-player-option-width);
   height: 40px;
   padding: 0 8px;
+  box-sizing: border-box;
   background-color: #242424;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  flex: 0 0 56px;
+  flex: 0 0 var(--competition-player-option-width);
   opacity: 0.56;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
   transition: opacity 0.18s ease;
+}
+
+.competition-players__option + .competition-players__option {
+  margin-left: var(--competition-player-option-gap);
 }
 
 .competition-players__option--active {

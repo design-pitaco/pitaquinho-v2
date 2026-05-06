@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
-
 :root {
   /* Cores principais */
   --color-primary: #164c2e;
@@ -10,6 +8,10 @@
   --color-text: rgba(255, 255, 255, 0.87);
   --color-text-muted: rgba(255, 255, 255, 0.6);
   --app-viewport-height: 100vh;
+  --navbar-height: 64px;
+  --navbar-bottom-offset: max(4px, calc(env(safe-area-inset-bottom, 0px) / 2));
+  --navbar-content-gap: 24px;
+  --navbar-page-bottom-padding: calc(var(--navbar-height) + var(--navbar-bottom-offset) + var(--navbar-content-gap));
 
   /* Tipografia */
   font-family: 'Red Hat Text', system-ui, sans-serif;

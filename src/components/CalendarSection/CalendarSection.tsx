@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type RefObject } from 'react'
+import { useState, useRef, useEffect, type MouseEvent, type RefObject } from 'react'
 import '../PreMatchSection/PreMatchSection.css'
 import './CalendarSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
@@ -11,7 +11,6 @@ import {
 
 import setaLink from '../../assets/setaLink.png'
 import iconAccordion from '../../assets/iconAccordion.png'
-import iconAoVivo from '../../assets/iconAoVivo.png'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
 import iconFutebol from '../../assets/iconFutebol.png'
@@ -80,34 +79,6 @@ import escudoSouthern from '../../assets/escudoSouthern.png'
 import escudoTexas from '../../assets/escudoTexas.png'
 import escudoCaxias from '../../assets/escudoCaxias.png'
 import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
-
-interface DateChip {
-  id: string
-  topLabel: string    // bold top line — "Em alta", "Sex", "Sáb"...
-  bottomLabel?: string // regular bottom line — "Agora", "19 Mar"...
-  liveIcon?: boolean
-}
-
-const PT_WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-
-function buildDateChips(): DateChip[] {
-  const chips: DateChip[] = [
-    { id: 'agora', topLabel: 'Em alta', bottomLabel: 'Agora' },
-    { id: 'ao-vivo', topLabel: 'Ao Vivo', liveIcon: true },
-  ]
-  const today = new Date()
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    chips.push({
-      id: `day-${i}`,
-      topLabel: PT_WEEKDAYS[d.getDay()],
-      bottomLabel: `${d.getDate()} ${PT_MONTHS[d.getMonth()]}`,
-    })
-  }
-  return chips
-}
 
 interface MarketChip {
   id: string
@@ -455,7 +426,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-16',
-        dateTime: 'Sábado, 18:30',
+        dateTime: 'Amanhã, 18:30',
         homeName: 'Vitória',
         homeIcon: iconFutebol,
         awayName: 'Sport',
@@ -464,7 +435,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-17',
-        dateTime: 'Domingo, 16:00',
+        dateTime: 'Amanhã, 16:00',
         homeName: 'Grêmio',
         homeIcon: iconFutebol,
         awayName: 'Juventude',
@@ -532,7 +503,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-4',
-        dateTime: 'Terça, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeName: 'Real Madrid',
         homeIcon: escudoReal,
         awayName: 'Barcelona',
@@ -541,7 +512,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-5',
-        dateTime: 'Terça, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeName: 'Liverpool',
         homeIcon: escudoLiverpool,
         awayName: 'Man. City',
@@ -550,7 +521,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-6',
-        dateTime: 'Quarta, 16:00',
+        dateTime: 'Amanhã, 16:00',
         homeName: 'Benfica',
         homeIcon: escudoBenfica,
         awayName: 'Ajax',
@@ -584,7 +555,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-7',
-        dateTime: 'Sábado, 12:30',
+        dateTime: 'Hoje, 12:30',
         homeName: 'Tottenham',
         homeIcon: iconFutebol,
         awayName: 'Wolves',
@@ -593,7 +564,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-8',
-        dateTime: 'Sábado, 15:00',
+        dateTime: 'Amanhã, 15:00',
         homeName: 'Brighton',
         homeIcon: escudoBrighton,
         awayName: 'West Ham',
@@ -602,7 +573,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-9',
-        dateTime: 'Sábado, 17:00',
+        dateTime: 'Amanhã, 17:00',
         homeName: 'Leeds',
         homeIcon: escudoLeeds,
         awayName: 'Burnley',
@@ -636,7 +607,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-10',
-        dateTime: 'Domingo, 14:00',
+        dateTime: 'Hoje, 14:00',
         homeName: 'Sevilla',
         homeIcon: iconFutebol,
         awayName: 'Villarreal',
@@ -645,7 +616,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-11',
-        dateTime: 'Domingo, 16:00',
+        dateTime: 'Hoje, 16:00',
         homeName: 'Alavés',
         homeIcon: escudoAlaves,
         awayName: 'Espanyol',
@@ -654,7 +625,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-12',
-        dateTime: 'Domingo, 18:30',
+        dateTime: 'Amanhã, 18:30',
         homeName: 'Mallorca',
         homeIcon: escudoMallorca,
         awayName: 'Levante',
@@ -688,7 +659,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-13',
-        dateTime: 'Sábado, 16:30',
+        dateTime: 'Hoje, 16:30',
         homeName: 'B. Dortmund',
         homeIcon: iconFutebol,
         awayName: 'RB Leipzig',
@@ -697,7 +668,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-14',
-        dateTime: 'Sábado, 13:30',
+        dateTime: 'Amanhã, 13:30',
         homeName: 'Wolfsburg',
         homeIcon: escudoWolfsburg,
         awayName: 'Eintracht',
@@ -706,7 +677,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-f-15',
-        dateTime: 'Domingo, 15:30',
+        dateTime: 'Amanhã, 15:30',
         homeName: 'Augsburg',
         homeIcon: escudoAugsburg,
         awayName: 'Hamburger',
@@ -781,7 +752,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-b-16',
-        dateTime: 'Sábado, 20:30',
+        dateTime: 'Amanhã, 20:30',
         homeName: 'Mavericks',
         homeIcon: escudoDefaultBasquete,
         awayName: 'Spurs',
@@ -790,7 +761,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-b-17',
-        dateTime: 'Domingo, 21:00',
+        dateTime: 'Amanhã, 21:00',
         homeName: 'Clippers',
         homeIcon: escudoDefaultBasquete,
         awayName: 'Kings',
@@ -929,7 +900,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-b-12',
-        dateTime: 'Sábado, 18:00',
+        dateTime: 'Amanhã, 18:00',
         homeName: 'São Paulo',
         homeIcon: escudoDefaultBasquete,
         awayName: 'Pinheiros',
@@ -981,7 +952,7 @@ export const championships: Championship[] = [
       },
       {
         id: 'cal-b-15',
-        dateTime: 'Quarta, 15:00',
+        dateTime: 'Hoje, 15:00',
         homeName: 'Schio',
         homeIcon: escudoDefaultBasquete,
         awayName: 'Girona',
@@ -1021,6 +992,11 @@ export interface DisplayedCompetitionEvent {
   event: CompetitionEvent
 }
 
+export interface DisplayedCompetitionEventGroup {
+  league: Championship
+  events: CompetitionEvent[]
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function getCalendarChampionships(
   sportFilter?: string | null,
@@ -1037,6 +1013,93 @@ export function getCalendarChampionships(
     : filteredBySport
 
   return { mappedCompetitionId, championships: filtered }
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getCalendarDisplayedEventGroups({
+  sportFilter,
+  competitionId,
+  liveOnly = false,
+  liveFilter = false,
+}: {
+  sportFilter?: string | null
+  competitionId?: string | null
+  liveOnly?: boolean
+  liveFilter?: boolean
+} = {}): {
+  mappedCompetitionId: string | null
+  groups: DisplayedCompetitionEventGroup[]
+} {
+  const { mappedCompetitionId, championships: filtered } = getCalendarChampionships(sportFilter, competitionId)
+  const shouldFilterLive = liveOnly || liveFilter
+  const filteredByLive = shouldFilterLive
+    ? filtered
+        .map((championship) => ({
+          ...championship,
+          events: championship.events.filter((event) => event.isLive),
+        }))
+        .filter((championship) => championship.events.length > 0)
+    : filtered
+  const leaguesToDisplay = filteredByLive.slice(0, mappedCompetitionId ? filteredByLive.length : 5)
+
+  const groups = leaguesToDisplay.map((league) => {
+    const events = shouldFilterLive
+      ? league.events.filter((event) => event.isLive)
+      : mappedCompetitionId
+        ? [
+            ...league.events.filter((event) => event.isLive).slice(0, 3),
+            ...league.events.filter((event) => !event.isLive).slice(0, 5),
+          ]
+        : league.events.slice(0, 3)
+
+    return { league, events }
+  })
+
+  return { mappedCompetitionId, groups }
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getCalendarDisplayedEvents({
+  sportFilter,
+  competitionId,
+  liveOnly = false,
+  liveFilter = false,
+}: {
+  sportFilter?: string | null
+  competitionId?: string | null
+  liveOnly?: boolean
+  liveFilter?: boolean
+} = {}): DisplayedCompetitionEvent[] {
+  const { mappedCompetitionId, groups } = getCalendarDisplayedEventGroups({
+    sportFilter,
+    competitionId,
+    liveOnly,
+    liveFilter,
+  })
+
+  if (!mappedCompetitionId || liveOnly || liveFilter) {
+    return groups.flatMap(({ league, events }) => events.map((event) => ({ league, event })))
+  }
+
+  const listedCompetitionGroups = groups
+    .map(({ league, events }) => ({
+      league,
+      events: events.filter((event) => {
+        const [dateLabel] = event.dateTime.split(',').map((part) => part.trim())
+        return event.isLive || dateLabel === 'Hoje' || dateLabel === 'Amanhã'
+      }),
+    }))
+    .filter(({ events }) => events.length > 0)
+
+  const fallbackGroups = groups
+    .map(({ league, events }) => ({
+      league,
+      events: events.filter((event) => !event.isLive),
+    }))
+    .filter(({ events }) => events.length > 0)
+
+  const visibleGroups = listedCompetitionGroups.length > 0 ? listedCompetitionGroups : fallbackGroups
+  return visibleGroups.flatMap(({ league, events }) => events.map((event) => ({ league, event })))
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -1059,6 +1122,133 @@ export function getCompetitionPageEvents(
   })
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const getCompetitionLiveEventMatch = (
+  event: CompetitionEvent,
+  sport: string,
+  matchTimes: Record<string, string> = {}
+): LiveEventMatch => {
+  const marketOdds = getMarketOdds(event, sport)
+
+  return {
+    id: event.id,
+    time: event.dateTime,
+    currentTime: matchTimes[event.id] || event.dateTime,
+    homeTeam: {
+      name: event.homeName,
+      icon: getTeamLogo(event.homeName, event.homeIcon),
+      score: event.homeScore ?? 0,
+    },
+    awayTeam: {
+      name: event.awayName,
+      icon: getTeamLogo(event.awayName, event.awayIcon),
+      score: event.awayScore ?? 0,
+    },
+    odds: event.odds,
+    doubleChanceOdds: marketOdds.doubleChance,
+    bothTeamsScoreOdds: marketOdds.bothTeamsScore,
+    totalGoalsOdds: marketOdds.totalGoals,
+    totalCornersOdds: marketOdds.totalCorners,
+    totalPointsOdds: marketOdds.totalPoints,
+    handicapOdds: event.handicapOdds,
+    q3TotalOdds: marketOdds.q3Total,
+    q4TotalOdds: marketOdds.q4Total,
+  }
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const getCompetitionLiveEventOpenPayload = ({
+  league,
+  selectedEventId,
+  matchTimes = {},
+}: {
+  league: Championship
+  selectedEventId: string
+  matchTimes?: Record<string, string>
+}): LiveEventOpenPayload | null => {
+  if (league.sport !== 'futebol') return null
+
+  const liveEvents = league.events.filter((event) => event.isLive)
+  const selectedIndex = Math.max(0, liveEvents.findIndex((event) => event.id === selectedEventId))
+  const currentTimes = liveEvents.reduce<Record<string, string>>((times, event) => {
+    times[event.id] = matchTimes[event.id] || event.dateTime
+    return times
+  }, {})
+
+  return {
+    matches: liveEvents.map((event) => getCompetitionLiveEventMatch(event, league.sport, matchTimes)),
+    selectedIndex,
+    leagueName: league.name,
+    leagueFlag: league.flag,
+    sport: league.sport,
+    currentTimes,
+  }
+}
+
+interface CompetitionCalendarDaySection {
+  id: string
+  title: string
+  groups: DisplayedCompetitionEventGroup[]
+}
+
+const getCompetitionEventDateLabel = (event: CompetitionEvent) => {
+  const [dateLabel] = event.dateTime.split(',').map((part) => part.trim())
+  return dateLabel
+}
+
+const filterCompetitionGroupsByEvent = (
+  groups: DisplayedCompetitionEventGroup[],
+  predicate: (event: CompetitionEvent) => boolean
+) =>
+  groups
+    .map(({ league, events }) => ({
+      league,
+      events: events.filter(predicate),
+    }))
+    .filter(({ events }) => events.length > 0)
+
+const getCompetitionCalendarDaySections = (
+  groups: DisplayedCompetitionEventGroup[],
+  liveOnly: boolean
+): CompetitionCalendarDaySection[] => {
+  if (liveOnly) {
+    const liveGroups = filterCompetitionGroupsByEvent(groups, (event) => !!event.isLive)
+    return liveGroups.length > 0 ? [{ id: 'live', title: 'Ao vivo', groups: liveGroups }] : []
+  }
+
+  const sections = [
+    {
+      id: 'live',
+      title: 'Ao vivo',
+      groups: filterCompetitionGroupsByEvent(
+        groups,
+        (event) => !!event.isLive
+      ),
+    },
+    {
+      id: 'today',
+      title: 'Hoje',
+      groups: filterCompetitionGroupsByEvent(
+        groups,
+        (event) => !event.isLive && getCompetitionEventDateLabel(event) === 'Hoje'
+      ),
+    },
+    {
+      id: 'tomorrow',
+      title: 'Amanhã',
+      groups: filterCompetitionGroupsByEvent(
+        groups,
+        (event) => !event.isLive && getCompetitionEventDateLabel(event) === 'Amanhã'
+      ),
+    },
+  ].filter(({ groups: sectionGroups }) => sectionGroups.length > 0)
+
+  if (sections.length > 0) return sections
+
+  const fallbackGroups = filterCompetitionGroupsByEvent(groups, (event) => !event.isLive)
+  return fallbackGroups.length > 0 ? [{ id: 'next', title: 'Próximos', groups: fallbackGroups }] : []
+}
+
 export function CalendarSection({
   sportFilter,
   competitionId,
@@ -1067,12 +1257,8 @@ export function CalendarSection({
   onLiveMatchClick,
   onOpenCompetition,
 }: CalendarSectionProps = {}) {
-  const [activeDateChip, setActiveDateChip] = useState('agora')
   const [activeMarket, setActiveMarket] = useState('resultado-final')
-  const dateChips = buildDateChips()
-  const dateChipsRef = useRef<HTMLDivElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
-  const dateChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [internalMatchTimes, setInternalMatchTimes] = useState<Record<string, string>>(() => {
     const times: Record<string, string> = {}
@@ -1086,17 +1272,12 @@ export function CalendarSection({
 
   const hasMatchTimesOverride = Boolean(matchTimesOverride)
   const matchTimes = matchTimesOverride ?? internalMatchTimes
-  const { mappedCompetitionId, championships: filtered } = getCalendarChampionships(sportFilter, competitionId)
-  const shouldFilterLive = liveOnly || activeDateChip === 'ao-vivo'
-  const filteredByLive = shouldFilterLive
-    ? filtered
-        .map((championship) => ({
-          ...championship,
-          events: championship.events.filter((event) => event.isLive),
-        }))
-        .filter((championship) => championship.events.length > 0)
-    : filtered
-  const topFive = filteredByLive.slice(0, mappedCompetitionId ? filteredByLive.length : 5)
+  const { mappedCompetitionId, groups: displayedEventGroups } = getCalendarDisplayedEventGroups({
+    sportFilter,
+    competitionId,
+    liveOnly,
+  })
+  const topFive = displayedEventGroups.map(({ league }) => league)
   const isCompetitionPage = !!mappedCompetitionId
 
   const [openLeagues, setOpenLeagues] = useState<string[]>(
@@ -1106,7 +1287,7 @@ export function CalendarSection({
   useEffect(() => {
     setOpenLeagues(topFive.map((c) => c.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sportFilter, competitionId, shouldFilterLive])
+  }, [sportFilter, competitionId, liveOnly])
 
   useEffect(() => {
     setActiveMarket(sportFilter === 'basquete' ? 'vencedor' : 'resultado-final')
@@ -1146,7 +1327,7 @@ export function CalendarSection({
     return () => clearInterval(interval)
   }, [hasMatchTimesOverride])
 
-  const scrollChipIntoView = (_index: number, chipsRef: RefObject<HTMLDivElement | null>, chipEl: HTMLButtonElement | null) => {
+  const scrollChipIntoView = (chipsRef: RefObject<HTMLDivElement | null>, chipEl: HTMLButtonElement | null) => {
     const containerEl = chipsRef.current
     if (!chipEl || !containerEl) return
     const chipLeft = chipEl.offsetLeft
@@ -1161,53 +1342,295 @@ export function CalendarSection({
     }
   }
 
-  const toLiveEventMatch = (event: CompetitionEvent, sport: string): LiveEventMatch => {
-    const marketOdds = getMarketOdds(event, sport)
+  const scrollClickedChipIntoView = (chipEl: HTMLButtonElement) => {
+    const containerEl = chipEl.parentElement
+    if (!containerEl) return
 
-    return {
-      id: event.id,
-      time: event.dateTime,
-      currentTime: matchTimes[event.id] || event.dateTime,
-      homeTeam: {
-        name: event.homeName,
-        icon: getTeamLogo(event.homeName, event.homeIcon),
-        score: event.homeScore ?? 0,
-      },
-      awayTeam: {
-        name: event.awayName,
-        icon: getTeamLogo(event.awayName, event.awayIcon),
-        score: event.awayScore ?? 0,
-      },
-      odds: event.odds,
-      doubleChanceOdds: marketOdds.doubleChance,
-      bothTeamsScoreOdds: marketOdds.bothTeamsScore,
-      totalGoalsOdds: marketOdds.totalGoals,
-      totalCornersOdds: marketOdds.totalCorners,
-      totalPointsOdds: marketOdds.totalPoints,
-      handicapOdds: event.handicapOdds,
-      q3TotalOdds: marketOdds.q3Total,
-      q4TotalOdds: marketOdds.q4Total,
+    const chipLeft = chipEl.offsetLeft
+    const chipWidth = chipEl.offsetWidth
+    const containerWidth = containerEl.offsetWidth
+    const containerScroll = containerEl.scrollLeft
+    const padding = 20
+
+    if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+    } else if (chipLeft < containerScroll + padding) {
+      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
     }
   }
 
   const openLiveEvent = (league: Championship, selectedEventId: string) => {
-    if (league.sport !== 'futebol') return
+    const payload = getCompetitionLiveEventOpenPayload({ league, selectedEventId, matchTimes })
+    if (payload) onLiveMatchClick?.(payload)
+  }
 
-    const liveEvents = league.events.filter((event) => event.isLive)
-    const selectedIndex = Math.max(0, liveEvents.findIndex((event) => event.id === selectedEventId))
-    const currentTimes = liveEvents.reduce<Record<string, string>>((times, event) => {
-      times[event.id] = matchTimes[event.id] || event.dateTime
-      return times
-    }, {})
+  const renderMarketChips = ({
+    className = '',
+    withRefs = false,
+  }: {
+    className?: string
+    withRefs?: boolean
+  } = {}) => (
+    <div
+      className={`prematch-section__chips${className ? ` ${className}` : ''}`}
+      ref={withRefs ? marketChipsRef : undefined}
+    >
+      {currentMarketChips.map((chip, index) => (
+        <button
+          key={chip.id}
+          ref={withRefs ? (el) => { marketChipRefs.current[index] = el } : undefined}
+          className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            setActiveMarket(chip.id)
+            if (withRefs) {
+              scrollChipIntoView(marketChipsRef, marketChipRefs.current[index])
+            } else {
+              scrollClickedChipIntoView(event.currentTarget)
+            }
+          }}
+        >
+          <span data-text={chip.label}>{chip.label}</span>
+        </button>
+      ))}
+    </div>
+  )
 
-    onLiveMatchClick?.({
-      matches: liveEvents.map((event) => toLiveEventMatch(event, league.sport)),
-      selectedIndex,
-      leagueName: league.name,
-      leagueFlag: league.flag,
-      sport: league.sport,
-      currentTimes,
-    })
+  const renderEventCard = (league: Championship, event: CompetitionEvent) => {
+    const marketOdds = getMarketOdds(event, league.sport)
+    const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
+    const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
+    const isHomeFallback = league.sport === 'basquete' && (!homeIcon || homeIcon === escudoDefaultBasquete)
+    const isAwayFallback = league.sport === 'basquete' && (!awayIcon || awayIcon === escudoDefaultBasquete)
+    const isHomeSportFallback = league.sport === 'futebol' && homeIcon === iconFutebol
+    const isAwaySportFallback = league.sport === 'futebol' && awayIcon === iconFutebol
+
+    if (event.isLive) {
+      return (
+        <LiveMatchCard
+          key={event.id}
+          sport={league.sport}
+          activeMarket={activeMarket}
+          currentTime={matchTimes[event.id] || event.dateTime}
+          match={{
+            id: event.id,
+            time: event.dateTime,
+            homeTeam: {
+              name: event.homeName,
+              icon: homeIcon,
+              score: event.homeScore ?? 0,
+            },
+            awayTeam: {
+              name: event.awayName,
+              icon: awayIcon,
+              score: event.awayScore ?? 0,
+            },
+            odds: event.odds,
+            doubleChanceOdds: marketOdds.doubleChance,
+            bothTeamsScoreOdds: marketOdds.bothTeamsScore,
+            totalGoalsOdds: marketOdds.totalGoals,
+            totalCornersOdds: marketOdds.totalCorners,
+            totalPointsOdds: marketOdds.totalPoints,
+            handicapOdds: event.handicapOdds,
+            q3TotalOdds: marketOdds.q3Total,
+            q4TotalOdds: marketOdds.q4Total,
+          }}
+          onClick={league.sport === 'futebol' ? () => openLiveEvent(league, event.id) : undefined}
+        />
+      )
+    }
+
+    const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
+
+    return (
+      <div key={event.id} className="prematch-section__match">
+        <div className="prematch-section__match-header">
+          <div className="prematch-section__teams-compact">
+            <div className="prematch-section__team-row">
+              {isHomeSportFallback ? (
+                <img
+                  src={homeIcon}
+                  alt=""
+                  className="prematch-section__team-icon prematch-section__team-icon--sport-home"
+                />
+              ) : !isHomeFallback ? (
+                <img
+                  src={homeIcon}
+                  alt=""
+                  className="prematch-section__team-icon"
+                />
+              ) : league.sport === 'basquete' ? (
+                <img
+                  src={iconBasquete}
+                  alt=""
+                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
+                />
+              ) : (
+                <div className="prematch-section__team-icon--placeholder" />
+              )}
+              <span className="prematch-section__team-name">{event.homeName}</span>
+            </div>
+            <div className="prematch-section__team-row">
+              {isAwaySportFallback ? (
+                <img
+                  src={awayIcon}
+                  alt=""
+                  className="prematch-section__team-icon prematch-section__team-icon--sport-away"
+                />
+              ) : !isAwayFallback ? (
+                <img
+                  src={awayIcon}
+                  alt=""
+                  className="prematch-section__team-icon"
+                />
+              ) : league.sport === 'basquete' ? (
+                <img
+                  src={iconBasquete}
+                  alt=""
+                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
+                />
+              ) : (
+                <div className="prematch-section__team-icon--placeholder" />
+              )}
+              <span className="prematch-section__team-name">{event.awayName}</span>
+            </div>
+          </div>
+          <div className="prematch-section__match-info">
+            <div className="prematch-section__match-info-content">
+              {event.earlyPayout !== false && (
+                <div className="prematch-section__pag-antecipado">
+                  <span className="prematch-section__pag-antecipado-label">Pag. Antecipado</span>
+                  <img src={reiAntecipa} alt="" className="prematch-section__rei-antecipa" />
+                </div>
+              )}
+              <span className="prematch-section__match-datetime">{event.dateTime}</span>
+            </div>
+            <img src={setaLink} alt="" className="prematch-section__match-arrow" />
+          </div>
+        </div>
+
+        <div className="prematch-section__odds">
+          {activeMarket === 'dupla-chance' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Casa ou Empate</span>
+                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrDraw}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Casa ou Fora</span>
+                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrAway}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Fora ou Empate</span>
+                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.awayOrDraw}</span>
+              </button>
+            </>
+          ) : activeMarket === 'ambos-marcam' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Sim</span>
+                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.yes}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Não</span>
+                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.no}</span>
+              </button>
+            </>
+          ) : activeMarket === 'total-gols' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Menos de {marketOdds.totalGoals?.line}</span>
+                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.under}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Mais de {marketOdds.totalGoals?.line}</span>
+                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.over}</span>
+              </button>
+            </>
+          ) : activeMarket === 'escanteios' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Menos de {marketOdds.totalCorners?.line}</span>
+                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.under}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Mais de {marketOdds.totalCorners?.line}</span>
+                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.over}</span>
+              </button>
+            </>
+          ) : activeMarket === 'total-pontos' || activeMarket === 'q3-total' || activeMarket === 'q4-total' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Menos de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.under : activeMarket === 'q4-total' ? marketOdds.q4Total?.under : marketOdds.totalPoints?.under}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Mais de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.over : activeMarket === 'q4-total' ? marketOdds.q4Total?.over : marketOdds.totalPoints?.over}</span>
+              </button>
+            </>
+          ) : activeMarket === 'handicap' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.homeName} {marketOdds.handicap && marketOdds.handicap.homeLine > 0 ? '+' : ''}{marketOdds.handicap?.homeLine}</span>
+                <span className="prematch-section__odd-value">{marketOdds.handicap?.home}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.awayName} {marketOdds.handicap && marketOdds.handicap.awayLine > 0 ? '+' : ''}{marketOdds.handicap?.awayLine}</span>
+                <span className="prematch-section__odd-value">{marketOdds.handicap?.away}</span>
+              </button>
+            </>
+          ) : currentSport === 'basquete' ? (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.homeName}</span>
+                <span className="prematch-section__odd-value">{event.odds.home}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.awayName}</span>
+                <span className="prematch-section__odd-value">{event.odds.away}</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.homeName}</span>
+                <span className="prematch-section__odd-value">{event.odds.home}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">Empate</span>
+                <span className="prematch-section__odd-value">{event.odds.draw}</span>
+              </button>
+              <button className="prematch-section__odd-btn">
+                <span className="prematch-section__odd-team">{event.awayName}</span>
+                <span className="prematch-section__odd-value">{event.odds.away}</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const competitionDaySections = isCompetitionPage
+    ? getCompetitionCalendarDaySections(displayedEventGroups, liveOnly)
+    : []
+
+  if (isCompetitionPage) {
+    return (
+      <section className="prematch-section calendar-section calendar-section--competition calendar-section--competition-days">
+        {competitionDaySections.map((section) => (
+          <div key={section.id} className="calendar-section__competition-day">
+            <h2 className="calendar-section__competition-day-title">{section.title}</h2>
+            {renderMarketChips({ className: 'calendar-section__competition-chips' })}
+            <div className="prematch-section__matches calendar-section__competition-matches">
+              {section.groups.flatMap(({ league, events }) =>
+                events.map((event) => renderEventCard(league, event))
+              )}
+            </div>
+          </div>
+        ))}
+      </section>
+    )
   }
 
   return (
@@ -1215,65 +1638,17 @@ export function CalendarSection({
       {/* Header */}
       <div className="prematch-section__header">
         <div className="prematch-section__title">
-          <span>Calendário</span>
+          <span>Melhores Jogos</span>
         </div>
       </div>
 
-      {/* Date chips (row 1) — fixed-width 60×44 with two-line layout per Figma */}
-      <div className="calendar-section__date-chips" ref={dateChipsRef}>
-        {dateChips.map((chip, index) => (
-          <button
-            key={chip.id}
-            ref={(el) => { dateChipRefs.current[index] = el }}
-            className={`calendar-date-chip ${activeDateChip === chip.id ? 'calendar-date-chip--active' : ''}`}
-            onClick={() => {
-              setActiveDateChip(chip.id)
-              scrollChipIntoView(index, dateChipsRef, dateChipRefs.current[index])
-            }}
-          >
-            <span className="calendar-date-chip__top">{chip.topLabel}</span>
-            {chip.liveIcon ? (
-              <span className="calendar-date-chip__live-icon-wrapper" aria-hidden="true">
-                <img src={iconAoVivo} alt="" className="calendar-date-chip__live-icon" />
-              </span>
-            ) : (
-              <span className="calendar-date-chip__bottom">{chip.bottomLabel}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Category chips (row 2) */}
-      <div className="prematch-section__chips" ref={marketChipsRef}>
-        {currentMarketChips.map((chip, index) => (
-          <button
-            key={chip.id}
-            ref={(el) => { marketChipRefs.current[index] = el }}
-            className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
-            onClick={() => {
-              setActiveMarket(chip.id)
-              scrollChipIntoView(index, marketChipsRef, marketChipRefs.current[index])
-            }}
-          >
-            <span data-text={chip.label}>{chip.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Category chips */}
+      {renderMarketChips({ withRefs: true })}
 
       {/* Leagues — same layout as PreMatchSection */}
       <div className="prematch-section__leagues">
-        {topFive.map((league) => {
+        {displayedEventGroups.map(({ league, events: eventsToDisplay }) => {
           const isOpen = openLeagues.includes(league.id)
-          const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
-          const eventsToDisplay = shouldFilterLive
-            ? league.events.filter((event) => event.isLive)
-            : isCompetitionPage
-              ? [
-                  ...league.events.filter((event) => event.isLive).slice(0, 3),
-                  ...league.events.filter((event) => !event.isLive).slice(0, 5),
-                ]
-              : league.events.slice(0, 3)
-
           return (
             <div key={league.id} className={`prematch-section__league ${isOpen ? 'prematch-section__league--open' : ''}`}>
               {!isCompetitionPage && (
@@ -1293,221 +1668,7 @@ export function CalendarSection({
               <div className={`prematch-section__matches-wrapper ${isOpen || isCompetitionPage ? 'prematch-section__matches-wrapper--open' : ''}`}>
                 <div className="prematch-section__matches-inner">
                   <div className="prematch-section__matches">
-                    {eventsToDisplay.map((event) => {
-                      const marketOdds = getMarketOdds(event, league.sport)
-                      const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
-                      const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
-                      const isHomeFallback = league.sport === 'basquete' && (!homeIcon || homeIcon === escudoDefaultBasquete)
-                      const isAwayFallback = league.sport === 'basquete' && (!awayIcon || awayIcon === escudoDefaultBasquete)
-                      const isHomeSportFallback = league.sport === 'futebol' && homeIcon === iconFutebol
-                      const isAwaySportFallback = league.sport === 'futebol' && awayIcon === iconFutebol
-
-                      if (event.isLive) {
-                        return (
-                          <LiveMatchCard
-                            key={event.id}
-                            sport={league.sport}
-                            activeMarket={activeMarket}
-                            currentTime={matchTimes[event.id] || event.dateTime}
-                            match={{
-                              id: event.id,
-                              time: event.dateTime,
-                              homeTeam: {
-                                name: event.homeName,
-                                icon: homeIcon,
-                                score: event.homeScore ?? 0,
-                              },
-                              awayTeam: {
-                                name: event.awayName,
-                                icon: awayIcon,
-                                score: event.awayScore ?? 0,
-                              },
-                              odds: event.odds,
-                              doubleChanceOdds: marketOdds.doubleChance,
-                              bothTeamsScoreOdds: marketOdds.bothTeamsScore,
-                              totalGoalsOdds: marketOdds.totalGoals,
-                              totalCornersOdds: marketOdds.totalCorners,
-                              totalPointsOdds: marketOdds.totalPoints,
-                              handicapOdds: event.handicapOdds,
-                              q3TotalOdds: marketOdds.q3Total,
-                              q4TotalOdds: marketOdds.q4Total,
-                            }}
-                            onClick={league.sport === 'futebol' ? () => openLiveEvent(league, event.id) : undefined}
-                          />
-                        )
-                      }
-
-                      return (
-                      <div key={event.id} className="prematch-section__match">
-                        <div className="prematch-section__match-header">
-                          <div className="prematch-section__teams-compact">
-                            <div className="prematch-section__team-row">
-                              {isHomeSportFallback ? (
-                                <img
-                                  src={homeIcon}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--sport-home"
-                                />
-                              ) : !isHomeFallback ? (
-                                <img
-                                  src={homeIcon}
-                                  alt=""
-                                  className="prematch-section__team-icon"
-                                />
-                              ) : league.sport === 'basquete' ? (
-                                <img
-                                  src={iconBasquete}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
-                                />
-                              ) : (
-                                <div className="prematch-section__team-icon--placeholder" />
-                              )}
-                              <span className="prematch-section__team-name">{event.homeName}</span>
-                            </div>
-                            <div className="prematch-section__team-row">
-                              {isAwaySportFallback ? (
-                                <img
-                                  src={awayIcon}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--sport-away"
-                                />
-                              ) : !isAwayFallback ? (
-                                <img
-                                  src={awayIcon}
-                                  alt=""
-                                  className="prematch-section__team-icon"
-                                />
-                              ) : league.sport === 'basquete' ? (
-                                <img
-                                  src={iconBasquete}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
-                                />
-                              ) : (
-                                <div className="prematch-section__team-icon--placeholder" />
-                              )}
-                              <span className="prematch-section__team-name">{event.awayName}</span>
-                            </div>
-                          </div>
-                          {!event.isLive && (
-                            <div className="prematch-section__match-info">
-                              <div className="prematch-section__match-info-content">
-                                {event.earlyPayout !== false && (
-                                  <div className="prematch-section__pag-antecipado">
-                                    <span className="prematch-section__pag-antecipado-label">Pag. Antecipado</span>
-                                    <img src={reiAntecipa} alt="" className="prematch-section__rei-antecipa" />
-                                  </div>
-                                )}
-                                <span className="prematch-section__match-datetime">{event.dateTime}</span>
-                              </div>
-                              <img src={setaLink} alt="" className="prematch-section__match-arrow" />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="prematch-section__odds">
-                          {activeMarket === 'dupla-chance' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Casa ou Empate</span>
-                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrDraw}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Casa ou Fora</span>
-                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.homeOrAway}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Fora ou Empate</span>
-                                <span className="prematch-section__odd-value">{marketOdds.doubleChance?.awayOrDraw}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'ambos-marcam' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Sim</span>
-                                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.yes}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Não</span>
-                                <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.no}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'total-gols' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Menos de {marketOdds.totalGoals?.line}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.under}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Mais de {marketOdds.totalGoals?.line}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.totalGoals?.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'escanteios' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Menos de {marketOdds.totalCorners?.line}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.under}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Mais de {marketOdds.totalCorners?.line}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.totalCorners?.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'total-pontos' || activeMarket === 'q3-total' || activeMarket === 'q4-total' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Menos de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
-                                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.under : activeMarket === 'q4-total' ? marketOdds.q4Total?.under : marketOdds.totalPoints?.under}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Mais de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
-                                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.over : activeMarket === 'q4-total' ? marketOdds.q4Total?.over : marketOdds.totalPoints?.over}</span>
-                              </button>
-                            </>
-                          ) : activeMarket === 'handicap' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.homeName} {marketOdds.handicap && marketOdds.handicap.homeLine > 0 ? '+' : ''}{marketOdds.handicap?.homeLine}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.handicap?.home}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.awayName} {marketOdds.handicap && marketOdds.handicap.awayLine > 0 ? '+' : ''}{marketOdds.handicap?.awayLine}</span>
-                                <span className="prematch-section__odd-value">{marketOdds.handicap?.away}</span>
-                              </button>
-                            </>
-                          ) : currentSport === 'basquete' ? (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.homeName}</span>
-                                <span className="prematch-section__odd-value">{event.odds.home}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.awayName}</span>
-                                <span className="prematch-section__odd-value">{event.odds.away}</span>
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.homeName}</span>
-                                <span className="prematch-section__odd-value">{event.odds.home}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">Empate</span>
-                                <span className="prematch-section__odd-value">{event.odds.draw}</span>
-                              </button>
-                              <button className="prematch-section__odd-btn">
-                                <span className="prematch-section__odd-team">{event.awayName}</span>
-                                <span className="prematch-section__odd-value">{event.odds.away}</span>
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      )
-                    })}
+                    {eventsToDisplay.map((event) => renderEventCard(league, event))}
                   </div>
 
                   {!isCompetitionPage && (

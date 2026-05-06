@@ -18,23 +18,29 @@
   width: calc(100% + 80px);
   z-index: 0;
   pointer-events: none;
+  transition: height var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }
 
 /* Esporte ativo: estende o fundo escuro até cobrir o SportFilterBar */
 .header--sport-active .header__bg-dark {
-  height: 262px;
+  height: var(--sport-header-bg-height, 362px);
 }
 
-/* Layer 2: glow roxo — blur 50px cria o fade natural nas bordas */
+.header--highlight-chips .header__bg-dark {
+  height: var(--highlight-header-bg-height, 266px);
+}
+
+/* Layer 2: glow roxo pré-renderizado para evitar blur pesado em runtime */
 .header__bg-gradient {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100px;
-  background: linear-gradient(45.09deg, rgb(75, 32, 255) 0%, rgb(151, 48, 255) 100%);
-  filter: blur(50px);
-  opacity: 0.48;
+  height: 180px;
+  background-image: url('../../assets/headerGlow.png');
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: 100% 180px;
   z-index: 0;
   pointer-events: none;
 }
@@ -46,8 +52,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 12px;
+  padding: var(--header-top-padding-y, 20px) 12px;
   gap: 8px;
+  transition: padding var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }
 
 /* Logo */
@@ -99,16 +106,16 @@
 .header__toggle-btn {
   position: relative;
   z-index: 1;
-  flex: 1 0 0;
+  flex: 0 0 54px;
   height: 24px;
-  min-width: 64px;
-  padding: 0 12px;
+  width: 54px;
+  padding: 0 8px;
   border-radius: 1000px;
   border: none;
   font-family: 'Red Hat Text', sans-serif;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
   cursor: pointer;
   background: transparent;
@@ -122,54 +129,115 @@
   transform: scale(1.02);
 }
 
-/* Botões de ação (busca + notificações) */
-.header__actions {
+.header__highlight-chips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 0 12px 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.header__highlight-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.header__highlight-chip {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  justify-content: flex-end;
+  height: 24px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 160px;
+  background-color: #1a1a1a;
+  color: #a8a8a8;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.header__highlight-chip span {
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: currentColor;
+  white-space: nowrap;
+}
+
+.header__highlight-chip--active {
+  position: relative;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  color: #ffffff;
+}
+
+.header__highlight-chip--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 160px;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.header__highlight-chip-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Saldo */
+.header__balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
   width: 96px;
   flex-shrink: 0;
-}
-
-.header__icon-btn {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 800px;
-  border: 1px solid #ffffff;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 6px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.header__icon-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Badge de notificações */
-.header__badge {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  background: #6b47ff;
   color: #ffffff;
   font-family: 'Red Hat Text', sans-serif;
-  font-size: 8px;
-  font-weight: 700;
-  border-radius: 800px;
-  min-width: 12px;
+}
+
+.header__balance-label {
+  display: block;
+  align-self: flex-end;
+  width: 26px;
   height: 12px;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.header__balance-value {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 2px;
-  line-height: 1;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 96px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.header__balance-value img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  flex-shrink: 0;
 }

@@ -9,6 +9,7 @@ import {
   findCompetition,
   isCompetitionEnabled,
 } from './competicaoData'
+import { getCompetitionBadge } from '../../data/competitionBadges'
 
 interface SportFilterBarProps {
   sport?: string | null
@@ -127,6 +128,11 @@ export function SportFilterBar({
               aria-pressed={active}
               onClick={() => handleChipSelect(competition.id)}
             >
+              <img
+                src={getCompetitionBadge(competition.id, config.sportIcon)}
+                alt=""
+                className="sport-filter-bar__competition-icon"
+              />
               <span className="sport-filter-bar__chip-label">{competition.name}</span>
             </button>
           )

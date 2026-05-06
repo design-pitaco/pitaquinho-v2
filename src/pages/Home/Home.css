@@ -1,33 +1,60 @@
 .home {
+  --sport-header-transition: 160ms cubic-bezier(0.2, 0, 0, 1);
+  --sport-header-padding-top: 287px;
+  --sport-header-bg-height: 362px;
+  --highlight-header-bg-height: 266px;
+  --header-top-padding-y: 20px;
+  --sport-rail-padding-bottom: 20px;
+  --sport-rail-item-gap: 4px;
+  --sport-rail-label-max-height: 14px;
+  --sport-rail-label-opacity: 1;
+  --sport-rail-label-translate-y: 0px;
+  --sport-filter-padding-bottom: 20px;
+  --sports-carousel-padding-bottom: 20px;
+  --sports-carousel-card-header-min-height: 34px;
+  --sports-carousel-card-header-padding-y: 8px;
+  --sports-carousel-header-font-size: 10px;
+  --sports-carousel-teams-gap: 4px;
+  --sports-carousel-teams-min-height: 40px;
+  --sports-carousel-teams-padding-y: 5px;
+  --sports-carousel-team-row-height: 13px;
+  --sports-carousel-team-font-size: 11px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #131313;
-  padding-top: 148px;
+  padding-top: 194px;
   padding-bottom: 60px;
+  transition: padding-top var(--sport-header-transition);
 }
 
 .home--sport-active {
-  padding-top: 196px;
+  padding-top: var(--sport-header-padding-top);
 }
 
-.home__content {
-  flex: 1;
-  padding: 0;
+.home--header-compact {
+  --highlight-header-bg-height: 222px;
+  --header-top-padding-y: 12px;
+  --sport-rail-padding-bottom: 10px;
+  --sport-rail-item-gap: 0px;
+  --sport-rail-label-max-height: 0px;
+  --sport-rail-label-opacity: 0;
+  --sport-rail-label-translate-y: -4px;
+  padding-top: 156px;
 }
 
-@media (max-width: 499px) {
-  .home {
-    position: fixed;
-    inset: 0;
-    height: var(--app-viewport-height);
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
-  }
+.home--sport-active.home--header-compact {
+  --sport-header-padding-top: 229px;
+  --sport-header-bg-height: 296px;
+  --sport-filter-padding-bottom: 12px;
+  --sports-carousel-padding-bottom: 12px;
+  --sports-carousel-card-header-min-height: 28px;
+  --sports-carousel-card-header-padding-y: 6px;
+  --sports-carousel-teams-gap: 3px;
+  --sports-carousel-teams-min-height: 34px;
+  --sports-carousel-teams-padding-y: 4px;
+  --sports-carousel-team-row-height: 12px;
+  padding-top: var(--sport-header-padding-top);
 }
 
 /* Padrão e v2 - Sem dividers */
@@ -40,4 +67,46 @@
 .home--no-dividers .winning-now-section {
   border-bottom: none;
   padding: 0 0 24px 0;
+}
+
+@media (max-width: 499px) {
+  .home {
+    position: fixed;
+    inset: 0;
+    height: var(--app-viewport-height);
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--navbar-page-bottom-padding);
+    scroll-padding-bottom: var(--navbar-page-bottom-padding);
+  }
+
+  .home
+    > :is(
+      .trilho-e-banner,
+      .promotion-section,
+      .offers-section,
+      .live-section,
+      .escadinha-section,
+      .prematch-section,
+      .treasure-section,
+      .winning-now-section,
+      .competition-players,
+      .competition-longterm
+    ):last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .home--sport-active .calendar-section--competition:last-of-type .prematch-section__league:last-child,
+  .home--sport-active .calendar-section--competition-days:last-of-type .calendar-section__competition-day:last-child {
+    margin-bottom: 0;
+  }
+
+  .home > .prematch-section:last-of-type .prematch-section__league:last-child,
+  .home > .prematch-section:last-of-type .prematch-section__league:last-child.prematch-section__league--open {
+    margin-bottom: 0;
+  }
 }
