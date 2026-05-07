@@ -4,6 +4,7 @@ import setaLink from '../../assets/setaLink.png'
 import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
 import iconFutebol from '../../assets/iconFutebol.png'
 import iconBasquete from '../../assets/iconBasquete.png'
+import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import '../LiveSection/LiveSection.css'
 
 export interface LiveMatchCardMatch {
@@ -67,8 +68,11 @@ interface LiveMatchCardProps {
 
 export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick }: LiveMatchCardProps) {
   const isBasketball = sport === 'basquete'
+  const sportFallbackIcon = isBasketball ? iconBasquete : iconFutebol
+  const homeTeamIcon = useSportsDbTeamLogo(match.homeTeam.name, match.homeTeam.icon, sport, sportFallbackIcon)
+  const awayTeamIcon = useSportsDbTeamLogo(match.awayTeam.name, match.awayTeam.icon, sport, sportFallbackIcon)
 
-  const renderTeamIcon = (icon: string, side: 'home' | 'away') => {
+  const renderTeamIcon = (icon: string | undefined, side: 'home' | 'away') => {
     if (sport === 'futebol' && icon === iconFutebol) {
       return (
         <img
@@ -79,7 +83,7 @@ export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick
       )
     }
 
-    if (icon && icon !== escudoDefaultBasquete) {
+    if (icon && !(isBasketball && (icon === escudoDefaultBasquete || icon === iconBasquete))) {
       return <img src={icon} alt="" className="live-section__team-icon" />
     }
 
@@ -121,7 +125,7 @@ export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick
       <div className="live-section__teams">
         <div className="live-section__team">
           <div className="live-section__team-info">
-            {renderTeamIcon(match.homeTeam.icon, 'home')}
+            {renderTeamIcon(homeTeamIcon, 'home')}
             <span className="live-section__team-name">{match.homeTeam.name}</span>
           </div>
           <div className="live-section__team-score">
@@ -130,7 +134,7 @@ export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick
         </div>
         <div className="live-section__team">
           <div className="live-section__team-info">
-            {renderTeamIcon(match.awayTeam.icon, 'away')}
+            {renderTeamIcon(awayTeamIcon, 'away')}
             <span className="live-section__team-name">{match.awayTeam.name}</span>
           </div>
           <div className="live-section__team-score">

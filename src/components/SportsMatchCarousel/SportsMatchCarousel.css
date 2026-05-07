@@ -103,7 +103,7 @@
   border: 0.5px solid #f87171;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  animation: sports-match-carousel-ping-live 6s linear infinite;
+  animation: sports-match-carousel-ping-live 2s linear infinite;
   z-index: 0;
 }
 
@@ -152,7 +152,7 @@
   grid-template-columns: minmax(0, 1fr) 28px;
   column-gap: 8px;
   min-height: var(--sports-carousel-teams-min-height, 40px);
-  padding: var(--sports-carousel-teams-padding-y, 5px) 8px;
+  padding: var(--sports-carousel-teams-padding-y, 8px) 8px;
   box-sizing: border-box;
   background-color: #1a1a1a;
   overflow: hidden;

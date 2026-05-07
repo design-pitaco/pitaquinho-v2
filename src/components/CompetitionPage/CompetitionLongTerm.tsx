@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import './CompetitionLongTerm.css'
 import setaLink from '../../assets/setaLink.png'
+import { TeamLogo } from '../TeamLogo'
 
 import type { LongTermOdd } from './competitionData'
 
 interface CompetitionLongTermProps {
   tabs: { id: string; label: string }[]
   oddsByTab: Record<string, LongTermOdd[]>
+  sport?: string
 }
 
-export function CompetitionLongTerm({ tabs, oddsByTab }: CompetitionLongTermProps) {
+export function CompetitionLongTerm({ tabs, oddsByTab, sport = '' }: CompetitionLongTermProps) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? '')
   const odds = oddsByTab[activeTab] ?? []
 
@@ -35,7 +37,13 @@ export function CompetitionLongTerm({ tabs, oddsByTab }: CompetitionLongTermProp
         {odds.map((row) => (
           <button key={row.id} type="button" className="competition-longterm__row">
             {row.icon ? (
-              <img src={row.icon} alt="" className="competition-longterm__row-icon" />
+              <TeamLogo
+                teamName={row.label}
+                currentLogo={row.icon}
+                sport={sport}
+                className="competition-longterm__row-icon"
+                placeholderClassName="competition-longterm__row-icon competition-longterm__row-icon--placeholder"
+              />
             ) : (
               <span className="competition-longterm__row-icon competition-longterm__row-icon--placeholder" />
             )}

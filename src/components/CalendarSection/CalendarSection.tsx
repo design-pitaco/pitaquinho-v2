@@ -4,6 +4,7 @@ import './CalendarSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import {
   getCompetitionLinkTarget,
   type CompetitionLinkTarget,
@@ -74,7 +75,6 @@ import escudoWesleyan from '../../assets/escudoWesleyan.png'
 import escudoLafayette from '../../assets/escudoLafayette.png'
 import escudoPennsylvania from '../../assets/escudoPennsylvania.png'
 import escudoSouthCarolina from '../../assets/escudoSouthCarolina.png'
-import escudoCharleston from '../../assets/escudoCharleston.png'
 import escudoSouthern from '../../assets/escudoSouthern.png'
 import escudoTexas from '../../assets/escudoTexas.png'
 import escudoCaxias from '../../assets/escudoCaxias.png'
@@ -100,6 +100,49 @@ const basketballMarketChips: MarketChip[] = [
   { id: 'q3-total', label: '3° Quarto - Total de Pontos' },
   { id: 'q4-total', label: '4° Quarto - Total de Pontos' },
 ]
+
+const SHORT_COMPETITION_EVENT_LIMIT = 3
+const liveEventSports = new Set(['futebol', 'basquete'])
+
+function getCalendarSportFallbackIcon(sport: string): string {
+  if (sport === 'basquete') return iconBasquete
+  if (sport === 'futebol') return iconFutebol
+  return ''
+}
+
+function isCalendarSportFallbackIcon(icon: string | undefined, sport: string): boolean {
+  if (!icon) return true
+  if (sport === 'basquete') return icon === iconBasquete || icon === escudoDefaultBasquete
+  return icon === getCalendarSportFallbackIcon(sport)
+}
+
+interface CalendarTeamIconProps {
+  teamName: string
+  currentIcon: string | undefined
+  sport: string
+  side: 'home' | 'away'
+}
+
+function CalendarTeamIcon({ teamName, currentIcon, sport, side }: CalendarTeamIconProps) {
+  const fallbackIcon = getCalendarSportFallbackIcon(sport)
+  const resolvedIcon = useSportsDbTeamLogo(teamName, currentIcon, sport, fallbackIcon || undefined)
+
+  if (!resolvedIcon) return <div className="prematch-section__team-icon--placeholder" />
+
+  if (isCalendarSportFallbackIcon(resolvedIcon, sport)) {
+    const fallbackModifier = sport === 'basquete' ? 'basketball' : 'sport'
+
+    return (
+      <img
+        src={fallbackIcon}
+        alt=""
+        className={`prematch-section__team-icon prematch-section__team-icon--${fallbackModifier}-${side}`}
+      />
+    )
+  }
+
+  return <img src={resolvedIcon} alt="" className="prematch-section__team-icon" />
+}
 
 export interface CompetitionEvent {
   id: string
@@ -808,7 +851,7 @@ export const championships: Championship[] = [
         homeName: 'South Carolina St.',
         homeIcon: escudoSouthCarolina,
         awayName: 'Charleston',
-        awayIcon: escudoCharleston,
+        awayIcon: '',
         odds: { home: '1.95x', away: '1.85x' },
       },
       {
@@ -1126,13 +1169,25 @@ export function getCompetitionPageEvents(
 export const getCompetitionLiveEventMatch = (
   event: CompetitionEvent,
   sport: string,
-  matchTimes: Record<string, string> = {}
+  matchTimes: Record<string, string> = {},
+  league?: Championship
 ): LiveEventMatch => {
   const marketOdds = getMarketOdds(event, sport)
+  const handicapOdds = event.handicapOdds ?? (marketOdds.handicap ? {
+    line: marketOdds.handicap.homeLine,
+    home: marketOdds.handicap.home,
+    away: marketOdds.handicap.away,
+  } : undefined)
 
   return {
     id: event.id,
+    leagueId: league?.id,
+    leagueName: league?.name,
+    leagueFlag: league?.flag,
+    sport,
+    isLive: !!event.isLive,
     time: event.dateTime,
+    dateTime: event.dateTime,
     currentTime: matchTimes[event.id] || event.dateTime,
     homeTeam: {
       name: event.homeName,
@@ -1150,7 +1205,7 @@ export const getCompetitionLiveEventMatch = (
     totalGoalsOdds: marketOdds.totalGoals,
     totalCornersOdds: marketOdds.totalCorners,
     totalPointsOdds: marketOdds.totalPoints,
-    handicapOdds: event.handicapOdds,
+    handicapOdds,
     q3TotalOdds: marketOdds.q3Total,
     q4TotalOdds: marketOdds.q4Total,
   }
@@ -1166,17 +1221,17 @@ export const getCompetitionLiveEventOpenPayload = ({
   selectedEventId: string
   matchTimes?: Record<string, string>
 }): LiveEventOpenPayload | null => {
-  if (league.sport !== 'futebol') return null
+  if (!liveEventSports.has(league.sport)) return null
 
-  const liveEvents = league.events.filter((event) => event.isLive)
-  const selectedIndex = Math.max(0, liveEvents.findIndex((event) => event.id === selectedEventId))
-  const currentTimes = liveEvents.reduce<Record<string, string>>((times, event) => {
+  const eventMatches = league.events
+  const selectedIndex = Math.max(0, eventMatches.findIndex((event) => event.id === selectedEventId))
+  const currentTimes = eventMatches.reduce<Record<string, string>>((times, event) => {
     times[event.id] = matchTimes[event.id] || event.dateTime
     return times
   }, {})
 
   return {
-    matches: liveEvents.map((event) => getCompetitionLiveEventMatch(event, league.sport, matchTimes)),
+    matches: eventMatches.map((event) => getCompetitionLiveEventMatch(event, league.sport, matchTimes, league)),
     selectedIndex,
     leagueName: league.name,
     leagueFlag: league.flag,
@@ -1248,6 +1303,11 @@ const getCompetitionCalendarDaySections = (
   const fallbackGroups = filterCompetitionGroupsByEvent(groups, (event) => !event.isLive)
   return fallbackGroups.length > 0 ? [{ id: 'next', title: 'Próximos', groups: fallbackGroups }] : []
 }
+
+const getCompetitionCalendarEventCount = (sections: CompetitionCalendarDaySection[]) =>
+  sections.reduce((sectionTotal, section) => (
+    sectionTotal + section.groups.reduce((groupTotal, group) => groupTotal + group.events.length, 0)
+  ), 0)
 
 export function CalendarSection({
   sportFilter,
@@ -1399,10 +1459,11 @@ export function CalendarSection({
     const marketOdds = getMarketOdds(event, league.sport)
     const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
     const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
-    const isHomeFallback = league.sport === 'basquete' && (!homeIcon || homeIcon === escudoDefaultBasquete)
-    const isAwayFallback = league.sport === 'basquete' && (!awayIcon || awayIcon === escudoDefaultBasquete)
-    const isHomeSportFallback = league.sport === 'futebol' && homeIcon === iconFutebol
-    const isAwaySportFallback = league.sport === 'futebol' && awayIcon === iconFutebol
+    const handicapOdds = event.handicapOdds ?? (marketOdds.handicap ? {
+      line: marketOdds.handicap.homeLine,
+      home: marketOdds.handicap.home,
+      away: marketOdds.handicap.away,
+    } : undefined)
 
     if (event.isLive) {
       return (
@@ -1430,11 +1491,11 @@ export function CalendarSection({
             totalGoalsOdds: marketOdds.totalGoals,
             totalCornersOdds: marketOdds.totalCorners,
             totalPointsOdds: marketOdds.totalPoints,
-            handicapOdds: event.handicapOdds,
+            handicapOdds,
             q3TotalOdds: marketOdds.q3Total,
             q4TotalOdds: marketOdds.q4Total,
           }}
-          onClick={league.sport === 'futebol' ? () => openLiveEvent(league, event.id) : undefined}
+          onClick={liveEventSports.has(league.sport) ? () => openLiveEvent(league, event.id) : undefined}
         />
       )
     }
@@ -1442,55 +1503,29 @@ export function CalendarSection({
     const reiAntecipa = league.sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
 
     return (
-      <div key={event.id} className="prematch-section__match">
+      <div
+        key={event.id}
+        className={`prematch-section__match${liveEventSports.has(league.sport) ? ' prematch-section__match--clickable' : ''}`}
+        onClick={liveEventSports.has(league.sport) ? () => openLiveEvent(league, event.id) : undefined}
+      >
         <div className="prematch-section__match-header">
           <div className="prematch-section__teams-compact">
             <div className="prematch-section__team-row">
-              {isHomeSportFallback ? (
-                <img
-                  src={homeIcon}
-                  alt=""
-                  className="prematch-section__team-icon prematch-section__team-icon--sport-home"
-                />
-              ) : !isHomeFallback ? (
-                <img
-                  src={homeIcon}
-                  alt=""
-                  className="prematch-section__team-icon"
-                />
-              ) : league.sport === 'basquete' ? (
-                <img
-                  src={iconBasquete}
-                  alt=""
-                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
-                />
-              ) : (
-                <div className="prematch-section__team-icon--placeholder" />
-              )}
+              <CalendarTeamIcon
+                teamName={event.homeName}
+                currentIcon={homeIcon}
+                sport={league.sport}
+                side="home"
+              />
               <span className="prematch-section__team-name">{event.homeName}</span>
             </div>
             <div className="prematch-section__team-row">
-              {isAwaySportFallback ? (
-                <img
-                  src={awayIcon}
-                  alt=""
-                  className="prematch-section__team-icon prematch-section__team-icon--sport-away"
-                />
-              ) : !isAwayFallback ? (
-                <img
-                  src={awayIcon}
-                  alt=""
-                  className="prematch-section__team-icon"
-                />
-              ) : league.sport === 'basquete' ? (
-                <img
-                  src={iconBasquete}
-                  alt=""
-                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
-                />
-              ) : (
-                <div className="prematch-section__team-icon--placeholder" />
-              )}
+              <CalendarTeamIcon
+                teamName={event.awayName}
+                currentIcon={awayIcon}
+                sport={league.sport}
+                side="away"
+              />
               <span className="prematch-section__team-name">{event.awayName}</span>
             </div>
           </div>
@@ -1614,10 +1649,22 @@ export function CalendarSection({
   const competitionDaySections = isCompetitionPage
     ? getCompetitionCalendarDaySections(displayedEventGroups, liveOnly)
     : []
+  const competitionEventCount = getCompetitionCalendarEventCount(competitionDaySections)
+  const competitionSectionClasses = [
+    'prematch-section',
+    'calendar-section',
+    'calendar-section--competition',
+    'calendar-section--competition-days',
+    competitionEventCount > 0 && competitionEventCount <= SHORT_COMPETITION_EVENT_LIMIT
+      ? 'calendar-section--short-competition-list'
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   if (isCompetitionPage) {
     return (
-      <section className="prematch-section calendar-section calendar-section--competition calendar-section--competition-days">
+      <section className={competitionSectionClasses}>
         {competitionDaySections.map((section) => (
           <div key={section.id} className="calendar-section__competition-day">
             <h2 className="calendar-section__competition-day-title">{section.title}</h2>

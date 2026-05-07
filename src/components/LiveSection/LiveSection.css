@@ -308,7 +308,7 @@
   background-color: transparent;
   border: 0.5px solid #F87171;
   border-radius: 50%;
-  animation: ping-live 6s linear infinite;
+  animation: ping-live 2s linear infinite;
   z-index: 0;
 }
 
@@ -343,7 +343,7 @@
   background-color: transparent;
   border: 0.5px solid #F87171;
   border-radius: 50%;
-  animation: ping-live 6s linear infinite;
+  animation: ping-live 2s linear infinite;
   z-index: 0;
 }
 

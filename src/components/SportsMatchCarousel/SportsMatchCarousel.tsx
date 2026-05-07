@@ -1,17 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import './SportsMatchCarousel.css'
 import {
-  getCompetitionLiveEventOpenPayload,
+  getCompetitionLiveEventMatch,
   updateCompetitionMatchTime,
   type DisplayedCompetitionEvent,
 } from '../CalendarSection'
-import type { LiveEventOpenPayload } from '../../pages/LiveEventPage'
+import type { LiveEventOpenPayload, LiveEventRailItem } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import { TeamLogo } from '../TeamLogo'
 import iconAoVivo from '../../assets/iconAoVivo.png'
 import iconStreaming from '../../assets/iconStreaming.svg'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
-import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
 
 interface SportsMatchCarouselProps {
   events: DisplayedCompetitionEvent[]
@@ -31,6 +29,7 @@ const getInitialLiveTimes = (events: DisplayedCompetitionEvent[]) =>
   }, {})
 
 const SPORTS_MATCH_VISIBLE_CARDS = 2.5
+const liveEventSports = new Set(['futebol', 'basquete'])
 
 const readCssPixelValue = (styles: CSSStyleDeclaration, property: string, fallback: number) => {
   const value = Number.parseFloat(styles.getPropertyValue(property))
@@ -63,6 +62,63 @@ const getCompetitionPreMatchHeader = (dateTime: string) => {
     primary: timePart || datePart,
     secondary: datePart,
   }
+}
+
+const getLiveEventRailItem = (
+  { league, event }: DisplayedCompetitionEvent,
+  currentTimes: Record<string, string>,
+  competitionMode: boolean
+): LiveEventRailItem => {
+  const leagueName = getShortLeagueName(league.name)
+  const preMatchHeader = competitionMode
+    ? getCompetitionPreMatchHeader(event.dateTime)
+    : { primary: getPreMatchLabel(event.dateTime), secondary: leagueName }
+
+  return {
+    id: event.id,
+    leagueId: league.id,
+    leagueName: league.name,
+    leagueFlag: league.flag,
+    sport: league.sport,
+    isLive: !!event.isLive,
+    dateTime: event.dateTime,
+    currentTime: currentTimes[event.id] ?? event.dateTime,
+    headerPrimary: event.isLive ? currentTimes[event.id] ?? event.dateTime : preMatchHeader.primary,
+    headerSecondary: event.isLive ? undefined : preMatchHeader.secondary,
+    homeTeam: {
+      name: event.homeName,
+      icon: getTeamLogo(event.homeName, event.homeIcon),
+      score: event.homeScore,
+    },
+    awayTeam: {
+      name: event.awayName,
+      icon: getTeamLogo(event.awayName, event.awayIcon),
+      score: event.awayScore,
+    },
+    odds: event.odds,
+  }
+}
+
+interface SportsMatchTeamLogoProps {
+  teamName: string
+  currentLogo: string
+  sport: string
+  side: 'home' | 'away'
+}
+
+function SportsMatchTeamLogo({ teamName, currentLogo, sport, side }: SportsMatchTeamLogoProps) {
+  const fallbackModifier = sport === 'basquete' ? 'basketball' : 'sport'
+
+  return (
+    <TeamLogo
+      teamName={teamName}
+      currentLogo={currentLogo}
+      sport={sport}
+      className="sports-match-carousel__team-icon"
+      fallbackClassName={`sports-match-carousel__team-icon--${fallbackModifier}-${side}`}
+      placeholderClassName="sports-match-carousel__team-icon sports-match-carousel__team-icon--placeholder"
+    />
+  )
 }
 
 export function SportsMatchCarousel({
@@ -139,43 +195,6 @@ export function SportsMatchCarousel({
 
   if (events.length === 0) return null
 
-  const renderTeamIcon = (
-    icon: string,
-    teamName: string,
-    sport: string,
-    side: 'home' | 'away'
-  ) => {
-    const teamIcon = getTeamLogo(teamName, icon)
-    const isBasketballFallback = sport === 'basquete' && (!teamIcon || teamIcon === escudoDefaultBasquete)
-    const isFootballFallback = sport === 'futebol' && teamIcon === iconFutebol
-
-    if (isFootballFallback) {
-      return (
-        <img
-          src={teamIcon}
-          alt=""
-          className={`sports-match-carousel__team-icon sports-match-carousel__team-icon--sport-${side}`}
-        />
-      )
-    }
-
-    if (!isBasketballFallback && teamIcon) {
-      return <img src={teamIcon} alt="" className="sports-match-carousel__team-icon" />
-    }
-
-    if (sport === 'basquete') {
-      return (
-        <img
-          src={iconBasquete}
-          alt=""
-          className={`sports-match-carousel__team-icon sports-match-carousel__team-icon--basketball-${side}`}
-        />
-      )
-    }
-
-    return <span className="sports-match-carousel__team-icon sports-match-carousel__team-icon--placeholder" />
-  }
-
   return (
     <div className="sports-match-carousel" ref={carouselRef} aria-label="Jogos">
       <div className="sports-match-carousel__track">
@@ -185,13 +204,33 @@ export function SportsMatchCarousel({
           const preMatchHeader = competitionMode
             ? getCompetitionPreMatchHeader(event.dateTime)
             : { primary: getPreMatchLabel(event.dateTime), secondary: leagueName }
-          const canOpenLiveEvent = !!onLiveMatchClick && !!event.isLive && league.sport === 'futebol'
+          const canOpenLiveEvent = !!onLiveMatchClick && liveEventSports.has(league.sport)
           const openLiveEvent = () => {
-            const payload = getCompetitionLiveEventOpenPayload({
-              league,
-              selectedEventId: event.id,
-              matchTimes: currentTimes,
-            })
+            const railEvents = events.map((displayedEvent) => (
+              getLiveEventRailItem(displayedEvent, currentTimes, competitionMode)
+            ))
+            const eventMatches = events.filter(({ league: itemLeague }) => (
+              itemLeague.sport === league.sport && liveEventSports.has(itemLeague.sport)
+            ))
+            const selectedIndex = eventMatches.findIndex(({ league: itemLeague, event: itemEvent }) => (
+              itemLeague.id === league.id && itemEvent.id === event.id
+            ))
+            const payload: LiveEventOpenPayload | null = eventMatches.length > 0
+              ? {
+                  matches: eventMatches.map(({ league: itemLeague, event: itemEvent }) => (
+                    getCompetitionLiveEventMatch(itemEvent, itemLeague.sport, currentTimes, itemLeague)
+                  )),
+                  selectedIndex: Math.max(0, selectedIndex),
+                  leagueName: league.name,
+                  leagueFlag: league.flag,
+                  sport: league.sport,
+                  currentTimes: eventMatches.reduce<Record<string, string>>((times, { event: itemEvent }) => {
+                    times[itemEvent.id] = currentTimes[itemEvent.id] ?? itemEvent.dateTime
+                    return times
+                  }, {}),
+                  railEvents,
+                }
+              : null
 
             if (payload) onLiveMatchClick?.(payload)
           }
@@ -235,13 +274,23 @@ export function SportsMatchCarousel({
               </div>
 
               <div className="sports-match-carousel__teams">
-                <div className="sports-match-carousel__team-list">
+                  <div className="sports-match-carousel__team-list">
                   <div className="sports-match-carousel__team-row">
-                    {renderTeamIcon(event.homeIcon, event.homeName, league.sport, 'home')}
+                    <SportsMatchTeamLogo
+                      teamName={event.homeName}
+                      currentLogo={event.homeIcon}
+                      sport={league.sport}
+                      side="home"
+                    />
                     <span className="sports-match-carousel__team-name">{event.homeName}</span>
                   </div>
                   <div className="sports-match-carousel__team-row">
-                    {renderTeamIcon(event.awayIcon, event.awayName, league.sport, 'away')}
+                    <SportsMatchTeamLogo
+                      teamName={event.awayName}
+                      currentLogo={event.awayIcon}
+                      sport={league.sport}
+                      side="away"
+                    />
                     <span className="sports-match-carousel__team-name">{event.awayName}</span>
                   </div>
                 </div>

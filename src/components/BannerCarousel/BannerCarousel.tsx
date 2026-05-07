@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './BannerCarousel.css'
 import { Toast } from '../Toast'
+import { TeamLogo } from '../TeamLogo'
 import { 
   BottomSheet, 
   MissionObjective, 
@@ -625,13 +626,27 @@ export function BannerCarousel() {
                     <div className="banner-card__live-team">
                       <span className="banner-card__live-score">{banner.liveMatch.homeTeam.score}</span>
                       <span className="banner-card__live-dot" />
-                      <img src={banner.liveMatch.homeTeam.badge} alt="" className="banner-card__live-badge" />
+                      <TeamLogo
+                        teamName={banner.liveMatch.homeTeam.name}
+                        currentLogo={banner.liveMatch.homeTeam.badge}
+                        sport="basquete"
+                        className="banner-card__live-badge"
+                        fallbackClassName="banner-card__live-badge--sport"
+                        placeholderClassName="banner-card__live-badge banner-card__live-badge--placeholder"
+                      />
                       <span className="banner-card__live-team-name">{banner.liveMatch.homeTeam.name}</span>
                     </div>
                     <div className="banner-card__live-team">
                       <span className="banner-card__live-score">{banner.liveMatch.awayTeam.score}</span>
                       <span className="banner-card__live-dot" />
-                      <img src={banner.liveMatch.awayTeam.badge} alt="" className="banner-card__live-badge" />
+                      <TeamLogo
+                        teamName={banner.liveMatch.awayTeam.name}
+                        currentLogo={banner.liveMatch.awayTeam.badge}
+                        sport="basquete"
+                        className="banner-card__live-badge"
+                        fallbackClassName="banner-card__live-badge--sport"
+                        placeholderClassName="banner-card__live-badge banner-card__live-badge--placeholder"
+                      />
                       <span className="banner-card__live-team-name">{banner.liveMatch.awayTeam.name}</span>
                     </div>
                   </div>
@@ -691,7 +706,14 @@ export function BannerCarousel() {
                   <div className="banner-card__teams">
                     {banner.odds.filter(o => o.badge).map((odd, i) => (
                       <div key={i} className="banner-card__live-team">
-                        <img src={odd.badge} alt="" className="banner-card__live-badge" />
+                        <TeamLogo
+                          teamName={odd.team}
+                          currentLogo={odd.badge}
+                          sport="futebol"
+                          className="banner-card__live-badge"
+                          fallbackClassName="banner-card__live-badge--sport"
+                          placeholderClassName="banner-card__live-badge banner-card__live-badge--placeholder"
+                        />
                         <span className="banner-card__live-team-name">{odd.team}</span>
                       </div>
                     ))}

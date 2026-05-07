@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import './PreMatchSection.css'
 import { getTeamLogo } from '../../data/teamLogos'
+import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import {
   getCompetitionLinkTarget,
   type CompetitionLinkTarget,
 } from '../../utils/competitionNavigation'
+import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 
 import setaLink from '../../assets/setaLink.png'
 import iconFutebol from '../../assets/iconFutebol.png'
@@ -31,7 +33,6 @@ import escudoMiami from '../../assets/escudoMiami.png'
 import escudoLafayette from '../../assets/escudoLafayette.png'
 import escudoPennsylvania from '../../assets/escudoPennsylvania.png'
 import escudoSouthCarolina from '../../assets/escudoSouthCarolina.png'
-import escudoCharleston from '../../assets/escudoCharleston.png'
 import escudoSouthern from '../../assets/escudoSouthern.png'
 import escudoTexas from '../../assets/escudoTexas.png'
 import escudoCaxias from '../../assets/escudoCaxias.png'
@@ -154,6 +155,7 @@ interface League {
 
 interface PreMatchSectionProps {
   onOpenCompetition?: (target: CompetitionLinkTarget) => void
+  onMatchClick?: (payload: LiveEventOpenPayload) => void
 }
 
 const sportChips: SportChip[] = [
@@ -163,6 +165,45 @@ const sportChips: SportChip[] = [
   { id: 'volei', icon: iconVolei, label: 'Vôlei', disabled: true },
   { id: 'esoccer', icon: iconEsoccer, label: 'Esoccer', disabled: true },
 ]
+
+function getPreMatchSportFallbackIcon(sport: string): string {
+  if (sport === 'basquete') return iconBasquete
+  if (sport === 'futebol') return iconFutebol
+  return ''
+}
+
+function isPreMatchSportFallbackIcon(icon: string | undefined, sport: string): boolean {
+  if (!icon) return true
+  return icon === getPreMatchSportFallbackIcon(sport)
+}
+
+interface PreMatchTeamIconProps {
+  teamName: string
+  currentIcon: string | undefined
+  sport: string
+  side: 'home' | 'away'
+}
+
+function PreMatchTeamIcon({ teamName, currentIcon, sport, side }: PreMatchTeamIconProps) {
+  const fallbackIcon = getPreMatchSportFallbackIcon(sport)
+  const resolvedIcon = useSportsDbTeamLogo(teamName, currentIcon, sport, fallbackIcon || undefined)
+
+  if (!resolvedIcon) return <div className="prematch-section__team-icon--placeholder" />
+
+  if (isPreMatchSportFallbackIcon(resolvedIcon, sport)) {
+    const fallbackModifier = sport === 'basquete' ? 'basketball' : 'sport'
+
+    return (
+      <img
+        src={resolvedIcon}
+        alt=""
+        className={`prematch-section__team-icon prematch-section__team-icon--${fallbackModifier}-${side}`}
+      />
+    )
+  }
+
+  return <img src={resolvedIcon} alt="" className="prematch-section__team-icon" />
+}
 
 const footballMarketChips: MarketChip[] = [
   { id: 'resultado-final', label: 'Resultado Final' },
@@ -465,7 +506,7 @@ const leagues: League[] = [
         id: 'ncaab-pre-2',
         dateTime: 'Hoje, 21:00',
         homeTeam: { name: 'South Carolina State', icon: escudoSouthCarolina },
-        awayTeam: { name: 'Charleston Southern', icon: escudoCharleston },
+        awayTeam: { name: 'Charleston Southern', icon: '' },
         odds: { home: '1.95x', away: '1.85x' },
         totalPointsOdds: { line: 138.5, under: '1.88x', over: '1.92x' },
         handicapOdds: { line: -2.5, home: '1.90x', away: '1.90x' },
@@ -594,7 +635,7 @@ const leagues: League[] = [
   },
   ]
 
-export function PreMatchSection({ onOpenCompetition }: PreMatchSectionProps = {}) {
+export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSectionProps = {}) {
   const [activeSport, setActiveSport] = useState('futebol')
   const [activeMarket, setActiveMarket] = useState('resultado-final')
   const [openLeagues, setOpenLeagues] = useState<string[]>(
@@ -645,6 +686,62 @@ export function PreMatchSection({ onOpenCompetition }: PreMatchSectionProps = {}
     const target = getCompetitionLinkTarget(leagueId)
     if (!target) return
     onOpenCompetition?.(target)
+  }
+
+  const toLiveEventMatch = (league: League, match: Match): LiveEventMatch => ({
+    id: match.id,
+    leagueId: league.id,
+    leagueName: league.name,
+    leagueFlag: league.flag,
+    sport: league.sport,
+    isLive: false,
+    time: match.dateTime,
+    dateTime: match.dateTime,
+    currentTime: match.dateTime,
+    homeTeam: {
+      ...match.homeTeam,
+      score: 0,
+    },
+    awayTeam: {
+      ...match.awayTeam,
+      score: 0,
+    },
+    odds: match.odds,
+    doubleChanceOdds: match.doubleChanceOdds,
+    bothTeamsScoreOdds: match.bothTeamsScoreOdds,
+    totalGoalsOdds: match.totalGoalsOdds,
+    totalCornersOdds: match.totalCornersOdds,
+    totalPointsOdds: match.totalPointsOdds,
+    handicapOdds: match.handicapOdds,
+    q3TotalOdds: match.q3TotalOdds,
+    q4TotalOdds: match.q4TotalOdds,
+    extraBets: match.extraBets,
+  })
+
+  const openPreMatchEvent = (league: League, selectedIndex: number) => {
+    const selectedMatch = league.matches[selectedIndex]
+    if (!selectedMatch) return
+
+    const eventEntries = filteredLeagues.flatMap((eventLeague) => (
+      eventLeague.matches.map((match) => ({ league: eventLeague, match }))
+    ))
+    const selectedEventIndex = eventEntries.findIndex(({ league: eventLeague, match }) => (
+      eventLeague.id === league.id && match.id === selectedMatch.id
+    ))
+
+    const currentTimes = eventEntries.reduce<Record<string, string>>((times, { match }) => {
+      times[match.id] = match.dateTime
+      return times
+    }, {})
+
+    onMatchClick?.({
+      matches: eventEntries.map(({ league: eventLeague, match }) => toLiveEventMatch(eventLeague, match)),
+      selectedIndex: Math.max(0, selectedEventIndex),
+      leagueName: league.name,
+      leagueFlag: league.flag,
+      sport: league.sport,
+      currentTimes,
+    })
   }
 
   const toggleLeague = (leagueId: string) => {
@@ -756,37 +853,31 @@ export function PreMatchSection({ onOpenCompetition }: PreMatchSectionProps = {}
               <div className={`prematch-section__matches-wrapper ${openLeagues.includes(league.id) ? 'prematch-section__matches-wrapper--open' : ''}`}>
                 <div className="prematch-section__matches-inner">
                   <div className="prematch-section__matches">
-                    {league.matches.map((match) => (
-                      <div key={match.id} className="prematch-section__match">
+                    {league.matches.map((match, matchIndex) => (
+                      <div
+                        key={match.id}
+                        className={`prematch-section__match${onMatchClick ? ' prematch-section__match--clickable' : ''}`}
+                        onClick={onMatchClick ? () => openPreMatchEvent(league, matchIndex) : undefined}
+                      >
                         {/* Match Header */}
                         <div className="prematch-section__match-header">
                           <div className="prematch-section__teams-compact">
                             <div className="prematch-section__team-row">
-                              {match.homeTeam.icon ? (
-                                <img src={match.homeTeam.icon} alt="" className="prematch-section__team-icon" />
-                              ) : league.sport === 'basquete' ? (
-                                <img
-                                  src={iconBasquete}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-home"
-                                />
-                              ) : (
-                                <div className="prematch-section__team-icon--placeholder" />
-                              )}
+                              <PreMatchTeamIcon
+                                teamName={match.homeTeam.name}
+                                currentIcon={match.homeTeam.icon}
+                                sport={league.sport}
+                                side="home"
+                              />
                               <span className="prematch-section__team-name">{match.homeTeam.name}</span>
                             </div>
                             <div className="prematch-section__team-row">
-                              {match.awayTeam.icon ? (
-                                <img src={match.awayTeam.icon} alt="" className="prematch-section__team-icon" />
-                              ) : league.sport === 'basquete' ? (
-                                <img
-                                  src={iconBasquete}
-                                  alt=""
-                                  className="prematch-section__team-icon prematch-section__team-icon--basketball-away"
-                                />
-                              ) : (
-                                <div className="prematch-section__team-icon--placeholder" />
-                              )}
+                              <PreMatchTeamIcon
+                                teamName={match.awayTeam.name}
+                                currentIcon={match.awayTeam.icon}
+                                sport={league.sport}
+                                side="away"
+                              />
                               <span className="prematch-section__team-name">{match.awayTeam.name}</span>
                             </div>
                           </div>

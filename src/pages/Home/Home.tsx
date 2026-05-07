@@ -209,7 +209,10 @@ export function Home() {
             onOpenCompetition={handleOpenCompetition}
           />
           <EscadinhaSection />
-          <PreMatchSection onOpenCompetition={handleOpenCompetition} />
+          <PreMatchSection
+            onOpenCompetition={handleOpenCompetition}
+            onMatchClick={handleLiveMatchClick}
+          />
           {/* <TreasureSection /> */}
           {/* <WinningNowSection /> */}
         </Fragment>
@@ -219,6 +222,7 @@ export function Home() {
           isOpen={true}
           onClose={() => setSelectedLiveMatch(null)}
           matches={selectedLiveMatch.matches}
+          railEvents={selectedLiveMatch.railEvents}
           selectedIndex={selectedLiveMatch.selectedIndex}
           currentTimes={selectedLiveMatch.currentTimes}
           leagueName={selectedLiveMatch.leagueName}

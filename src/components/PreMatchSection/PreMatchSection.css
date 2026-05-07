@@ -236,6 +236,10 @@
   border-radius: 12px;
 }
 
+.prematch-section__match--clickable {
+  cursor: pointer;
+}
+
 .prematch-section__match-header {
   display: flex;
   align-items: center;

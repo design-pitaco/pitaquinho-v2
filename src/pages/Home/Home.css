@@ -1,6 +1,6 @@
 .home {
   --sport-header-transition: 160ms cubic-bezier(0.2, 0, 0, 1);
-  --sport-header-padding-top: 287px;
+  --sport-header-padding-top: 293px;
   --sport-header-bg-height: 362px;
   --highlight-header-bg-height: 266px;
   --header-top-padding-y: 20px;
@@ -16,7 +16,7 @@
   --sports-carousel-header-font-size: 10px;
   --sports-carousel-teams-gap: 4px;
   --sports-carousel-teams-min-height: 40px;
-  --sports-carousel-teams-padding-y: 5px;
+  --sports-carousel-teams-padding-y: 8px;
   --sports-carousel-team-row-height: 13px;
   --sports-carousel-team-font-size: 11px;
   min-height: 100vh;
@@ -44,15 +44,15 @@
 }
 
 .home--sport-active.home--header-compact {
-  --sport-header-padding-top: 229px;
+  --sport-header-padding-top: 241px;
   --sport-header-bg-height: 296px;
   --sport-filter-padding-bottom: 12px;
   --sports-carousel-padding-bottom: 12px;
   --sports-carousel-card-header-min-height: 28px;
-  --sports-carousel-card-header-padding-y: 6px;
+  --sports-carousel-card-header-padding-y: 8px;
   --sports-carousel-teams-gap: 3px;
   --sports-carousel-teams-min-height: 34px;
-  --sports-carousel-teams-padding-y: 4px;
+  --sports-carousel-teams-padding-y: 8px;
   --sports-carousel-team-row-height: 12px;
   padding-top: var(--sport-header-padding-top);
 }

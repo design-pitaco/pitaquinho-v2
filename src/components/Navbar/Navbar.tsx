@@ -1,23 +1,22 @@
 import './Navbar.css'
 
-import iconAoVivo from '../../assets/iconFooterAoVivo.png'
-import iconBusca from '../../assets/iconBuscaHeader.svg'
-import navEntradas from '../../assets/navEntradas.svg'
+import navApostas from '../../assets/navApostas.svg'
+import navBusca from '../../assets/navBusca.svg'
+import navClub from '../../assets/navClub.svg'
 import navHome from '../../assets/navHome.svg'
-import navPitacoClub from '../../assets/navPitacoClub.svg'
+import navLive from '../../assets/navLive.svg'
 
 interface NavItem {
   id: string
   icon: string
   label: string
-  iconClassName?: string
 }
 
 const navItems: NavItem[] = [
   { id: 'home', icon: navHome, label: 'Início' },
-  { id: 'ao-vivo', icon: iconAoVivo, label: 'Ao Vivo', iconClassName: 'navbar__icon--live' },
-  { id: 'pitaco-club', icon: navPitacoClub, label: 'Pitaco Club' },
-  { id: 'apostas', icon: navEntradas, label: 'Apostas' },
+  { id: 'ao-vivo', icon: navLive, label: 'Ao Vivo' },
+  { id: 'pitaco-club', icon: navClub, label: 'Pitaco Club' },
+  { id: 'apostas', icon: navApostas, label: 'Apostas' },
 ]
 
 export function Navbar() {
@@ -43,7 +42,7 @@ export function Navbar() {
                     <img
                       src={item.icon}
                       alt=""
-                      className={`navbar__icon${item.iconClassName ? ` ${item.iconClassName}` : ''}`}
+                      className="navbar__icon"
                     />
                   </span>
                   <span className="navbar__label">{item.label}</span>
@@ -56,7 +55,7 @@ export function Navbar() {
         <div className="navbar__panel navbar__panel--search">
           <button type="button" className="navbar__item navbar__item--search" aria-label="Buscar">
             <span className="navbar__icon-slot">
-              <img src={iconBusca} alt="" className="navbar__icon navbar__icon--search" />
+              <img src={navBusca} alt="" className="navbar__icon" />
             </span>
             <span className="navbar__label">Buscar</span>
           </button>

@@ -7,6 +7,7 @@ import setaLink from '../../assets/setaLink.png'
 import iconAoVivo from '../../assets/iconAoVivo.png'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
+import { TeamLogo } from '../TeamLogo'
 
 import type { CompetitionMatch } from './competitionData'
 
@@ -127,6 +128,21 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
     )
   }
 
+  const renderTeamLogo = (teamName: string, currentLogo: string, side: 'home' | 'away') => {
+    const fallbackModifier = sport === 'basquete' ? 'basketball' : 'sport'
+
+    return (
+      <TeamLogo
+        teamName={teamName}
+        currentLogo={currentLogo}
+        sport={sport}
+        className="prematch-section__team-icon"
+        fallbackClassName={`prematch-section__team-icon--${fallbackModifier}-${side}`}
+        placeholderClassName="prematch-section__team-icon--placeholder"
+      />
+    )
+  }
+
   return (
     <section className="prematch-section calendar-section competition-calendar">
       <div className="prematch-section__header">
@@ -168,14 +184,14 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
                   </div>
                 )}
                 <div className="prematch-section__team-row">
-                  <img src={m.homeIcon} alt="" className="prematch-section__team-icon" />
+                  {renderTeamLogo(m.homeName, m.homeIcon, 'home')}
                   <span className="prematch-section__team-name">{m.homeName}</span>
                   {m.isLive && (
                     <span className="competition-calendar__score">{m.homeScore ?? 0}</span>
                   )}
                 </div>
                 <div className="prematch-section__team-row">
-                  <img src={m.awayIcon} alt="" className="prematch-section__team-icon" />
+                  {renderTeamLogo(m.awayName, m.awayIcon, 'away')}
                   <span className="prematch-section__team-name">{m.awayName}</span>
                   {m.isLive && (
                     <span className="competition-calendar__score">{m.awayScore ?? 0}</span>

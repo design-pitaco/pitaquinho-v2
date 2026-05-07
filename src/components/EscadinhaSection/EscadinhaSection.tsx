@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import './EscadinhaSection.css'
+import { TeamLogo } from '../TeamLogo'
 
 import iconDuvida from '../../assets/iconDuvida.png'
 import bgEscadinhaJoao from '../../assets/bgEscadinhaJoao.png'
@@ -197,8 +198,22 @@ export function EscadinhaSection() {
                 {/* Match Info */}
                 <div className="escadinha-card__match">
                   <div className="escadinha-card__shields">
-                    <img src={card.awayTeam.icon} alt="" className="escadinha-card__shield escadinha-card__shield--back" />
-                    <img src={card.homeTeam.icon} alt="" className="escadinha-card__shield escadinha-card__shield--front" />
+                    <TeamLogo
+                      teamName={card.awayTeam.name}
+                      currentLogo={card.awayTeam.icon}
+                      sport="futebol"
+                      className="escadinha-card__shield escadinha-card__shield--back"
+                      fallbackClassName="escadinha-card__shield--sport"
+                      placeholderClassName="escadinha-card__shield escadinha-card__shield--placeholder"
+                    />
+                    <TeamLogo
+                      teamName={card.homeTeam.name}
+                      currentLogo={card.homeTeam.icon}
+                      sport="futebol"
+                      className="escadinha-card__shield escadinha-card__shield--front"
+                      fallbackClassName="escadinha-card__shield--sport"
+                      placeholderClassName="escadinha-card__shield escadinha-card__shield--placeholder"
+                    />
                   </div>
                   <span className="escadinha-card__match-name">
                     {card.homeTeam.name} vs {card.awayTeam.name}

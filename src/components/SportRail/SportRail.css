@@ -1,10 +1,12 @@
 .sport-rail {
+  --sport-rail-pulse-safe-area: 4px;
   position: relative;
   z-index: 1;
   width: 100%;
+  margin-top: calc(var(--sport-rail-pulse-safe-area) * -1);
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 0 var(--sport-rail-padding-bottom, 20px) 12px;
+  padding: var(--sport-rail-pulse-safe-area) 0 var(--sport-rail-padding-bottom, 20px) 12px;
   transition: padding-bottom var(--sport-header-transition, 160ms cubic-bezier(0.2, 0, 0, 1));
 }
 
@@ -109,7 +111,7 @@
   border-radius: 50%;
   background: transparent;
   transform: translate(-50%, -50%);
-  animation: sport-rail-ping-live 6s linear infinite;
+  animation: sport-rail-ping-live 2s linear infinite;
   z-index: 0;
 }
 

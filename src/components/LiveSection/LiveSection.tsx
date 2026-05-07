@@ -165,6 +165,8 @@ const basketballMarketChips: MarketChip[] = [
   { id: 'q4-total', label: '4° Quarto - Total de Pontos' },
 ]
 
+const liveEventSports = new Set(['futebol', 'basquete'])
+
 const leagues: League[] = [
   {
     id: 'brasil-serie-a',
@@ -680,9 +682,15 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
     return matchTimes[matchId] || defaultTime
   }
 
-  const toLiveEventMatch = (match: Match): LiveEventMatch => ({
+  const toLiveEventMatch = (league: League, match: Match): LiveEventMatch => ({
     id: match.id,
+    leagueId: league.id,
+    leagueName: league.name,
+    leagueFlag: league.flag,
+    sport: league.sport,
+    isLive: true,
     time: match.time,
+    dateTime: match.time,
     currentTime: getMatchTime(match.id, match.time),
     homeTeam: match.homeTeam,
     awayTeam: match.awayTeam,
@@ -699,16 +707,25 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
   })
 
   const openLiveEvent = (league: League, selectedIndex: number) => {
-    if (league.sport !== 'futebol') return
+    if (!liveEventSports.has(league.sport)) return
+    const selectedMatch = league.matches[selectedIndex]
+    if (!selectedMatch) return
 
-    const currentTimes = league.matches.reduce<Record<string, string>>((times, match) => {
+    const eventEntries = filteredLeagues.flatMap((eventLeague) => (
+      eventLeague.matches.map((match) => ({ league: eventLeague, match }))
+    ))
+    const selectedEventIndex = eventEntries.findIndex(({ league: eventLeague, match }) => (
+      eventLeague.id === league.id && match.id === selectedMatch.id
+    ))
+
+    const currentTimes = eventEntries.reduce<Record<string, string>>((times, { match }) => {
       times[match.id] = getMatchTime(match.id, match.time)
       return times
     }, {})
 
     onMatchClick?.({
-      matches: league.matches.map(toLiveEventMatch),
-      selectedIndex,
+      matches: eventEntries.map(({ league: eventLeague, match }) => toLiveEventMatch(eventLeague, match)),
+      selectedIndex: Math.max(0, selectedEventIndex),
       leagueName: league.name,
       leagueFlag: league.flag,
       sport: league.sport,
@@ -828,7 +845,7 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
                         sport={league.sport}
                         activeMarket={activeMarket}
                         currentTime={getMatchTime(match.id, match.time)}
-                        onClick={league.sport === 'futebol' ? () => openLiveEvent(league, matchIndex) : undefined}
+                        onClick={liveEventSports.has(league.sport) ? () => openLiveEvent(league, matchIndex) : undefined}
                       />
                     ))}
                   </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import './OffersSection.css'
+import { TeamLogo } from '../TeamLogo'
 
 import iconCombinada from '../../assets/iconCombinada.png'
 import iconSuperCombinada from '../../assets/iconSuperCombinada.png'
@@ -55,6 +56,53 @@ const filterChips: FilterChip[] = [
   { id: 'aumentada', label: 'Aumentada' },
   { id: 'pechinchas', label: 'Pechinchas' },
 ]
+
+const offerTeamNameByLogo: Record<string, string> = {
+  [escudoBayerLeverkusen]: 'B. Leverkusen',
+  [escudoBayerMunique]: 'Bayern',
+  [escudoPSG]: 'PSG',
+  [escudoLyon]: 'Lyon',
+  [escudoCruzeiro]: 'Cruzeiro',
+  [escudoPalmeiras]: 'Palmeiras',
+  [escudoFluminense]: 'Fluminense',
+  [escudoBotafogo]: 'Botafogo',
+  [escudoBahia]: 'Bahia',
+  [escudoManchesterCity]: 'Man. City',
+  [escudoLiverpool]: 'Liverpool',
+  [escudoBarcelonaGde]: 'Barcelona',
+  [escudoBotafogoGde]: 'Botafogo',
+  [escudoFlamengoGde]: 'Flamengo',
+  [escudo76ersGde]: '76ers',
+  [escudoWarriorsGde]: 'Warriors',
+  [escudoBullsGde]: 'Bulls',
+  [escudoPistonsGde]: 'Pistons',
+  [escudoMiami]: 'Heat',
+  [escudoLakers]: 'Lakers',
+  [escudoCavaliers]: 'Cavaliers',
+}
+
+interface OfferTeamLogoProps {
+  teamName: string
+  currentLogo: string
+  sport: string
+  className: string
+}
+
+function OfferTeamLogo({ teamName, currentLogo, sport, className }: OfferTeamLogoProps) {
+  return (
+    <TeamLogo
+      teamName={teamName}
+      currentLogo={currentLogo}
+      sport={sport}
+      className={className}
+      fallbackClassName={`${className}--sport`}
+      placeholderClassName={`${className} ${className}--placeholder`}
+    />
+  )
+}
+
+const getOfferTeamName = (label: string, logo: string) =>
+  offerTeamNameByLogo[logo] ?? label
 
 interface OfferCard {
   id: string
@@ -1153,7 +1201,12 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
               <div className="offer-card__events">
                 {offer.events.map((event, index) => (
                   <div key={index} className="offer-card__event">
-                    <img src={event.team1Icon} alt="" className="offer-card__event-icon" />
+                    <OfferTeamLogo
+                      teamName={getOfferTeamName(event.team1, event.team1Icon)}
+                      currentLogo={event.team1Icon}
+                      sport={offer.sport ?? ''}
+                      className="offer-card__event-icon"
+                    />
                     <div className="offer-card__event-info">
                       <span className="offer-card__event-team">{event.team1}</span>
                       <span className="offer-card__event-dot">•</span>
@@ -1161,7 +1214,12 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
                     </div>
                     <div className="offer-card__event-vs">
                       <span>vs</span>
-                      <img src={event.team2Icon} alt="" className="offer-card__event-icon" />
+                      <OfferTeamLogo
+                        teamName={getOfferTeamName('', event.team2Icon)}
+                        currentLogo={event.team2Icon}
+                        sport={offer.sport ?? ''}
+                        className="offer-card__event-icon"
+                      />
                     </div>
                   </div>
                 ))}
@@ -1173,7 +1231,16 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
               <div className="offer-card__player-events">
                 {offer.playerEvents.map((pEvent, index) => (
                   <div key={index} className="offer-card__player-event">
-                    <img src={pEvent.icon} alt="" className="offer-card__player-event-icon" />
+                    {offerTeamNameByLogo[pEvent.icon] ? (
+                      <OfferTeamLogo
+                        teamName={offerTeamNameByLogo[pEvent.icon]}
+                        currentLogo={pEvent.icon}
+                        sport={offer.sport ?? ''}
+                        className="offer-card__player-event-icon"
+                      />
+                    ) : (
+                      <img src={pEvent.icon} alt="" className="offer-card__player-event-icon" />
+                    )}
                     <div className="offer-card__player-event-info">
                       <span className="offer-card__player-event-name">{pEvent.name}</span>
                       <span className="offer-card__player-event-dot">•</span>
@@ -1235,7 +1302,12 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
             {offer.teamStat && (
               <div className="offer-card__team-stat">
                 <div className="offer-card__team-stat-avatar">
-                  <img src={offer.teamStat.teamIcon} alt={offer.teamStat.teamName} className="offer-card__team-stat-icon" />
+                  <OfferTeamLogo
+                    teamName={offer.teamStat.teamName}
+                    currentLogo={offer.teamStat.teamIcon}
+                    sport={offer.sport ?? ''}
+                    className="offer-card__team-stat-icon"
+                  />
                   <div className="offer-card__team-stat-badge">
                     <img src={offer.teamStat.sportIcon || iconFutebol} alt="" />
                   </div>

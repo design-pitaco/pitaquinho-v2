@@ -33,7 +33,7 @@ interface SportsDbPlayersResponse {
   player?: SportsDbPlayerRecord[] | null
 }
 
-const API_KEY = '3'
+const API_KEY = import.meta.env.VITE_THESPORTSDB_API_KEY ?? '3'
 const API_BASE_URL = import.meta.env.DEV
   ? `/sportsdb/api/v1/json/${API_KEY}`
   : `https://www.thesportsdb.com/api/v1/json/${API_KEY}`
