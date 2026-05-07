@@ -303,7 +303,7 @@
 .live-event-page__rail-stream-icon {
   width: 12px;
   height: 12px;
-  object-fit: contain;
+  color: #f87171;
   flex: 0 0 auto;
 }
 
@@ -1337,24 +1337,22 @@
 .live-event-page__tab-icon {
   width: 16px;
   height: 16px;
-  object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(45%);
+  color: #6e6e6e;
 }
 
 .live-event-page__tab--active .live-event-page__tab-icon {
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 .live-event-page__tab-field-icon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(45%);
+  color: #6e6e6e;
 }
 
 .live-event-page__tab--active .live-event-page__tab-field-icon {
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 /* ── Streaming ── */
@@ -1986,6 +1984,13 @@
   width: 12px;
   height: 12px;
   object-fit: contain;
+  display: block;
+}
+
+.live-event-page__player-stat-svg {
+  width: 12px;
+  height: 12px;
+  color: #9ecc30;
   display: block;
 }
 

@@ -10,6 +10,8 @@
   --sport-rail-label-opacity: 1;
   --sport-rail-label-translate-y: 0px;
   --sport-filter-padding-bottom: 20px;
+  --home-market-sticky-top: 194px;
+  --home-market-sticky-bg-height: 266px;
   --sports-carousel-padding-bottom: 20px;
   --sports-carousel-card-header-min-height: 34px;
   --sports-carousel-card-header-padding-y: 8px;
@@ -30,6 +32,10 @@
 
 .home--sport-active {
   padding-top: var(--sport-header-padding-top);
+}
+
+.home--event-rail-active {
+  --sport-header-bg-height: 266px;
 }
 
 .home--header-compact {
@@ -81,6 +87,27 @@
 .home--header-morph-active .sports-match-carousel__team-row,
 .home--header-morph-active .sports-match-carousel__score-column,
 .home--header-morph-active .sports-match-carousel__team-score {
+  transition: none;
+}
+
+.home[data-market-sticky-engaged="true"] .header--highlight-chips .header__bg-dark {
+  height: max(var(--highlight-header-bg-height, 266px), var(--home-market-sticky-bg-height, 266px));
+  transition: none;
+}
+
+.home[data-market-sticky-rail-protection="true"] .header--highlight-chips .header__bg-dark {
+  height: max(var(--highlight-header-bg-height, 266px), var(--home-market-sticky-bg-height, 266px));
+  transition: none;
+}
+
+.home[data-market-sticky-engaged="true"] .header--sport-active .header__bg-dark {
+  height: max(var(--sport-header-bg-height, 362px), var(--home-market-sticky-bg-height, 266px));
+  transition: none;
+}
+
+.home[data-market-sticky-rail-protection="true"] .header--sport-active .header__bg-dark,
+.home[data-market-sticky-rail-clipped="true"] .header--sport-active .header__bg-dark {
+  height: var(--sport-header-bg-height, 362px);
   transition: none;
 }
 

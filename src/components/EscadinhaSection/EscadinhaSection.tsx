@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
+import { QuestionIcon } from '@phosphor-icons/react'
 import './EscadinhaSection.css'
 import { TeamLogo } from '../TeamLogo'
 
-import iconDuvida from '../../assets/iconDuvida.png'
 import bgEscadinhaJoao from '../../assets/bgEscadinhaJoao.png'
 import bgEscadinhaMbape from '../../assets/bgEscadinhaMbape.png'
 import escudoChelsea from '../../assets/escudoChelsea.png'
@@ -174,7 +174,7 @@ export function EscadinhaSection() {
       <div className="escadinha-section__header">
         <div className="escadinha-section__title">
           <span>Escadinha</span>
-          <img src={iconDuvida} alt="Dúvidas" className="escadinha-section__help" />
+          <QuestionIcon aria-label="Dúvidas" className="escadinha-section__help" weight="bold" />
         </div>
       </div>
 

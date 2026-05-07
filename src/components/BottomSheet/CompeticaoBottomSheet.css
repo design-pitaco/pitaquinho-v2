@@ -52,6 +52,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  color: #a8a8a8;
 }
 
 .competicao-bs__search-input-box {
@@ -128,7 +129,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
   transform: rotate(180deg);
   transition: transform 0.2s ease;
 }
@@ -182,8 +183,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  filter: brightness(0) invert(1);
-  object-fit: contain;
+  color: #ffffff;
 }
 
 /* Countries list */
@@ -236,7 +236,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
   transform: rotate(180deg);
   transition: transform 0.2s ease;
 }

@@ -141,11 +141,12 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  color: #ffffff;
 }
 
 .bottom-sheet__close-icon {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Body - Scrollable */
@@ -369,7 +370,7 @@
   width: 16px;
   height: 16px;
   transform: rotate(-360deg);
-  filter: brightness(0) saturate(100%) invert(52%) sepia(94%) saturate(371%) hue-rotate(101deg) brightness(93%) contrast(88%);
+  color: #32a866;
 }
 
 /* Mission Info Row */
@@ -447,13 +448,13 @@
 .mission-faq-item__icon {
   width: 16px;
   height: 16px;
+  color: #ffffff;
   transform: rotate(180deg);
-  filter: brightness(0) invert(1);
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .mission-faq-item--expanded .mission-faq-item__icon {
-  filter: brightness(0) saturate(100%) invert(52%) sepia(94%) saturate(371%) hue-rotate(101deg) brightness(93%) contrast(88%);
+  color: #32a866;
 }
 
 .mission-faq-item__icon--rotated {

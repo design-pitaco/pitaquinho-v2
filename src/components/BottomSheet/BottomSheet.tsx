@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { CaretUpIcon, XIcon } from '@phosphor-icons/react'
 import './BottomSheet.css'
-
-import iconAccordion from '../../assets/iconAccordion.png'
-import iconFechar from '../../assets/iconFechar.svg'
 
 interface BottomSheetProps {
   isOpen: boolean
@@ -141,8 +139,8 @@ export function BottomSheet({
           ) : (
             <span className="bottom-sheet__title-spacer" />
           )}
-          <button className="bottom-sheet__close" onClick={handleClose}>
-            <img src={iconFechar} alt="Fechar" className="bottom-sheet__close-icon" />
+          <button type="button" className="bottom-sheet__close" onClick={handleClose} aria-label="Fechar">
+            <XIcon aria-hidden="true" className="bottom-sheet__close-icon" weight="bold" />
           </button>
         </div>
 
@@ -221,10 +219,10 @@ export function MissionFaqItem({ question, answer, defaultOpen = false }: Missio
         onClick={() => answer && setIsExpanded(!isExpanded)}
       >
         <span className="mission-faq-item__question">{question}</span>
-        <img 
-          src={iconAccordion} 
-          alt="" 
-          className={`mission-faq-item__icon ${isExpanded ? 'mission-faq-item__icon--rotated' : ''}`} 
+        <CaretUpIcon
+          aria-hidden="true"
+          className={`mission-faq-item__icon ${isExpanded ? 'mission-faq-item__icon--rotated' : ''}`}
+          weight="bold"
         />
       </button>
       {answer && (

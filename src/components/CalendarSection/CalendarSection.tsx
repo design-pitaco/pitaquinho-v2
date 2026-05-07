@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect, type RefObject } from 'react'
+import { useState, useRef, useEffect, type ReactNode, type RefObject } from 'react'
+import { CaretRightIcon, CaretUpIcon } from '@phosphor-icons/react'
 import '../PreMatchSection/PreMatchSection.css'
 import './CalendarSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import { useHomeMarketStickyState } from '../../hooks/useHomeMarketStickyVisible'
 import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 import {
@@ -11,12 +13,10 @@ import {
   type CompetitionLinkTarget,
 } from '../../utils/competitionNavigation'
 
-import setaLink from '../../assets/setaLink.png'
-import iconAccordion from '../../assets/iconAccordion.png'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
 // Flags
 import flagBrasil from '../../assets/flagBrasil.png'
 import flagMundo from '../../assets/flagMundo.png'
@@ -1359,7 +1359,7 @@ function MarketChips({
 
   return (
     <div
-      className={`prematch-section__chips sliding-chip-group${className ? ` ${className}` : ''}`}
+      className={`prematch-section__chips sliding-chip-group sliding-chip-group--indicator-ready${className ? ` ${className}` : ''}`}
       ref={chipsRef}
     >
       <span className="sliding-chip-indicator" aria-hidden="true" />
@@ -1380,6 +1380,56 @@ function MarketChips({
   )
 }
 
+const getMarketStickyClassName = (
+  stickyState: { isStuck: boolean; isVisible: boolean },
+  className = ''
+) => [
+  'prematch-section__chips--sticky',
+  className,
+  stickyState.isStuck ? 'prematch-section__chips--sticky-stuck' : '',
+  stickyState.isVisible ? '' : 'prematch-section__chips--sticky-hidden',
+]
+  .filter(Boolean)
+  .join(' ')
+
+interface CompetitionDayMarketSectionProps {
+  section: CompetitionCalendarDaySection
+  activeMarketId: string
+  chips: MarketChip[]
+  onMarketChange: (marketId: string) => void
+  renderEventCard: (league: Championship, event: CompetitionEvent, selectedMarket?: string) => ReactNode
+}
+
+function CompetitionDayMarketSection({
+  section,
+  activeMarketId,
+  chips,
+  onMarketChange,
+  renderEventCard,
+}: CompetitionDayMarketSectionProps) {
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const marketChipsRef = useRef<HTMLDivElement>(null)
+  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
+
+  return (
+    <div key={section.id} className="calendar-section__competition-day" ref={sectionRef}>
+      <h2 className="calendar-section__competition-day-title">{section.title}</h2>
+      <MarketChips
+        activeMarketId={activeMarketId}
+        chips={chips}
+        className={getMarketStickyClassName(marketStickyState, 'calendar-section__competition-chips')}
+        containerRef={marketChipsRef}
+        onMarketChange={onMarketChange}
+      />
+      <div className="prematch-section__matches calendar-section__competition-matches">
+        {section.groups.flatMap(({ league, events }) =>
+          events.map((event) => renderEventCard(league, event, activeMarketId))
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function CalendarSection({
   sportFilter,
   competitionId,
@@ -1388,9 +1438,11 @@ export function CalendarSection({
   onLiveMatchClick,
   onOpenCompetition,
 }: CalendarSectionProps = {}) {
+  const sectionRef = useRef<HTMLElement>(null)
   const [activeMarket, setActiveMarket] = useState(() => getDefaultMarketId(sportFilter))
   const [competitionSectionMarkets, setCompetitionSectionMarkets] = useState<Record<string, string>>({})
   const marketChipsRef = useRef<HTMLDivElement>(null)
+  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
   const [internalMatchTimes, setInternalMatchTimes] = useState<Record<string, string>>(() => {
     const times: Record<string, string> = {}
     championships.forEach((championship) => {
@@ -1568,7 +1620,7 @@ export function CalendarSection({
               )}
               <span className="prematch-section__match-datetime">{event.dateTime}</span>
             </div>
-            <img src={setaLink} alt="" className="prematch-section__match-arrow" />
+            <CaretRightIcon aria-hidden="true" className="prematch-section__match-arrow" weight="bold" />
           </div>
         </div>
 
@@ -1698,24 +1750,19 @@ export function CalendarSection({
           const sectionMarket = competitionSectionMarkets[section.id] ?? getDefaultMarketId(section.groups[0]?.league.sport ?? currentSport)
 
           return (
-            <div key={section.id} className="calendar-section__competition-day">
-              <h2 className="calendar-section__competition-day-title">{section.title}</h2>
-              {renderMarketChips({
-                className: 'calendar-section__competition-chips',
-                activeMarketId: sectionMarket,
-                onMarketChange: (marketId) => {
-                  setCompetitionSectionMarkets((current) => ({
-                    ...current,
-                    [section.id]: marketId,
-                  }))
-                },
-              })}
-              <div className="prematch-section__matches calendar-section__competition-matches">
-                {section.groups.flatMap(({ league, events }) =>
-                  events.map((event) => renderEventCard(league, event, sectionMarket))
-                )}
-              </div>
-            </div>
+            <CompetitionDayMarketSection
+              key={section.id}
+              section={section}
+              activeMarketId={sectionMarket}
+              chips={currentMarketChips}
+              onMarketChange={(marketId) => {
+                setCompetitionSectionMarkets((current) => ({
+                  ...current,
+                  [section.id]: marketId,
+                }))
+              }}
+              renderEventCard={renderEventCard}
+            />
           )
         })}
       </section>
@@ -1723,7 +1770,7 @@ export function CalendarSection({
   }
 
   return (
-    <section className={`prematch-section calendar-section${isCompetitionPage ? ' calendar-section--competition' : ''}`}>
+    <section className={`prematch-section calendar-section${isCompetitionPage ? ' calendar-section--competition' : ''}`} ref={sectionRef}>
       {/* Header */}
       <div className="prematch-section__header">
         <div className="prematch-section__title">
@@ -1732,7 +1779,10 @@ export function CalendarSection({
       </div>
 
       {/* Category chips */}
-      {renderMarketChips({ withRefs: true })}
+      {renderMarketChips({
+        className: getMarketStickyClassName(marketStickyState),
+        withRefs: true,
+      })}
 
       {/* Leagues — same layout as PreMatchSection */}
       <div className="prematch-section__leagues">
@@ -1746,10 +1796,10 @@ export function CalendarSection({
                     <img src={league.flag} alt="" className="prematch-section__league-flag" />
                     <span>{league.name}</span>
                   </div>
-                  <img
-                    src={iconAccordion}
-                    alt=""
+                  <CaretUpIcon
+                    aria-hidden="true"
                     className={`prematch-section__accordion-icon ${isOpen ? 'prematch-section__accordion-icon--open' : ''}`}
+                    weight="bold"
                   />
                 </button>
               )}
@@ -1767,7 +1817,7 @@ export function CalendarSection({
                       onClick={() => openCompetitionFromLeague(league.id)}
                     >
                       <span>Veja mais {league.name}</span>
-                      <img src={setaLink} alt="" className="prematch-section__league-more-icon" />
+                      <CaretRightIcon aria-hidden="true" className="prematch-section__league-more-icon" weight="bold" />
                     </button>
                   )}
                 </div>

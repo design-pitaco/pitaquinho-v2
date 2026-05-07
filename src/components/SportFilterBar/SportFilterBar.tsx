@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import './SportFilterBar.css'
-import arrowDown from '../../assets/arrowDown.png'
-import iconFecharPeq from '../../assets/iconFecharPeq.svg'
 import { CompeticaoBottomSheet } from '../BottomSheet/CompeticaoBottomSheet'
 import {
   competicaoConfigBySport,
@@ -71,6 +70,7 @@ export function SportFilterBar({
       : featuredCompetitions
   const activeChipId =
     chipCompetitions.find((competition) => isSelectedCompetition(competition.id, competition.name))?.id ?? null
+  const firstChipId = chipCompetitions[0]?.id ?? null
   const hasClearCompetition = !!selectedCompetitionId && !!onClearCompetition
 
   const handleSelectCompetition = (id: string) => {
@@ -103,6 +103,13 @@ export function SportFilterBar({
   }, [])
 
   const handleChipSelect = (id: string) => {
+    if (id === firstChipId) {
+      resetChipScroll()
+      handleSelectCompetition(id)
+      window.requestAnimationFrame(resetChipScroll)
+      return
+    }
+
     scrollChipIntoView(chipRefs.current[id])
     handleSelectCompetition(id)
   }
@@ -211,7 +218,7 @@ export function SportFilterBar({
             disabled={!hasClearCompetition}
             tabIndex={hasClearCompetition ? 0 : -1}
           >
-            <img src={iconFecharPeq} alt="" className="sport-filter-bar__clear-icon" />
+            <XIcon aria-hidden="true" className="sport-filter-bar__clear-icon" weight="bold" />
           </button>
         </span>
 
@@ -242,7 +249,7 @@ export function SportFilterBar({
           onClick={() => setShowCompeticao(true)}
           aria-label="Escolha a competição"
         >
-          <img src={arrowDown} alt="" className="sport-filter-bar__chip-icon" />
+          <CaretDownIcon aria-hidden="true" className="sport-filter-bar__chip-icon" weight="bold" />
         </button>
       </div>
 

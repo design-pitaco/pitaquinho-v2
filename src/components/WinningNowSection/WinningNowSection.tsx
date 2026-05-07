@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import './WinningNowSection.css'
 
-import setaLink from '../../assets/setaLink.png'
 import imgAviator from '../../assets/imgAviator.png'
 import imgRoletaSorte from '../../assets/imgRoletaSorte.png'
 import imgFutebolStudio from '../../assets/imgFutebolStudio.png'
@@ -202,7 +202,7 @@ export function WinningNowSection() {
       <div className="winning-now-section__header">
         <div className="winning-now-section__title">
           <span>Ganhando agora no nosso Cassino</span>
-          <img src={setaLink} alt="Ver mais" className="winning-now-section__arrow" />
+          <CaretRightIcon aria-hidden="true" className="winning-now-section__arrow" weight="bold" />
         </div>
       </div>
 

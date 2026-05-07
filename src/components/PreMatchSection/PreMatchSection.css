@@ -32,8 +32,7 @@
 .prematch-section__arrow {
   width: 20px;
   height: 20px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 /* Chips */
@@ -50,19 +49,68 @@
   display: none;
 }
 
-/* .prematch-section__chips--sticky {
+.prematch-section__chips--sticky {
   position: sticky;
-  top: 135px;
-  background: transparent;
-  z-index: 100;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  margin-top: -8px;
+  top: var(--home-market-sticky-top, 194px);
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 180ms ease,
+    visibility 0ms linear;
+  will-change: opacity;
 }
 
-.prematch-section__chips--sticky.prematch-section__chips--scrolling {
-  z-index: 1000;
-} */
+.prematch-section__chips--sticky-stuck {
+  z-index: 210;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-stuck="true"] {
+  z-index: 210;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-stuck="false"] {
+  z-index: 1;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-event-rail="true"][data-market-sticky-visible="true"] {
+  z-index: 210;
+}
+
+.prematch-section__chips--sticky-stuck .sliding-chip-indicator {
+  z-index: 1;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-stuck="true"] .sliding-chip-indicator {
+  z-index: 1;
+}
+
+.prematch-section__chips--sticky-stuck .sliding-chip {
+  z-index: 2;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-stuck="true"] .sliding-chip {
+  z-index: 2;
+}
+
+.prematch-section__chips--sticky-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    visibility 0ms linear 180ms;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-visible="false"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transition:
+    opacity 180ms ease,
+    visibility 0ms linear 180ms;
+}
 
 .prematch-section__chip {
   position: relative;
@@ -191,7 +239,7 @@
 .prematch-section__accordion-icon {
   width: 16px;
   height: 16px;
-  object-fit: contain;
+  color: #ffffff;
   transition: transform 0.3s ease;
   transform: rotate(180deg);
 }
@@ -325,7 +373,7 @@
 .prematch-section__match-arrow {
   width: 20px;
   height: 20px;
-  object-fit: contain;
+  color: #a8a8a8;
   margin-left: 4px;
   padding-left: 4px;
   border-left: 1px solid #202020;
@@ -427,8 +475,7 @@
 .prematch-section__league-more-icon {
   width: 16px;
   height: 16px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 /* More Button */
@@ -460,8 +507,7 @@
 .prematch-section__more-icon {
   width: 20px;
   height: 20px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 /* Clickable info content */

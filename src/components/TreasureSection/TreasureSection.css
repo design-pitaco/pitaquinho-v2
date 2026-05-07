@@ -29,7 +29,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 .treasure-section__box-wrapper {

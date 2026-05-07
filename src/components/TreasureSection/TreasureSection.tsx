@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import './TreasureSection.css'
 
 import imgTesouroRei from '../../assets/imgTesouroRei.png'
-import setaLink from '../../assets/setaLink.png'
 
 // Format number to Brazilian currency format (without R$)
 const formatNumber = (num: number): string => {
@@ -85,7 +85,7 @@ export function TreasureSection() {
       <div className="treasure-section__header">
         <div className="treasure-section__title">
           <span>Tesouro do Rei</span>
-          <img src={setaLink} alt="Ver mais" className="treasure-section__arrow" />
+          <CaretRightIcon aria-hidden="true" className="treasure-section__arrow" weight="bold" />
         </div>
       </div>
 

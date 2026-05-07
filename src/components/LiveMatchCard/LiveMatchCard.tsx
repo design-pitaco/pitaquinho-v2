@@ -1,9 +1,8 @@
+import { CaretRightIcon, MonitorPlayIcon } from '@phosphor-icons/react'
 import iconAoVivo from '../../assets/iconAoVivo.png'
-import iconStreaming from '../../assets/iconStreaming.svg'
-import setaLink from '../../assets/setaLink.png'
 import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
 import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import '../LiveSection/LiveSection.css'
 
@@ -117,8 +116,8 @@ export function LiveMatchCard({ match, sport, activeMarket, currentTime, onClick
           <span>{currentTime}</span>
         </div>
         <div className="live-section__match-header-actions">
-          <img src={iconStreaming} alt="" className="live-section__stream-icon" />
-          <img src={setaLink} alt="" className="live-section__match-arrow" />
+          <MonitorPlayIcon aria-hidden="true" className="live-section__stream-icon" weight="bold" />
+          <CaretRightIcon aria-hidden="true" className="live-section__match-arrow" weight="bold" />
         </div>
       </div>
 

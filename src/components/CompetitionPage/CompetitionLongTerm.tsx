@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import './CompetitionLongTerm.css'
-import setaLink from '../../assets/setaLink.png'
 import { TeamLogo } from '../TeamLogo'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
@@ -65,7 +65,7 @@ export function CompetitionLongTerm({ tabs, oddsByTab, sport = '' }: Competition
               <span className="competition-longterm__row-market">{row.market}</span>
             </span>
             <span className="competition-longterm__row-odd">{row.odd}</span>
-            <img src={setaLink} alt="" className="competition-longterm__row-arrow" />
+            <CaretRightIcon aria-hidden="true" className="competition-longterm__row-arrow" weight="bold" />
           </button>
         ))}
       </div>

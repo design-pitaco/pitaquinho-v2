@@ -18,9 +18,14 @@ import './Home.css'
 const HEADER_COMPACT_SCROLL_TOP = 28
 const HEADER_EXPAND_SCROLL_TOP = 4
 const HEADER_MORPH_SCROLL_START = 64
+const HEADER_EVENT_RAIL_MORPH_SCROLL_START = 0
 const HEADER_MORPH_SCROLL_END = 190
+const HEADER_SNAP_IDLE_MS = 160
+const HEADER_SNAP_SETTLE_MS = 420
 const EVENT_RAIL_HEIGHT = 112
 const EVENT_RAIL_PADDING_BOTTOM = 20
+const EVENT_RAIL_COLLAPSE_TRANSLATE_Y = -28
+const EVENT_RAIL_VISUAL_COLLAPSE_SCROLL_END = 72
 const EVENT_RAIL_DISABLE_INTERACTION_PROGRESS = 0.9
 const HIGHLIGHT_HEADER_EXPANDED_BG_HEIGHT = 266
 const HIGHLIGHT_HEADER_COMPACT_BG_HEIGHT = 222
@@ -44,6 +49,10 @@ const SPORTS_CAROUSEL_EXPANDED_TEAMS_MIN_HEIGHT = 40
 const SPORTS_CAROUSEL_COMPACT_TEAMS_MIN_HEIGHT = 34
 const SPORTS_CAROUSEL_EXPANDED_TEAM_ROW_HEIGHT = 13
 const SPORTS_CAROUSEL_COMPACT_TEAM_ROW_HEIGHT = 12
+const MARKET_STICKY_GAP = 12
+const MARKET_STICKY_ROW_HEIGHT = 24
+const MARKET_STICKY_BG_GAP = 16
+const HEADER_BG_TOP_OFFSET = 72
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const smoothStep = (value: number) => value * value * (3 - 2 * value)
@@ -51,6 +60,10 @@ const roundCssNumber = (value: number) => Math.round(value * 1000) / 1000
 const getScrollProgress = (scrollTop: number, start: number, end: number) =>
   clamp((scrollTop - start) / (end - start), 0, 1)
 const interpolate = (from: number, to: number, progress: number) => from + (to - from) * progress
+const marketStickySelector = [
+  '.live-section__chips--sticky:not([data-market-sticky-visible="false"])',
+  '.prematch-section__chips--sticky:not([data-market-sticky-visible="false"])',
+].join(', ')
 
 export function Home() {
   const homeRef = useRef<HTMLDivElement>(null)
@@ -85,6 +98,7 @@ export function Home() {
     homeEl.style.setProperty('--sports-carousel-collapse-max-height', `${EVENT_RAIL_HEIGHT}px`)
     homeEl.style.setProperty('--sports-carousel-collapse-padding-bottom', `${EVENT_RAIL_PADDING_BOTTOM}px`)
     homeEl.style.setProperty('--sports-carousel-collapse-opacity', '1')
+    homeEl.style.setProperty('--sports-carousel-collapse-translate-y', '0px')
     homeEl.style.removeProperty('--highlight-header-bg-height')
     homeEl.style.removeProperty('--header-top-padding-y')
     homeEl.style.removeProperty('--sport-header-bg-height')
@@ -136,32 +150,200 @@ export function Home() {
       )
 
     let frame: number | null = null
+    let headerSnapTimer: number | null = null
+    let headerSnapSettleTimer: number | null = null
+    let isHeaderSnapScrolling = false
+    const headerEl = homeEl.querySelector<HTMLElement>('.header')
+
+    const clearHeaderSnapTimer = () => {
+      if (headerSnapTimer === null) return
+      window.clearTimeout(headerSnapTimer)
+      headerSnapTimer = null
+    }
+
+    const clearHeaderSnapSettleTimer = () => {
+      if (headerSnapSettleTimer === null) return
+      window.clearTimeout(headerSnapSettleTimer)
+      headerSnapSettleTimer = null
+    }
+
+    const hasEventRailHeader = () => !!activeSport && sportsCarouselEvents.length > 0
+    const canSnapHeaderMorph = () => !activeSport || hasEventRailHeader()
+    const getHeaderMorphScrollStart = () => (
+      hasEventRailHeader()
+        ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
+        : HEADER_MORPH_SCROLL_START
+    )
+
+    const scrollToHeaderMorphTarget = (targetScrollTop: number) => {
+      homeEl.scrollTo({ top: targetScrollTop, left: 0, behavior: 'smooth' })
+      window.scrollTo({ top: targetScrollTop, left: 0, behavior: 'smooth' })
+    }
+
+    const scheduleHeaderMorphSnap = () => {
+      clearHeaderSnapTimer()
+
+      if (!canSnapHeaderMorph()) return
+
+      headerSnapTimer = window.setTimeout(() => {
+        headerSnapTimer = null
+
+        if (!canSnapHeaderMorph()) return
+
+        const scrollTop = getScrollTop()
+        const morphProgress = getScrollProgress(
+          scrollTop,
+          getHeaderMorphScrollStart(),
+          HEADER_MORPH_SCROLL_END
+        )
+
+        if (morphProgress <= 0 || morphProgress >= 1) return
+
+        const targetScrollTop = HEADER_MORPH_SCROLL_END
+
+        if (Math.abs(scrollTop - targetScrollTop) < 1) return
+
+        isHeaderSnapScrolling = true
+        clearHeaderSnapSettleTimer()
+        scrollToHeaderMorphTarget(targetScrollTop)
+
+        headerSnapSettleTimer = window.setTimeout(() => {
+          headerSnapSettleTimer = null
+          isHeaderSnapScrolling = false
+          scheduleUpdate()
+          scheduleHeaderMorphSnap()
+        }, HEADER_SNAP_SETTLE_MS)
+      }, HEADER_SNAP_IDLE_MS)
+    }
+
+    const syncMarketStickyTop = () => {
+      if (!headerEl) return
+      const stickyAnchorEl =
+        headerEl.querySelector<HTMLElement>('.header__highlight-chip--active') ??
+        headerEl.querySelector<HTMLElement>('.header__highlight-chip') ??
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip--active') ??
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip') ??
+        headerEl
+      const desiredStickyTop = stickyAnchorEl.getBoundingClientRect().bottom + MARKET_STICKY_GAP
+      const homeStyle = window.getComputedStyle(homeEl)
+      const homePaddingTop = parseFloat(homeStyle.paddingTop) || 0
+      const usesHomeScroll = (
+        homeStyle.position === 'fixed' &&
+        (homeStyle.overflowY === 'auto' || homeStyle.overflowY === 'scroll')
+      )
+      const stickyTop = usesHomeScroll
+        ? desiredStickyTop - homeEl.getBoundingClientRect().top - homePaddingTop
+        : desiredStickyTop
+
+      homeEl.style.setProperty(
+        '--home-market-sticky-top',
+        `${roundCssNumber(stickyTop)}px`
+      )
+      homeEl.style.setProperty(
+        '--home-market-sticky-bg-height',
+        `${roundCssNumber(desiredStickyTop + MARKET_STICKY_ROW_HEIGHT + MARKET_STICKY_BG_GAP + HEADER_BG_TOP_OFFSET)}px`
+      )
+    }
+
+    const getVisibleMarketStickyEl = () => {
+      const stickyEls = Array.from(homeEl.querySelectorAll<HTMLElement>(marketStickySelector))
+      const visibleStickyEls = stickyEls
+        .map((stickyEl) => ({
+          stickyEl,
+          rect: stickyEl.getBoundingClientRect(),
+          style: window.getComputedStyle(stickyEl),
+        }))
+        .filter(({ rect, style }) => (
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          rect.width > 0 &&
+          rect.height > 1
+        ))
+        .sort((first, second) => first.rect.top - second.rect.top)
+
+      return visibleStickyEls[0] ?? null
+    }
+
+    const getFirstVisibleContentEl = () => {
+      const contentEls = Array.from(homeEl.children)
+        .filter((child): child is HTMLElement => child instanceof HTMLElement)
+        .filter((child) => !child.classList.contains('header'))
+        .map((contentEl) => ({
+          contentEl,
+          rect: contentEl.getBoundingClientRect(),
+          style: window.getComputedStyle(contentEl),
+        }))
+        .filter(({ rect, style }) => (
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          rect.width > 0 &&
+          rect.height > 1
+        ))
+
+      return contentEls[0] ?? null
+    }
+
+    const getSportsCarouselMetrics = (naturalMaxHeight: number, naturalPaddingBottom: number) => {
+      const carouselEl = headerEl?.querySelector<HTMLElement>('.sports-match-carousel')
+      const clipTarget = isCompetitionMode ? getVisibleMarketStickyEl() : getFirstVisibleContentEl()
+
+      if (!carouselEl || !clipTarget) {
+        return {
+          maxHeight: naturalMaxHeight,
+          paddingBottom: naturalPaddingBottom,
+          isClipped: false,
+        }
+      }
+
+      const carouselRect = carouselEl.getBoundingClientRect()
+      const clipHeight = clamp(
+        clipTarget.rect.top - carouselRect.top,
+        0,
+        naturalMaxHeight
+      )
+      const trackRect = carouselEl
+        .querySelector<HTMLElement>('.sports-match-carousel__track')
+        ?.getBoundingClientRect()
+      const clippedPaddingBottom = trackRect
+        ? clamp(clipHeight - trackRect.height, 0, naturalPaddingBottom)
+        : Math.min(clipHeight, naturalPaddingBottom)
+
+      return {
+        maxHeight: clipHeight,
+        paddingBottom: clippedPaddingBottom,
+        isClipped: clipHeight < naturalMaxHeight,
+      }
+    }
+
+    const getCompetitionChipHeaderBgHeight = () => {
+      if (!headerEl) return SPORT_HEADER_COMPACT_BG_HEIGHT
+
+      const competitionChipEl =
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip--active') ??
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip') ??
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar') ??
+        headerEl
+
+      return Math.max(
+        SPORT_HEADER_COMPACT_BG_HEIGHT,
+        competitionChipEl.getBoundingClientRect().bottom + HEADER_BG_TOP_OFFSET
+      )
+    }
 
     const syncHeaderMorph = (scrollTop: number) => {
+      const hasEventRail = !!activeSport && sportsCarouselEvents.length > 0
+      const morphScrollStart = hasEventRail
+        ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
+        : HEADER_MORPH_SCROLL_START
       const requestedMorphProgress = smoothStep(
-        getScrollProgress(scrollTop, HEADER_MORPH_SCROLL_START, HEADER_MORPH_SCROLL_END)
+        getScrollProgress(scrollTop, morphScrollStart, HEADER_MORPH_SCROLL_END)
       )
-      const hasEventRail = !!activeSport
       const morphProgress = requestedMorphProgress
-
-      if (hasEventRail) {
-        homeEl.style.setProperty(
-          '--sports-carousel-collapse-max-height',
-          `${roundCssNumber(EVENT_RAIL_HEIGHT * (1 - morphProgress))}px`
-        )
-        homeEl.style.setProperty(
-          '--sports-carousel-collapse-padding-bottom',
-          `${roundCssNumber(EVENT_RAIL_PADDING_BOTTOM * (1 - morphProgress))}px`
-        )
-        homeEl.style.setProperty(
-          '--sports-carousel-collapse-opacity',
-          `${roundCssNumber(1 - morphProgress)}`
-        )
-      } else {
-        homeEl.style.setProperty('--sports-carousel-collapse-max-height', `${EVENT_RAIL_HEIGHT}px`)
-        homeEl.style.setProperty('--sports-carousel-collapse-padding-bottom', `${EVENT_RAIL_PADDING_BOTTOM}px`)
-        homeEl.style.setProperty('--sports-carousel-collapse-opacity', '1')
-      }
+      const eventRailVisualProgress = hasEventRail
+        ? smoothStep(
+            getScrollProgress(scrollTop, HEADER_EVENT_RAIL_MORPH_SCROLL_START, EVENT_RAIL_VISUAL_COLLAPSE_SCROLL_END)
+          )
+        : morphProgress
 
       homeEl.style.setProperty(
         '--highlight-header-bg-height',
@@ -170,10 +352,6 @@ export function Home() {
       homeEl.style.setProperty(
         '--header-top-padding-y',
         `${roundCssNumber(interpolate(HEADER_TOP_EXPANDED_PADDING_Y, HEADER_TOP_COMPACT_PADDING_Y, morphProgress))}px`
-      )
-      homeEl.style.setProperty(
-        '--sport-header-bg-height',
-        `${roundCssNumber(interpolate(SPORT_HEADER_EXPANDED_BG_HEIGHT, SPORT_HEADER_COMPACT_BG_HEIGHT, morphProgress))}px`
       )
       homeEl.style.setProperty(
         '--sport-rail-padding-bottom',
@@ -200,6 +378,13 @@ export function Home() {
         `${roundCssNumber(interpolate(SPORT_FILTER_EXPANDED_PADDING_BOTTOM, SPORT_FILTER_COMPACT_PADDING_BOTTOM, morphProgress))}px`
       )
       homeEl.style.setProperty(
+        '--sport-header-bg-height',
+        `${roundCssNumber(hasEventRail
+          ? getCompetitionChipHeaderBgHeight()
+          : interpolate(SPORT_HEADER_EXPANDED_BG_HEIGHT, SPORT_HEADER_COMPACT_BG_HEIGHT, morphProgress)
+        )}px`
+      )
+      homeEl.style.setProperty(
         '--sports-carousel-teams-gap',
         `${roundCssNumber(interpolate(SPORTS_CAROUSEL_EXPANDED_TEAMS_GAP, SPORTS_CAROUSEL_COMPACT_TEAMS_GAP, morphProgress))}px`
       )
@@ -211,6 +396,38 @@ export function Home() {
         '--sports-carousel-team-row-height',
         `${roundCssNumber(interpolate(SPORTS_CAROUSEL_EXPANDED_TEAM_ROW_HEIGHT, SPORTS_CAROUSEL_COMPACT_TEAM_ROW_HEIGHT, morphProgress))}px`
       )
+
+      syncMarketStickyTop()
+
+      if (hasEventRail) {
+        const naturalMaxHeight = EVENT_RAIL_HEIGHT * (1 - morphProgress)
+        const naturalPaddingBottom = EVENT_RAIL_PADDING_BOTTOM * (1 - morphProgress)
+        const sportsCarouselMetrics = getSportsCarouselMetrics(naturalMaxHeight, naturalPaddingBottom)
+
+        homeEl.style.setProperty(
+          '--sports-carousel-collapse-max-height',
+          `${roundCssNumber(sportsCarouselMetrics.maxHeight)}px`
+        )
+        homeEl.style.setProperty(
+          '--sports-carousel-collapse-padding-bottom',
+          `${roundCssNumber(sportsCarouselMetrics.paddingBottom)}px`
+        )
+        homeEl.style.setProperty(
+          '--sports-carousel-collapse-opacity',
+          `${roundCssNumber(1 - eventRailVisualProgress)}`
+        )
+        homeEl.style.setProperty(
+          '--sports-carousel-collapse-translate-y',
+          `${roundCssNumber(interpolate(0, EVENT_RAIL_COLLAPSE_TRANSLATE_Y, eventRailVisualProgress))}px`
+        )
+        homeEl.toggleAttribute('data-market-sticky-rail-clipped', sportsCarouselMetrics.isClipped)
+      } else {
+        homeEl.style.setProperty('--sports-carousel-collapse-max-height', `${EVENT_RAIL_HEIGHT}px`)
+        homeEl.style.setProperty('--sports-carousel-collapse-padding-bottom', `${EVENT_RAIL_PADDING_BOTTOM}px`)
+        homeEl.style.setProperty('--sports-carousel-collapse-opacity', '1')
+        homeEl.style.setProperty('--sports-carousel-collapse-translate-y', '0px')
+        homeEl.removeAttribute('data-market-sticky-rail-clipped')
+      }
 
       setIsSportsMatchCarouselCollapsed((isCollapsed) => {
         const shouldCollapse = hasEventRail && morphProgress >= EVENT_RAIL_DISABLE_INTERACTION_PROGRESS
@@ -236,16 +453,33 @@ export function Home() {
       frame = window.requestAnimationFrame(updateCompactState)
     }
 
+    const handleScroll = () => {
+      scheduleUpdate()
+      if (!isHeaderSnapScrolling) scheduleHeaderMorphSnap()
+    }
+
     scheduleUpdate()
-    homeEl.addEventListener('scroll', scheduleUpdate, { passive: true })
-    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+    homeEl.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', scheduleUpdate, { passive: true })
+
+    const resizeObserver = headerEl && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(scheduleUpdate)
+      : null
+
+    if (headerEl) resizeObserver?.observe(headerEl)
 
     return () => {
       if (frame !== null) window.cancelAnimationFrame(frame)
-      homeEl.removeEventListener('scroll', scheduleUpdate)
-      window.removeEventListener('scroll', scheduleUpdate)
+      clearHeaderSnapTimer()
+      clearHeaderSnapSettleTimer()
+      homeEl.removeAttribute('data-market-sticky-rail-clipped')
+      homeEl.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', scheduleUpdate)
+      resizeObserver?.disconnect()
     }
-  }, [activeSport, resetEventRailCollapse])
+  }, [activeSport, isCompetitionMode, resetEventRailCollapse, sportsCarouselEvents.length])
 
   const handleSportChange = (sportId: string) => {
     setContentResetKey((current) => current + 1)
@@ -284,6 +518,7 @@ export function Home() {
     'home--header-morph-active',
     isVariant3 ? '' : 'home--no-dividers',
     activeSport ? 'home--sport-active' : '',
+    activeSport && sportsCarouselEvents.length > 0 ? 'home--event-rail-active' : '',
     isCompetitionMode ? 'home--competition-active' : '',
     isSportHeaderCompact ? 'home--header-compact' : '',
   ]

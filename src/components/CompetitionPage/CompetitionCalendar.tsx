@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import '../PreMatchSection/PreMatchSection.css'
 import '../CalendarSection/CalendarSection.css'
 import './CompetitionCalendar.css'
+import { useHomeMarketStickyState } from '../../hooks/useHomeMarketStickyVisible'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
-import setaLink from '../../assets/setaLink.png'
 import iconAoVivo from '../../assets/iconAoVivo.png'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
@@ -53,8 +54,10 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
 
   const [activeMarket, setActiveMarket] = useState(marketChips[0].id)
 
+  const sectionRef = useRef<HTMLElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
   const activeMarketChipIndex = marketChips.findIndex((chip) => chip.id === activeMarket)
   const marketIndicatorKey = `${sport}:${activeMarket}:${marketChips.map((chip) => chip.id).join('|')}`
 
@@ -153,14 +156,24 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
   }
 
   return (
-    <section className="prematch-section calendar-section competition-calendar">
+    <section className="prematch-section calendar-section competition-calendar" ref={sectionRef}>
       <div className="prematch-section__header">
         <div className="prematch-section__title">
           <span>Melhores Jogos</span>
         </div>
       </div>
 
-      <div className="prematch-section__chips sliding-chip-group" ref={marketChipsRef}>
+      <div
+        className={[
+          'prematch-section__chips',
+          'prematch-section__chips--sticky',
+          'sliding-chip-group',
+          'sliding-chip-group--indicator-ready',
+          marketStickyState.isStuck ? 'prematch-section__chips--sticky-stuck' : '',
+          marketStickyState.isVisible ? '' : 'prematch-section__chips--sticky-hidden',
+        ].filter(Boolean).join(' ')}
+        ref={marketChipsRef}
+      >
         <span className="sliding-chip-indicator" aria-hidden="true" />
         {marketChips.map((chip, index) => (
           <button
@@ -219,11 +232,11 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
                     )}
                     <span className="prematch-section__match-datetime">{m.dateTime}</span>
                   </div>
-                  <img src={setaLink} alt="" className="prematch-section__match-arrow" />
+                  <CaretRightIcon aria-hidden="true" className="prematch-section__match-arrow" weight="bold" />
                 </div>
               )}
               {m.isLive && (
-                <img src={setaLink} alt="" className="prematch-section__match-arrow competition-calendar__live-arrow" />
+                <CaretRightIcon aria-hidden="true" className="prematch-section__match-arrow competition-calendar__live-arrow" weight="bold" />
               )}
             </div>
 

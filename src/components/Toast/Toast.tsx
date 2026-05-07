@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { CheckCircleIcon, XIcon } from '@phosphor-icons/react'
 import './Toast.css'
-
-import iconOk from '../../assets/iconOk.svg'
-import iconFecharPeq from '../../assets/iconFecharPeq.svg'
 
 interface ToastProps {
   isVisible: boolean
@@ -75,11 +73,11 @@ export function Toast({
     <div className={`toast ${isClosing ? 'toast--closing' : ''}`}>
       <div className="toast__header">
         <div className="toast__title">
-          <img src={iconOk} alt="" className="toast__icon-ok" />
+          <CheckCircleIcon aria-hidden="true" className="toast__icon-ok" weight="fill" />
           <span>{title}</span>
         </div>
-        <button className="toast__close" onClick={handleClose}>
-          <img src={iconFecharPeq} alt="Fechar" className="toast__icon-close" />
+        <button type="button" className="toast__close" onClick={handleClose} aria-label="Fechar">
+          <XIcon aria-hidden="true" className="toast__icon-close" weight="bold" />
         </button>
       </div>
       <div className="toast__content">

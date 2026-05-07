@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import './PromotionSection.css'
 
 // Images for cards
@@ -7,7 +8,6 @@ import imgPagamentoAntecipado from '../../assets/img-promo-pagamento-antecipado-
 import imgFlamengo from '../../assets/bgFlamengo.png'
 import imgRatinho from '../../assets/img-ratinho.png'
 import imgTesouroRei from '../../assets/img-promo-tesouro-do-rei.png'
-import setaLink from '../../assets/setaLink.png'
 
 interface Promotion {
   id: string
@@ -109,7 +109,7 @@ export function PromotionSection() {
       <div className="promotion-section__header">
         <div className="promotion-section__title">
           <span>Promoções</span>
-          <img src={setaLink} alt="Ver mais" className="promotion-section__arrow" />
+          <CaretRightIcon aria-hidden="true" className="promotion-section__arrow" weight="bold" />
         </div>
       </div>
 

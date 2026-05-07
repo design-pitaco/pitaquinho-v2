@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { PlusCircleIcon } from '@phosphor-icons/react'
 import './Header.css'
 import { SportRail } from '../SportRail'
 import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
-import moreSaldo from '../../assets/more-saldo.svg'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
 import { competicaoConfigBySport } from '../SportFilterBar/competicaoData'
 import { getCompetitionBadge } from '../../data/competitionBadges'
 import type { CompetitionLinkTarget } from '../../utils/competitionNavigation'
@@ -157,7 +157,7 @@ export function Header({
         <div className="header__balance" aria-label="Saldo disponível">
           <span className="header__balance-label">Saldo</span>
           <span className="header__balance-value">
-            <img src={moreSaldo} alt="" aria-hidden="true" />
+            <PlusCircleIcon aria-hidden="true" className="header__balance-icon" weight="fill" />
             <span>R$ 3.400,00</span>
           </span>
         </div>

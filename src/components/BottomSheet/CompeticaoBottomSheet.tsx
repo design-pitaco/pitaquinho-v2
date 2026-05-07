@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react'
+import { CaretRightIcon, CaretUpIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { BottomSheet } from './BottomSheet'
 import './CompeticaoBottomSheet.css'
-
-import iconBusca from '../../assets/iconBuscaHeader.svg'
-import iconAccordion from '../../assets/iconAccordion.png'
-import setaLink from '../../assets/setaLink.png'
 
 export interface Competition {
   id: string
@@ -96,7 +93,7 @@ export function CompeticaoBottomSheet({
 
       <div className="competicao-bs__search">
         <div className="competicao-bs__search-icon-box">
-          <img src={iconBusca} alt="" className="competicao-bs__search-icon" />
+          <MagnifyingGlassIcon aria-hidden="true" className="competicao-bs__search-icon" weight="bold" />
         </div>
         <div className="competicao-bs__search-input-box">
           <input
@@ -118,10 +115,10 @@ export function CompeticaoBottomSheet({
           >
             <img src={sportIcon} alt={sportLabel} className="competicao-bs__group-icon" />
             <span className="competicao-bs__group-label">Principais escolhas</span>
-            <img
-              src={iconAccordion}
-              alt=""
+            <CaretUpIcon
+              aria-hidden="true"
               className={`competicao-bs__group-chevron ${topOpen ? 'competicao-bs__group-chevron--open' : ''}`}
+              weight="bold"
             />
           </button>
 
@@ -138,7 +135,7 @@ export function CompeticaoBottomSheet({
                       disabled={!enabled}
                     >
                       <span className="competicao-bs__row-label">{c.name}</span>
-                      {enabled && <img src={setaLink} alt="" className="competicao-bs__row-arrow" />}
+                      {enabled && <CaretRightIcon aria-hidden="true" className="competicao-bs__row-arrow" weight="bold" />}
                     </button>
                   </li>
                 )
@@ -160,10 +157,10 @@ export function CompeticaoBottomSheet({
               >
                 <img src={country.flag} alt="" className="competicao-bs__country-flag" />
                 <span className="competicao-bs__country-label">{country.name}</span>
-                <img
-                  src={iconAccordion}
-                  alt=""
+                <CaretUpIcon
+                  aria-hidden="true"
                   className={`competicao-bs__country-chevron ${isOpenCountry ? 'competicao-bs__country-chevron--open' : ''}`}
+                  weight="bold"
                 />
               </button>
 
@@ -180,7 +177,7 @@ export function CompeticaoBottomSheet({
                           disabled={!enabled}
                         >
                           <span className="competicao-bs__row-label">{c.name}</span>
-                          {enabled && <img src={setaLink} alt="" className="competicao-bs__row-arrow" />}
+                          {enabled && <CaretRightIcon aria-hidden="true" className="competicao-bs__row-arrow" weight="bold" />}
                         </button>
                       </li>
                     )

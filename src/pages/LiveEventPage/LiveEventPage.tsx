@@ -1,22 +1,18 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type UIEvent, type WheelEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { CaretRightIcon, ChartBarIcon, CourtBasketballIcon, MonitorPlayIcon, SoccerBallIcon } from '@phosphor-icons/react'
 import './LiveEventPage.css'
 
 import iconAoVivo from '../../assets/iconAoVivo.png'
-import iconStreaming from '../../assets/iconStreaming.svg'
-import iconCampoEvento from '../../assets/iconCampoEvento.svg'
-import iconQuadraBasqueteEvento from '../../assets/iconQuadraBasqueteEvento.svg'
-import iconMercadoChevron from '../../assets/iconMercadoChevron.svg'
 import reiAntecipaFutebol from '../../assets/reiAntecipaFutebol.png'
 import reiAntecipaBasquete from '../../assets/reiAntecipaBasquete.png'
 import substituicaoGarantida from '../../assets/substituicaoGarantida.png'
 import multiplaTurbinada from '../../assets/multiplaTurbinada.png'
 import streamingFutebol from '../../assets/streamingFutebol.png'
 import streamingBasquete from '../../assets/streamingBasquete.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
 import escudoDefaultBasquete from '../../assets/escudoDefaultBasquete.png'
-import iconEstatistica from '../../assets/iconEstatistica.png'
 import avatarFutebol from '../../assets/avatarFutebol.png'
 import avatarBasquete from '../../assets/avatarBasquete.png'
 import arrascaetaProps from '../../assets/arrascaetaProps.png'
@@ -1037,7 +1033,7 @@ function LiveEventMatchRail({
                       </span>
                       <span className="live-event-page__rail-header-primary">{displayTime}</span>
                     </span>
-                    <img src={iconStreaming} alt="" className="live-event-page__rail-stream-icon" />
+                    <MonitorPlayIcon aria-hidden="true" className="live-event-page__rail-stream-icon" weight="bold" />
                   </>
                 ) : (
                   <>
@@ -1911,14 +1907,18 @@ function LiveEventContent({
                 className={`live-event-page__tab${activeTab === 'transmissao' ? ' live-event-page__tab--active' : ''}`}
                 onClick={() => setActiveTab('transmissao')}
               >
-                <img src={iconStreaming} alt="" className="live-event-page__tab-icon" />
+                <MonitorPlayIcon aria-hidden="true" className="live-event-page__tab-icon" weight="bold" />
                 <span>Transmissão</span>
               </button>
               <button
                 className={`live-event-page__tab${activeTab === 'campo' ? ' live-event-page__tab--active' : ''}`}
                 onClick={() => setActiveTab('campo')}
               >
-                <img src={isBasketball ? iconQuadraBasqueteEvento : iconCampoEvento} alt="" className="live-event-page__tab-field-icon" />
+                {isBasketball ? (
+                  <CourtBasketballIcon aria-hidden="true" className="live-event-page__tab-field-icon" weight="bold" />
+                ) : (
+                  <SoccerBallIcon aria-hidden="true" className="live-event-page__tab-field-icon" weight="bold" />
+                )}
                 <span>{fieldTabLabel}</span>
               </button>
             </div>
@@ -1981,10 +1981,10 @@ function LiveEventContent({
                 aria-expanded={isResultMarketOpen}
                 onClick={() => setIsResultMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isResultMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2042,10 +2042,10 @@ function LiveEventContent({
                 aria-expanded={isShotsMarketOpen}
                 onClick={() => setIsShotsMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isShotsMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2077,7 +2077,7 @@ function LiveEventContent({
                           <img src={row.image ?? playerAvatarFallback} alt="" className="live-event-page__player-avatar" />
                         </div>
                         <span className="live-event-page__player-stat-icon">
-                          <img src={iconEstatistica} alt="" />
+                          <ChartBarIcon aria-hidden="true" className="live-event-page__player-stat-svg" weight="bold" />
                         </span>
                       </div>
                       <div className="live-event-page__player-copy">
@@ -2095,7 +2095,7 @@ function LiveEventContent({
                               <img src={row.image ?? playerAvatarFallback} alt="" className="live-event-page__player-avatar" />
                             </div>
                             <span className="live-event-page__player-stat-icon">
-                              <img src={iconEstatistica} alt="" />
+                              <ChartBarIcon aria-hidden="true" className="live-event-page__player-stat-svg" weight="bold" />
                             </span>
                           </div>
                           <div className="live-event-page__player-copy">
@@ -2169,10 +2169,10 @@ function LiveEventContent({
                 onClick={() => setIsShotsExpanded((current) => !current)}
               >
                 <span>{isShotsExpanded ? 'Ver Menos' : 'Ver Mais'}</span>
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-more-icon${isShotsExpanded ? ' live-event-page__market-more-icon--expanded' : ''}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2194,10 +2194,10 @@ function LiveEventContent({
                 aria-expanded={isTotalGoalsMarketOpen}
                 onClick={() => setIsTotalGoalsMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isTotalGoalsMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2247,10 +2247,10 @@ function LiveEventContent({
                 aria-expanded={isCornersMarketOpen}
                 onClick={() => setIsCornersMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isCornersMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2300,10 +2300,10 @@ function LiveEventContent({
                 aria-expanded={isCardsMarketOpen}
                 onClick={() => setIsCardsMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isCardsMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>
@@ -2353,10 +2353,10 @@ function LiveEventContent({
                 aria-expanded={isDoubleChanceMarketOpen}
                 onClick={() => setIsDoubleChanceMarketOpen((current) => !current)}
               >
-                <img
-                  src={iconMercadoChevron}
-                  alt=""
+                <CaretRightIcon
+                  aria-hidden="true"
                   className={`live-event-page__market-chevron${isDoubleChanceMarketOpen ? '' : ' live-event-page__market-chevron--closed'}`}
+                  weight="bold"
                 />
               </button>
             </div>

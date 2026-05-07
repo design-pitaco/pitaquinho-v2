@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { CaretRightIcon, CaretUpIcon } from '@phosphor-icons/react'
 import './PreMatchSection.css'
 import { getTeamLogo } from '../../data/teamLogos'
+import { useHomeMarketStickyState } from '../../hooks/useHomeMarketStickyVisible'
 import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 import {
@@ -9,13 +11,11 @@ import {
 } from '../../utils/competitionNavigation'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 
-import setaLink from '../../assets/setaLink.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
-import iconTenis from '../../assets/iconTenis.png'
-import iconVolei from '../../assets/iconVolei.png'
-import iconEsoccer from '../../assets/iconEsoccer.png'
-import iconAccordion from '../../assets/iconAccordion.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconEsoccer from '../../assets/iconSports/e-soccer.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
+import iconTenis from '../../assets/iconSports/tennis.png'
+import iconVolei from '../../assets/iconSports/volleyball.png'
 import flagBrasil from '../../assets/flagBrasil.png'
 import flagMundo from '../../assets/flagMundo.png'
 import flagInglaterra from '../../assets/flagInglaterra.png'
@@ -646,26 +646,12 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
   const [bottomSheetSport, setBottomSheetSport] = useState<'futebol' | 'basquete'>('futebol')
   
   // Refs for auto-scroll chips
+  const sectionRef = useRef<HTMLElement>(null)
   const sportChipsRef = useRef<HTMLDivElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const sportChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const [isFollowingScroll, setIsFollowingScroll] = useState(false)
-
-  // Elevate chip z-index while it's actively following the scroll (sticky engaged).
-  // When the chip releases at the bottom of the section, z-index drops back.
-  useEffect(() => {
-    const chipsEl = marketChipsRef.current
-    if (!chipsEl) return
-    const STICKY_TOP = 135
-    const update = () => {
-      const top = chipsEl.getBoundingClientRect().top
-      setIsFollowingScroll(Math.abs(top - STICKY_TOP) < 1)
-    }
-    window.addEventListener('scroll', update, { passive: true })
-    update()
-    return () => window.removeEventListener('scroll', update)
-  }, [])
+  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
 
   // Reset market chips scroll position when sport changes
   useEffect(() => {
@@ -769,12 +755,12 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
   }
 
   return (
-    <section id="section-breve" className="prematch-section">
+    <section id="section-breve" className="prematch-section" ref={sectionRef}>
       {/* Header */}
       <div className="prematch-section__header">
         <div className="prematch-section__title">
           <span>Começa em Breve</span>
-          <img src={setaLink} alt="Ver mais" className="prematch-section__arrow" />
+          <CaretRightIcon aria-hidden="true" className="prematch-section__arrow" weight="bold" />
         </div>
       </div>
 
@@ -815,7 +801,7 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
       </div>
 
       {/* Market Chips */}
-      <div className={`prematch-section__chips prematch-section__chips--sticky sliding-chip-group${isFollowingScroll ? ' prematch-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
+      <div className={`prematch-section__chips prematch-section__chips--sticky sliding-chip-group sliding-chip-group--indicator-ready${marketStickyState.isStuck ? ' prematch-section__chips--sticky-stuck' : ''}${marketStickyState.isVisible ? '' : ' prematch-section__chips--sticky-hidden'}`} ref={marketChipsRef}>
         <span className="sliding-chip-indicator" aria-hidden="true" />
         {currentMarketChips.map((chip, index) => (
           <button
@@ -859,10 +845,10 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
                 <img src={league.flag} alt="" className="prematch-section__league-flag" />
                 <span>{league.name}</span>
               </div>
-              <img
-                src={iconAccordion}
-                alt=""
+              <CaretUpIcon
+                aria-hidden="true"
                 className={`prematch-section__accordion-icon ${openLeagues.includes(league.id) ? 'prematch-section__accordion-icon--open' : ''}`}
+                weight="bold"
               />
             </button>
 
@@ -921,7 +907,7 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
                                 <span className="prematch-section__match-datetime">{match.dateTime}</span>
                               </div>
                             )}
-                            <img src={setaLink} alt="" className="prematch-section__match-arrow" />
+                            <CaretRightIcon aria-hidden="true" className="prematch-section__match-arrow" weight="bold" />
                           </div>
                         </div>
 
@@ -1063,7 +1049,7 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
                     onClick={() => openCompetitionFromLeague(league.id)}
                   >
                     <span>Veja mais {league.name}</span>
-                    <img src={setaLink} alt="" className="prematch-section__league-more-icon" />
+                    <CaretRightIcon aria-hidden="true" className="prematch-section__league-more-icon" weight="bold" />
                   </button>
                 </div>
               </div>
@@ -1076,7 +1062,7 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
       <div className="prematch-section__more">
         <button className="prematch-section__more-btn">
           <span>Mais {activeSport === 'basquete' ? 'Basquete' : 'Futebol'}</span>
-          <img src={setaLink} alt="" className="prematch-section__more-icon" />
+          <CaretRightIcon aria-hidden="true" className="prematch-section__more-icon" weight="bold" />
         </button>
       </div>
 

@@ -325,11 +325,12 @@
   position: absolute;
   width: 16px;
   height: 16px;
-  background-color: #1A1A1A;
+  background-color: #202020;
+  border-radius: 4px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-
 }
 
 .offer-card__player-badge img {
@@ -337,16 +338,20 @@
   height: 12px;
 }
 
+.offer-card__player-stat-icon {
+  width: 12px;
+  height: 12px;
+  color: #9ecc30;
+}
+
 .offer-card__player-badge--sport {
   bottom: -4px;
   right: -8px;
-  border-radius: 100px;
 }
 
 .offer-card__player-badge--stat {
   top: 0px;
   right: -8px;
-  border-radius: 4px;
 }
 
 .offer-card__player-info {
@@ -579,8 +584,7 @@
 .offer-card__viewall-icon {
   width: 16px;
   height: 16px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 /* Team Stat (for team-based super aumentada) */
@@ -626,8 +630,9 @@
   right: -4px;
   width: 16px;
   height: 16px;
-  background-color: #1A1A1A;
-  border-radius: 100px;
+  background-color: #202020;
+  border-radius: 4px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;

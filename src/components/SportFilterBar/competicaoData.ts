@@ -1,8 +1,8 @@
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
-import iconTenis from '../../assets/iconTenis.png'
-import iconVolei from '../../assets/iconVolei.png'
-import iconEsoccer from '../../assets/iconEsoccer.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconEsoccer from '../../assets/iconSports/e-soccer.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
+import iconTenis from '../../assets/iconSports/tennis.png'
+import iconVolei from '../../assets/iconSports/volleyball.png'
 
 import flagBrasil from '../../assets/flagBrasil.png'
 import flagAlemanha from '../../assets/flagAlemanha.png'

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { CaretDownIcon, ChartBarIcon } from '@phosphor-icons/react'
 import './OffersSection.css'
 import { TeamLogo } from '../TeamLogo'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
@@ -30,7 +31,8 @@ import escudoPistonsGde from '../../assets/escudoPistonsGde.png'
 import escudoMiami from '../../assets/escudoMiami.png'
 import escudoLakers from '../../assets/escudoLakers.png'
 import escudoCavaliers from '../../assets/escudoMagic.png' // Using Magic as placeholder for Cavaliers
-import iconBasquete from '../../assets/iconBasquete.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
 import playerJimmyButler from '../../assets/playerJimmyButler.png'
 import playerLeBronJames from '../../assets/playerLeBronJames.png'
 import playerLukaDoncic from '../../assets/playerLukaDoncic.png'
@@ -39,9 +41,6 @@ import playerRaphinha from '../../assets/playerRaphinha.png'
 import playerArrascaeta from '../../assets/playerArrascaeta.png'
 import playerLewa from '../../assets/playerLewa.png'
 import playerYamal from '../../assets/playerYamal.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconEstatistica from '../../assets/iconEstatistica.png'
-import arrowDown from '../../assets/arrowDown.png'
 import iconBoostWhite from '../../assets/iconBoostWhite.svg'
 
 interface FilterChip {
@@ -1286,7 +1285,7 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
                     <img src={offer.player.sportIcon || iconFutebol} alt="" />
                   </div>
                   <div className="offer-card__player-badge offer-card__player-badge--stat">
-                    <img src={iconEstatistica} alt="" />
+                    <ChartBarIcon aria-hidden="true" className="offer-card__player-stat-icon" weight="bold" />
                   </div>
                 </div>
                 <div className="offer-card__player-info">
@@ -1334,7 +1333,7 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
               {offer.showViewAll && (
                 <button className="offer-card__viewall">
                   <span>Ver todos ({offer.showViewAll})</span>
-                  <img src={arrowDown} alt="" className="offer-card__viewall-icon" />
+                  <CaretDownIcon aria-hidden="true" className="offer-card__viewall-icon" weight="bold" />
                 </button>
               )}
               <div className="offer-card__button">

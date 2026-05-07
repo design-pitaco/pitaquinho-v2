@@ -286,11 +286,11 @@
   white-space: nowrap;
 }
 
-.header__balance-value img {
+.header__balance-icon {
   width: 12px;
   height: 12px;
-  object-fit: contain;
   flex-shrink: 0;
+  color: #f3f3f3;
 }
 
 @media (prefers-reduced-motion: reduce) {

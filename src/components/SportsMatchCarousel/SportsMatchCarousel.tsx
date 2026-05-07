@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { MonitorPlayIcon } from '@phosphor-icons/react'
 import './SportsMatchCarousel.css'
 import {
   getCompetitionLiveEventMatch,
@@ -9,7 +10,6 @@ import type { LiveEventOpenPayload, LiveEventRailItem } from '../../pages/LiveEv
 import { getTeamLogo } from '../../data/teamLogos'
 import { TeamLogo } from '../TeamLogo'
 import iconAoVivo from '../../assets/iconAoVivo.png'
-import iconStreaming from '../../assets/iconStreaming.svg'
 
 interface SportsMatchCarouselProps {
   events: DisplayedCompetitionEvent[]
@@ -273,7 +273,7 @@ export function SportsMatchCarousel({
                       </span>
                       <span className="sports-match-carousel__header-primary">{currentTime}</span>
                     </div>
-                    <img src={iconStreaming} alt="" className="sports-match-carousel__stream-icon" />
+                    <MonitorPlayIcon aria-hidden="true" className="sports-match-carousel__stream-icon" weight="bold" />
                   </>
                 ) : (
                   <>

@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
+import { CaretRightIcon, CaretUpIcon } from '@phosphor-icons/react'
 import './LiveSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
+import { useHomeMarketStickyState } from '../../hooks/useHomeMarketStickyVisible'
 import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 import {
   getCompetitionLinkTarget,
   type CompetitionLinkTarget,
 } from '../../utils/competitionNavigation'
 
-import setaLink from '../../assets/setaLink.png'
-import iconFutebol from '../../assets/iconFutebol.png'
-import iconBasquete from '../../assets/iconBasquete.png'
-import iconTenis from '../../assets/iconTenis.png'
-import iconVolei from '../../assets/iconVolei.png'
-import iconEsoccer from '../../assets/iconEsoccer.png'
-import iconAccordion from '../../assets/iconAccordion.png'
+import iconBasquete from '../../assets/iconSports/basketball.png'
+import iconEsoccer from '../../assets/iconSports/e-soccer.png'
+import iconFutebol from '../../assets/iconSports/soccer.png'
+import iconTenis from '../../assets/iconSports/tennis.png'
+import iconVolei from '../../assets/iconSports/volleyball.png'
 import flagBrasil from '../../assets/flagBrasil.png'
 import flagMundo from '../../assets/flagMundo.png'
 import flagArgentina from '../../assets/flagArgentina.png'
@@ -593,12 +593,12 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
   )
   
   // Refs for auto-scroll chips
-  const [isChipsStuck, setIsChipsStuck] = useState(false)
-  const [isScrolling, setIsScrolling] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
   const sportChipsRef = useRef<HTMLDivElement>(null)
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const sportChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
 
   // Reset market chips scroll position when sport changes
   useEffect(() => {
@@ -642,33 +642,6 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
     })
     return times
   })
-
-  // Detect when market chips are stuck — observe sport chips going off screen
-  useEffect(() => {
-    const sportChips = sportChipsRef.current
-    if (!sportChips) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsChipsStuck(!entry.isIntersecting),
-      { threshold: 0 }
-    )
-    observer.observe(sportChips)
-    return () => observer.disconnect()
-  }, [])
-
-  // Elevate chip z-index while it's actively following the scroll (sticky engaged).
-  // When the chip releases at the bottom of the section (stops following), z-index drops back.
-  useEffect(() => {
-    const chipsEl = marketChipsRef.current
-    if (!chipsEl) return
-    const STICKY_TOP = 135
-    const update = () => {
-      const top = chipsEl.getBoundingClientRect().top
-      setIsScrolling(Math.abs(top - STICKY_TOP) < 1)
-    }
-    window.addEventListener('scroll', update, { passive: true })
-    update()
-    return () => window.removeEventListener('scroll', update)
-  }, [])
 
   // Update times every second
   useEffect(() => {
@@ -750,12 +723,12 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
   }
 
   return (
-    <section id="section-aovivo" className="live-section">
+    <section id="section-aovivo" className="live-section" ref={sectionRef}>
       {/* Header */}
       <div className="live-section__header">
         <div className="live-section__title">
           <span>Ao Vivo</span>
-          <img src={setaLink} alt="Ver mais" className="live-section__arrow" />
+          <CaretRightIcon aria-hidden="true" className="live-section__arrow" weight="bold" />
         </div>
       </div>
 
@@ -796,7 +769,7 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
       </div>
 
       {/* Market Chips */}
-      <div className={`live-section__chips live-section__chips--sticky sliding-chip-group${isChipsStuck ? ' live-section__chips--is-stuck' : ''}${isScrolling ? ' live-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
+      <div className={`live-section__chips live-section__chips--sticky sliding-chip-group sliding-chip-group--indicator-ready${marketStickyState.isStuck ? ' live-section__chips--sticky-stuck' : ''}${marketStickyState.isVisible ? '' : ' live-section__chips--sticky-hidden'}`} ref={marketChipsRef}>
         <span className="sliding-chip-indicator" aria-hidden="true" />
         {currentMarketChips.map((chip, index) => (
           <button
@@ -844,10 +817,10 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
                 )}
                 <span>{league.name}</span>
               </div>
-              <img
-                src={iconAccordion}
-                alt=""
+              <CaretUpIcon
+                aria-hidden="true"
                 className={`live-section__accordion-icon ${openLeagues.includes(league.id) ? 'live-section__accordion-icon--open' : ''}`}
+                weight="bold"
               />
             </button>
 
@@ -873,7 +846,7 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
                     onClick={() => openCompetitionFromLeague(league.id)}
                   >
                     <span>Veja mais {league.name}</span>
-                    <img src={setaLink} alt="" className="live-section__league-more-icon" />
+                    <CaretRightIcon aria-hidden="true" className="live-section__league-more-icon" weight="bold" />
                   </button>
                 </div>
               </div>
@@ -886,7 +859,7 @@ export function LiveSection({ onMatchClick, onOpenCompetition }: LiveSectionProp
       <div className="live-section__more">
         <button className="live-section__more-btn">
           <span>Mais {activeSport === 'basquete' ? 'Basquete' : 'Futebol'} Ao Vivo</span>
-          <img src={setaLink} alt="" className="live-section__more-icon" />
+          <CaretRightIcon aria-hidden="true" className="live-section__more-icon" weight="bold" />
         </button>
       </div>
     </section>

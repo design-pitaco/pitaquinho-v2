@@ -174,3 +174,47 @@ img {
     transition: none;
   }
 }
+
+/* Phosphor carets draw much larger inside their viewBox than the legacy PNGs. */
+svg.live-section__arrow,
+svg.prematch-section__arrow,
+svg.promotion-section__arrow,
+svg.treasure-section__arrow,
+svg.winning-now-section__arrow,
+svg.live-section__match-arrow,
+svg.prematch-section__match-arrow,
+svg.live-section__more-icon,
+svg.prematch-section__more-icon {
+  width: 14px;
+  height: 14px;
+}
+
+svg.live-section__league-more-icon,
+svg.prematch-section__league-more-icon,
+svg.competicao-bs__row-arrow,
+svg.competition-longterm__row-arrow {
+  width: 11px;
+  height: 11px;
+}
+
+svg.live-event-page__market-chevron,
+svg.live-event-page__market-more-icon {
+  width: 14px;
+  height: 14px;
+}
+
+svg.live-section__accordion-icon,
+svg.prematch-section__accordion-icon,
+svg.competicao-bs__group-chevron,
+svg.competicao-bs__country-chevron,
+svg.mission-faq-item__icon,
+svg.mission-info-header__icon {
+  width: 14px;
+  height: 14px;
+}
+
+svg.offer-card__viewall-icon,
+svg.sport-filter-bar__chip-icon {
+  width: 12px;
+  height: 12px;
+}

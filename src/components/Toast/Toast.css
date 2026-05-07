@@ -53,6 +53,7 @@
 .toast__icon-ok {
   width: 20px;
   height: 20px;
+  color: #ffffff;
 }
 
 .toast__title span {
@@ -82,7 +83,7 @@
 .toast__icon-close {
   width: 16px;
   height: 16px;
-  filter: brightness(0) invert(1);
+  color: #ffffff;
 }
 
 .toast__content {

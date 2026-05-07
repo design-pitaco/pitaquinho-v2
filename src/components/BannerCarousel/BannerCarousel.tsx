@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { CaretUpIcon } from '@phosphor-icons/react'
 import './BannerCarousel.css'
 import { Toast } from '../Toast'
 import { TeamLogo } from '../TeamLogo'
@@ -9,7 +10,6 @@ import {
   MissionFaqItem,
   MissionTimer 
 } from '../BottomSheet'
-import iconAccordion from '../../assets/iconAccordion.png'
 
 // Backgrounds
 import bgMissao from '../../assets/bgMissao.png'
@@ -21,7 +21,7 @@ import bgAoVivoTenis from '../../assets/bgAoVivoTenis.png'
 import bgCombinada from '../../assets/combinada.png'
 import iconSuperCombinada from '../../assets/iconSuperCombinada.png'
 import iconAoVivo from '../../assets/iconAoVivo.png'
-import iconTenis from '../../assets/iconTenis.png'
+import iconTenis from '../../assets/iconSports/tennis.png'
 import iconSaibaMais from '../../assets/iconSaibaMais.svg'
 import iconBoostWhite from '../../assets/iconBoostWhite.svg'
 import iconAumentada from '../../assets/iconAumentada.png'
@@ -895,7 +895,7 @@ export function BannerCarousel() {
           <div className="mission-info-section">
             <div className="mission-info-header">
               <span className="mission-info-header__title">Informações sobre a Missão</span>
-              <img src={iconAccordion} alt="" className="mission-info-header__icon" />
+              <CaretUpIcon aria-hidden="true" className="mission-info-header__icon" weight="bold" />
             </div>
             <div className="mission-info-rows">
               <MissionInfoRow label="Tipo de Aposta" value="Jogo Crash" />
