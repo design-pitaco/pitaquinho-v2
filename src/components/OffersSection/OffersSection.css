@@ -46,6 +46,8 @@
 }
 
 .offers-section__chip {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   height: 24px;
   padding: 0 16px;
@@ -61,24 +63,13 @@
 }
 
 .offers-section__chip--active {
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  background: transparent;
   color: #ffffff;
   position: relative;
 }
 
 .offers-section__chip--active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 160px;
-  padding: 1px;
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  display: none;
 }
 
 /* Cards List - slider horizontal */

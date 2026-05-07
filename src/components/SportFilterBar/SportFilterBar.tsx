@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './SportFilterBar.css'
 import arrowDown from '../../assets/arrowDown.png'
 import iconFecharPeq from '../../assets/iconFecharPeq.svg'
@@ -18,6 +18,25 @@ interface SportFilterBarProps {
   onClearCompetition?: () => void
 }
 
+const setSportFilterActiveIndicator = (
+  chipsListEl: HTMLDivElement | null,
+  activeChip: HTMLButtonElement | null | undefined
+) => {
+  if (!chipsListEl || !activeChip) {
+    chipsListEl?.classList.remove('sport-filter-bar__chips--indicator-ready')
+    return
+  }
+
+  const listRect = chipsListEl.getBoundingClientRect()
+  const chipRect = activeChip.getBoundingClientRect()
+
+  chipsListEl.style.setProperty('--sport-filter-active-x', `${chipRect.left - listRect.left}px`)
+  chipsListEl.style.setProperty('--sport-filter-active-y', `${chipRect.top - listRect.top}px`)
+  chipsListEl.style.setProperty('--sport-filter-active-width', `${chipRect.width}px`)
+  chipsListEl.style.setProperty('--sport-filter-active-height', `${chipRect.height}px`)
+  chipsListEl.classList.add('sport-filter-bar__chips--indicator-ready')
+}
+
 export function SportFilterBar({
   sport,
   selectedCompetitionId,
@@ -26,6 +45,8 @@ export function SportFilterBar({
 }: SportFilterBarProps) {
   const [showCompeticao, setShowCompeticao] = useState(false)
   const chipsContainerRef = useRef<HTMLDivElement>(null)
+  const chipsListRef = useRef<HTMLDivElement>(null)
+  const clearSlotRef = useRef<HTMLSpanElement>(null)
   const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const config =
@@ -48,6 +69,9 @@ export function SportFilterBar({
           { id: selectedCompetitionId, name: selectedCompetition },
         ]
       : featuredCompetitions
+  const activeChipId =
+    chipCompetitions.find((competition) => isSelectedCompetition(competition.id, competition.name))?.id ?? null
+  const hasClearCompetition = !!selectedCompetitionId && !!onClearCompetition
 
   const handleSelectCompetition = (id: string) => {
     if (!isCompetitionEnabled(id)) return
@@ -90,32 +114,106 @@ export function SportFilterBar({
     window.requestAnimationFrame(resetChipScroll)
   }
 
+  useLayoutEffect(() => {
+    setSportFilterActiveIndicator(
+      chipsListRef.current,
+      activeChipId ? chipRefs.current[activeChipId] : null
+    )
+  }, [activeChipId])
+
   useEffect(() => {
-    if (!selectedCompetitionId) {
+    const chipsListEl = chipsListRef.current
+    if (!chipsListEl) return
+
+    const activeChip = activeChipId ? chipRefs.current[activeChipId] : null
+    const updateActiveIndicator = () => {
+      setSportFilterActiveIndicator(
+        chipsListEl,
+        activeChipId ? chipRefs.current[activeChipId] : null
+      )
+    }
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateActiveIndicator)
+      : null
+
+    resizeObserver?.observe(chipsListEl)
+    if (activeChip) resizeObserver?.observe(activeChip)
+    window.addEventListener('resize', updateActiveIndicator)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateActiveIndicator)
+    }
+  }, [activeChipId])
+
+  useEffect(() => {
+    const clearSlotEl = clearSlotRef.current
+    if (!clearSlotEl) return
+
+    const updateIndicator = () => {
+      setSportFilterActiveIndicator(
+        chipsListRef.current,
+        activeChipId ? chipRefs.current[activeChipId] : null
+      )
+    }
+    let frame: number | null = null
+    let settleTimer: number | null = null
+
+    if (hasClearCompetition) {
+      frame = window.requestAnimationFrame(() => {
+        clearSlotEl.classList.add('sport-filter-bar__clear-slot--visible')
+        updateIndicator()
+        settleTimer = window.setTimeout(updateIndicator, 240)
+      })
+    } else {
+      clearSlotEl.classList.remove('sport-filter-bar__clear-slot--visible')
+      updateIndicator()
+      settleTimer = window.setTimeout(updateIndicator, 240)
+    }
+
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame)
+      if (settleTimer !== null) window.clearTimeout(settleTimer)
+    }
+  }, [activeChipId, hasClearCompetition])
+
+  useEffect(() => {
+    if (!activeChipId) {
       resetChipScroll()
       return
     }
 
     const frame = window.requestAnimationFrame(() => {
-      scrollChipIntoView(chipRefs.current[selectedCompetitionId])
+      scrollChipIntoView(chipRefs.current[activeChipId])
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [resetChipScroll, scrollChipIntoView, selectedCompetitionId])
+  }, [activeChipId, resetChipScroll, scrollChipIntoView])
 
   return (
     <div className="sport-filter-bar" ref={chipsContainerRef}>
-      <div className="sport-filter-bar__chips" aria-label={`Campeonatos de ${config.sportLabel}`}>
-        {selectedCompetitionId && onClearCompetition && (
+      <div
+        className="sport-filter-bar__chips"
+        ref={chipsListRef}
+        aria-label={`Campeonatos de ${config.sportLabel}`}
+      >
+        <span className="sport-filter-bar__active-indicator" aria-hidden="true" />
+        <span
+          ref={clearSlotRef}
+          className="sport-filter-bar__clear-slot"
+          aria-hidden={!hasClearCompetition}
+        >
           <button
             type="button"
             className="sport-filter-bar__clear"
             onClick={handleClearCompetition}
             aria-label="Limpar competição"
+            disabled={!hasClearCompetition}
+            tabIndex={hasClearCompetition ? 0 : -1}
           >
             <img src={iconFecharPeq} alt="" className="sport-filter-bar__clear-icon" />
           </button>
-        )}
+        </span>
 
         {chipCompetitions.map((competition) => {
           const active = isSelectedCompetition(competition.id, competition.name)

@@ -4,7 +4,7 @@ import { isSportsDbTeamLogoUrl } from '../../services/theSportsDbTeamLogos'
 import iconFutebol from '../../assets/iconFutebol.png'
 import iconBasquete from '../../assets/iconBasquete.png'
 
-export function getSportFallbackLogo(sport: string) {
+function getSportFallbackLogo(sport: string) {
   if (sport === 'basquete') return iconBasquete
   if (sport === 'futebol') return iconFutebol
   return ''

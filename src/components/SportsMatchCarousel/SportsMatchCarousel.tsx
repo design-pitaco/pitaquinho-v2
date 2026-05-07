@@ -16,6 +16,7 @@ interface SportsMatchCarouselProps {
   matchTimes?: Record<string, string>
   resetKey?: string
   competitionMode?: boolean
+  isCollapsed?: boolean
   onLiveMatchClick?: (payload: LiveEventOpenPayload) => void
 }
 
@@ -126,6 +127,7 @@ export function SportsMatchCarousel({
   matchTimes,
   resetKey,
   competitionMode = false,
+  isCollapsed = false,
   onLiveMatchClick,
 }: SportsMatchCarouselProps) {
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -196,7 +198,15 @@ export function SportsMatchCarousel({
   if (events.length === 0) return null
 
   return (
-    <div className="sports-match-carousel" ref={carouselRef} aria-label="Jogos">
+    <div
+      className={[
+        'sports-match-carousel',
+        isCollapsed ? 'sports-match-carousel--collapsed' : '',
+      ].filter(Boolean).join(' ')}
+      ref={carouselRef}
+      aria-label="Jogos"
+      aria-hidden={isCollapsed}
+    >
       <div className="sports-match-carousel__track">
         {events.map(({ league, event }) => {
           const currentTime = currentTimes[event.id] ?? event.dateTime
@@ -204,7 +214,7 @@ export function SportsMatchCarousel({
           const preMatchHeader = competitionMode
             ? getCompetitionPreMatchHeader(event.dateTime)
             : { primary: getPreMatchLabel(event.dateTime), secondary: leagueName }
-          const canOpenLiveEvent = !!onLiveMatchClick && liveEventSports.has(league.sport)
+          const canOpenLiveEvent = !isCollapsed && !!onLiveMatchClick && liveEventSports.has(league.sport)
           const openLiveEvent = () => {
             const railEvents = events.map((displayedEvent) => (
               getLiveEventRailItem(displayedEvent, currentTimes, competitionMode)

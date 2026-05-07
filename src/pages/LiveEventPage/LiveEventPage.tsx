@@ -96,9 +96,12 @@ interface LiveEventContentProps {
   sport: string
   currentTime: string
   isExpanded: boolean
+  expansionProgress: number
   onRequestClose: () => void
   onRequestExpand: () => void
   onRequestCollapse: () => void
+  onExpansionProgressChange: (progress: number, options?: { deferSettle?: boolean }) => void
+  onExpansionGestureEnd: (progress: number) => void
   onCompactPullChange: (distance: number) => void
   onCompactPullEnd: (distance: number) => void
 }
@@ -1280,9 +1283,12 @@ function LiveEventContent({
   onRequestClose,
   onRequestExpand,
   onRequestCollapse,
+  onExpansionProgressChange,
+  onExpansionGestureEnd,
   onCompactPullChange,
   onCompactPullEnd,
   isExpanded,
+  expansionProgress,
   match,
   leagueName,
   sport,
@@ -1304,16 +1310,20 @@ function LiveEventContent({
   const scoreBoxRef = useRef<HTMLDivElement>(null)
   const stickyScoreHeaderVisibleRef = useRef(false)
   const dragStartYRef = useRef<number | null>(null)
+  const expansionProgressRef = useRef(expansionProgress)
   const isResettingCompactScrollRef = useRef(false)
   const compactScrollResetTimerRef = useRef<number | null>(null)
   const scrollAnimationFrameRef = useRef<number | null>(null)
   const lastScrollTopRef = useRef(0)
   const pendingScrollTopRef = useRef(0)
-  const compactPullGestureRef = useRef<{
+  const expansionGestureRef = useRef<{
     startX: number
     startY: number
-    isPulling: boolean
+    startProgress: number
+    startedAtScrollTop: boolean
+    isControlling: boolean
     pullDistance: number
+    lastProgress: number
   } | null>(null)
   const contentSport = match.sport ?? sport
   const isBasketball = contentSport === 'basquete'
@@ -1362,6 +1372,10 @@ function LiveEventContent({
   const homeExtraEventsCount = Math.max(0, homeEvents.length - 1)
   const awayExtraEventsCount = Math.max(0, awayEvents.length - 1)
 
+  useEffect(() => {
+    expansionProgressRef.current = expansionProgress
+  }, [expansionProgress])
+
   const syncStickyScoreHeaderVisibility = useCallback((isVisible: boolean) => {
     if (stickyScoreHeaderVisibleRef.current === isVisible) return
 
@@ -1407,6 +1421,12 @@ function LiveEventContent({
   const handleContentScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     if (isResettingCompactScrollRef.current) return
 
+    if (!isExpanded) {
+      event.currentTarget.scrollTop = 0
+      syncStickyScoreHeaderVisibility(false)
+      return
+    }
+
     pendingScrollTopRef.current = event.currentTarget.scrollTop
 
     if (scrollAnimationFrameRef.current !== null) return
@@ -1415,25 +1435,37 @@ function LiveEventContent({
       scrollAnimationFrameRef.current = null
 
       const scrollTop = pendingScrollTopRef.current
-      const previousScrollTop = lastScrollTopRef.current
-      const isScrollingDown = scrollTop > previousScrollTop
-      const isScrollingUp = scrollTop < previousScrollTop
 
       lastScrollTopRef.current = scrollTop
       updateStickyScoreHeaderVisibility()
-
-      if (isExpanded) {
-        if (scrollTop <= LIVE_EVENT_COLLAPSE_SCROLL_THRESHOLD && isScrollingUp) {
-          onRequestCollapse()
-        }
-        return
-      }
-
-      if (scrollTop >= LIVE_EVENT_EXPAND_SCROLL_THRESHOLD && isScrollingDown) {
-        onRequestExpand()
-      }
     })
-  }, [isExpanded, onRequestCollapse, onRequestExpand, updateStickyScoreHeaderVisibility])
+  }, [isExpanded, syncStickyScoreHeaderVisibility, updateStickyScoreHeaderVisibility])
+
+  const handleContentWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    const verticalDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : 0
+    if (verticalDelta === 0) return
+
+    const scrollElement = event.currentTarget
+    const currentProgress = expansionProgressRef.current
+    const isAtScrollTop = scrollElement.scrollTop <= LIVE_EVENT_PULL_TOP_THRESHOLD
+    const shouldExpand = verticalDelta > 0 && currentProgress < 1
+    const shouldCollapse = verticalDelta < 0 && (currentProgress < 1 || isAtScrollTop)
+
+    if (!shouldExpand && !shouldCollapse) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    scrollElement.scrollTop = 0
+    onCompactPullChange(0)
+
+    const nextProgress = clampLiveEventExpansionProgress(
+      currentProgress + verticalDelta / LIVE_EVENT_EXPANSION_WHEEL_DISTANCE
+    )
+
+    expansionProgressRef.current = nextProgress
+    onExpansionProgressChange(nextProgress, { deferSettle: true })
+  }, [onCompactPullChange, onExpansionProgressChange])
 
   useEffect(() => {
     const syncTimer = window.setTimeout(() => setDisplayTime(currentTime), 0)
@@ -1480,22 +1512,27 @@ function LiveEventContent({
   }, [])
 
   useEffect(() => {
-    if (!isExpanded) {
+    if (isExpanded) return
+
+    const stickyHeaderTimer = window.setTimeout(() => {
       syncStickyScoreHeaderVisibility(false)
-      isResettingCompactScrollRef.current = true
-      lastScrollTopRef.current = 0
-      pendingScrollTopRef.current = 0
-      scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    }, 0)
 
-      if (compactScrollResetTimerRef.current !== null) {
-        window.clearTimeout(compactScrollResetTimerRef.current)
-      }
+    isResettingCompactScrollRef.current = true
+    lastScrollTopRef.current = 0
+    pendingScrollTopRef.current = 0
+    scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
 
-      compactScrollResetTimerRef.current = window.setTimeout(() => {
-        isResettingCompactScrollRef.current = false
-        compactScrollResetTimerRef.current = null
-      }, LIVE_EVENT_TRANSITION_MS)
+    if (compactScrollResetTimerRef.current !== null) {
+      window.clearTimeout(compactScrollResetTimerRef.current)
     }
+
+    compactScrollResetTimerRef.current = window.setTimeout(() => {
+      isResettingCompactScrollRef.current = false
+      compactScrollResetTimerRef.current = null
+    }, LIVE_EVENT_TRANSITION_MS)
+
+    return () => window.clearTimeout(stickyHeaderTimer)
   }, [isExpanded, syncStickyScoreHeaderVisibility])
 
   useEffect(() => {
@@ -1508,62 +1545,97 @@ function LiveEventContent({
     if (!scrollElement || !isMobileTouchScreen()) return
 
     const handleTouchStart = (event: globalThis.TouchEvent) => {
-      if (isExpanded || event.touches.length !== 1) {
-        compactPullGestureRef.current = null
+      if (event.touches.length !== 1) {
+        expansionGestureRef.current = null
         return
       }
 
       const touch = event.touches[0]
       if (!touch) return
 
-      compactPullGestureRef.current = {
+      const currentProgress = expansionProgressRef.current
+
+      expansionGestureRef.current = {
         startX: touch.clientX,
         startY: touch.clientY,
-        isPulling: false,
+        startProgress: currentProgress,
+        startedAtScrollTop: scrollElement.scrollTop <= LIVE_EVENT_PULL_TOP_THRESHOLD,
+        isControlling: false,
         pullDistance: 0,
+        lastProgress: currentProgress,
       }
     }
 
     const handleTouchMove = (event: globalThis.TouchEvent) => {
-      const gesture = compactPullGestureRef.current
+      const gesture = expansionGestureRef.current
       const touch = event.touches[0]
-      if (!gesture || !touch || isExpanded) return
+      if (!gesture || !touch) return
 
       const dx = touch.clientX - gesture.startX
       const dy = touch.clientY - gesture.startY
-      const atScrollTop = scrollElement.scrollTop <= LIVE_EVENT_PULL_TOP_THRESHOLD
+      const currentProgress = expansionProgressRef.current
+      const hasVerticalIntent = Math.abs(dy) >= LIVE_EVENT_PULL_START_THRESHOLD && Math.abs(dy) > Math.abs(dx)
 
-      if (!gesture.isPulling) {
-        const hasDownwardIntent = dy >= LIVE_EVENT_PULL_START_THRESHOLD && Math.abs(dy) > Math.abs(dx)
-        if (!atScrollTop || !hasDownwardIntent) return
-        gesture.isPulling = true
+      if (!gesture.isControlling) {
+        const wantsExpand = dy <= -LIVE_EVENT_PULL_START_THRESHOLD && currentProgress < 1
+        const wantsCollapse = dy >= LIVE_EVENT_PULL_START_THRESHOLD
+          && (
+            currentProgress < 1
+            || (currentProgress >= 1 && gesture.startedAtScrollTop)
+          )
+
+        if (!hasVerticalIntent || (!wantsExpand && !wantsCollapse)) return
+
+        gesture.isControlling = true
       }
 
-      event.preventDefault()
+      if (event.cancelable) event.preventDefault()
       event.stopPropagation()
       scrollElement.scrollTop = 0
-      gesture.pullDistance = getCompactPullDistance(dy)
+
+      const nextProgress = clampLiveEventExpansionProgress(
+        gesture.startProgress - dy / LIVE_EVENT_EXPANSION_TOUCH_DISTANCE
+      )
+      const distanceToCompact = gesture.startProgress * LIVE_EVENT_EXPANSION_TOUCH_DISTANCE
+      const compactPullDistance = dy > distanceToCompact
+        ? getCompactPullDistance(dy - distanceToCompact)
+        : 0
+
+      gesture.lastProgress = nextProgress
+      gesture.pullDistance = nextProgress <= 0 ? compactPullDistance : 0
+      expansionProgressRef.current = nextProgress
+
+      onExpansionProgressChange(nextProgress)
       onCompactPullChange(gesture.pullDistance)
     }
 
-    const finishCompactPull = () => {
-      const gesture = compactPullGestureRef.current
-      compactPullGestureRef.current = null
-      if (gesture?.isPulling) onCompactPullEnd(gesture.pullDistance)
+    const finishExpansionGesture = () => {
+      const gesture = expansionGestureRef.current
+      expansionGestureRef.current = null
+      if (!gesture?.isControlling) return
+
+      if (gesture.pullDistance > 0) {
+        onCompactPullEnd(gesture.pullDistance)
+        if (gesture.pullDistance >= LIVE_EVENT_CLOSE_PULL_THRESHOLD) return
+      } else {
+        onCompactPullChange(0)
+      }
+
+      onExpansionGestureEnd(gesture.lastProgress)
     }
 
     scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
     scrollElement.addEventListener('touchmove', handleTouchMove, { passive: false })
-    scrollElement.addEventListener('touchend', finishCompactPull)
-    scrollElement.addEventListener('touchcancel', finishCompactPull)
+    scrollElement.addEventListener('touchend', finishExpansionGesture)
+    scrollElement.addEventListener('touchcancel', finishExpansionGesture)
 
     return () => {
       scrollElement.removeEventListener('touchstart', handleTouchStart)
       scrollElement.removeEventListener('touchmove', handleTouchMove)
-      scrollElement.removeEventListener('touchend', finishCompactPull)
-      scrollElement.removeEventListener('touchcancel', finishCompactPull)
+      scrollElement.removeEventListener('touchend', finishExpansionGesture)
+      scrollElement.removeEventListener('touchcancel', finishExpansionGesture)
     }
-  }, [isExpanded, onCompactPullChange, onCompactPullEnd])
+  }, [onCompactPullChange, onCompactPullEnd, onExpansionGestureEnd, onExpansionProgressChange])
 
   const handleCloseHandlePointerDown = (event: PointerEvent<HTMLSpanElement>) => {
     dragStartYRef.current = event.clientY
@@ -1666,6 +1738,7 @@ function LiveEventContent({
         className="live-event-page__scroll"
         ref={scrollRef}
         onScroll={handleContentScroll}
+        onWheel={handleContentWheel}
       >
         <div className="live-event-page__scroll-body">
         <button
@@ -2345,19 +2418,22 @@ const MemoLiveEventContent = memo(LiveEventContent, (previous, next) => (
   && previous.sport === next.sport
   && previous.currentTime === next.currentTime
   && previous.isExpanded === next.isExpanded
+  && previous.expansionProgress === next.expansionProgress
 ))
 
 const LIVE_EVENT_COMPACT_SIDE_MARGIN = 24
 const LIVE_EVENT_COMPACT_TOP = 106
 const LIVE_EVENT_TRANSITION_MS = 360
 const LIVE_EVENT_CONTENT_SWITCH_MS = 380
-const LIVE_EVENT_EXPAND_SCROLL_THRESHOLD = 8
-const LIVE_EVENT_COLLAPSE_SCROLL_THRESHOLD = 1
 const LIVE_EVENT_PULL_TOP_THRESHOLD = 1
 const LIVE_EVENT_PULL_START_THRESHOLD = 6
 const LIVE_EVENT_PULL_RESISTANCE = 0.56
 const LIVE_EVENT_MAX_COMPACT_PULL = 132
 const LIVE_EVENT_CLOSE_PULL_THRESHOLD = 72
+const LIVE_EVENT_EXPANSION_TOUCH_DISTANCE = 180
+const LIVE_EVENT_EXPANSION_WHEEL_DISTANCE = 260
+const LIVE_EVENT_EXPANSION_SETTLE_THRESHOLD = 0.5
+const LIVE_EVENT_WHEEL_SETTLE_DELAY_MS = 140
 type LiveEventSwitchDirection = 'next' | 'previous'
 
 interface LiveEventContentTransition {
@@ -2389,6 +2465,10 @@ const isMobileTouchScreen = () => (
 
 const getCompactPullDistance = (distance: number) => (
   Math.min(LIVE_EVENT_MAX_COMPACT_PULL, Math.max(0, distance * LIVE_EVENT_PULL_RESISTANCE))
+)
+
+const clampLiveEventExpansionProgress = (progress: number) => (
+  Math.min(1, Math.max(0, progress))
 )
 
 interface SheetMetrics {
@@ -2500,12 +2580,16 @@ export function LiveEventPage({
   const railTimes = railTimesState.key === railItemsKey ? railTimesState.times : initialRailTimes
   const [isClosing, setIsClosing] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [expansionProgress, setExpansionProgress] = useState(0)
+  const isExpanded = expansionProgress >= 1
+  const hasExpansionStarted = expansionProgress > 0
+  const [isExpansionGestureActive, setIsExpansionGestureActive] = useState(false)
   const [compactPullY, setCompactPullY] = useState(0)
   const [isCompactPulling, setIsCompactPulling] = useState(false)
   const [sheetMetrics, setSheetMetrics] = useState<SheetMetrics>(() => measureSheetMetrics())
   const closeTimerRef = useRef<number | null>(null)
   const switchTimerRef = useRef<number | null>(null)
+  const expansionSettleTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -2515,14 +2599,16 @@ export function LiveEventPage({
           closeTimerRef.current = null
         }
         setSheetMetrics(measureSheetMetrics())
-        setIsExpanded(false)
+        setExpansionProgress(0)
+        setIsExpansionGestureActive(false)
         setCompactPullY(0)
         setIsCompactPulling(false)
         setShouldRender(true)
         setIsClosing(false)
       } else if (shouldRender && !isClosing) {
         setIsClosing(true)
-        setIsExpanded(false)
+        setExpansionProgress(0)
+        setIsExpansionGestureActive(false)
         setCompactPullY(0)
         setIsCompactPulling(false)
         closeTimerRef.current = window.setTimeout(() => {
@@ -2544,6 +2630,10 @@ export function LiveEventPage({
     if (switchTimerRef.current !== null) {
       window.clearTimeout(switchTimerRef.current)
       switchTimerRef.current = null
+    }
+    if (expansionSettleTimerRef.current !== null) {
+      window.clearTimeout(expansionSettleTimerRef.current)
+      expansionSettleTimerRef.current = null
     }
   }, [])
 
@@ -2614,10 +2704,63 @@ export function LiveEventPage({
     }
   }, [shouldRender])
 
+  const clearExpansionSettleTimer = useCallback(() => {
+    if (expansionSettleTimerRef.current !== null) {
+      window.clearTimeout(expansionSettleTimerRef.current)
+      expansionSettleTimerRef.current = null
+    }
+  }, [])
+
+  const settleExpansionProgress = useCallback((progress: number) => {
+    clearExpansionSettleTimer()
+
+    const clampedProgress = clampLiveEventExpansionProgress(progress)
+    const settledProgress = clampedProgress <= 0
+      ? 0
+      : clampedProgress >= 1
+        ? 1
+        : clampedProgress >= LIVE_EVENT_EXPANSION_SETTLE_THRESHOLD
+          ? 1
+          : 0
+
+    setExpansionProgress(settledProgress)
+    setIsExpansionGestureActive(false)
+    setCompactPullY(0)
+    setIsCompactPulling(false)
+  }, [clearExpansionSettleTimer])
+
+  const handleExpansionProgressChange = useCallback((
+    progress: number,
+    options: { deferSettle?: boolean } = {}
+  ) => {
+    const nextProgress = clampLiveEventExpansionProgress(progress)
+
+    clearExpansionSettleTimer()
+    setIsExpansionGestureActive(true)
+    setExpansionProgress(nextProgress)
+
+    if (nextProgress > 0) {
+      setCompactPullY(0)
+      setIsCompactPulling(false)
+    }
+
+    if (options.deferSettle) {
+      expansionSettleTimerRef.current = window.setTimeout(() => {
+        settleExpansionProgress(nextProgress)
+      }, LIVE_EVENT_WHEEL_SETTLE_DELAY_MS)
+    }
+  }, [clearExpansionSettleTimer, settleExpansionProgress])
+
+  const handleExpansionGestureEnd = useCallback((progress: number) => {
+    settleExpansionProgress(progress)
+  }, [settleExpansionProgress])
+
   const requestClose = useCallback(() => {
     if (isClosing) return
+    clearExpansionSettleTimer()
     setIsClosing(true)
-    setIsExpanded(false)
+    setExpansionProgress(0)
+    setIsExpansionGestureActive(false)
     setCompactPullY(0)
     setIsCompactPulling(false)
     if (closeTimerRef.current !== null) {
@@ -2629,25 +2772,36 @@ export function LiveEventPage({
       closeTimerRef.current = null
       onClose()
     }, LIVE_EVENT_TRANSITION_MS)
-  }, [isClosing, onClose])
+  }, [clearExpansionSettleTimer, isClosing, onClose])
 
   const requestExpand = useCallback(() => {
+    clearExpansionSettleTimer()
     setCompactPullY(0)
     setIsCompactPulling(false)
-    setIsExpanded(true)
-  }, [])
+    setIsExpansionGestureActive(false)
+    setExpansionProgress(1)
+  }, [clearExpansionSettleTimer])
 
   const requestCollapse = useCallback(() => {
+    clearExpansionSettleTimer()
     setCompactPullY(0)
     setIsCompactPulling(false)
-    setIsExpanded(false)
-  }, [])
+    setIsExpansionGestureActive(false)
+    setExpansionProgress(0)
+  }, [clearExpansionSettleTimer])
 
   const handleCompactPullChange = useCallback((distance: number) => {
-    if (isExpanded || isClosing) return
+    if (isClosing) return
+    if (distance <= 0) {
+      setIsCompactPulling(false)
+      setCompactPullY(0)
+      return
+    }
+    if (expansionProgress > 0) return
+
     setIsCompactPulling(true)
     setCompactPullY(distance)
-  }, [isClosing, isExpanded])
+  }, [expansionProgress, isClosing])
 
   const handleCompactPullEnd = useCallback((distance: number) => {
     if (distance >= LIVE_EVENT_CLOSE_PULL_THRESHOLD) {
@@ -2714,15 +2868,24 @@ export function LiveEventPage({
     'live-event-page',
     isClosing ? 'live-event-page--closing' : '',
     isExpanded ? 'live-event-page--expanded' : '',
+    hasExpansionStarted ? 'live-event-page--expansion-started' : '',
+    isExpansionGestureActive ? 'live-event-page--gesture-resizing' : '',
     isCompactPulling ? 'live-event-page--compact-pulling' : '',
     activeContentTransition ? 'live-event-page--content-switching' : '',
   ].filter(Boolean).join(' ')
+  const sheetOffsetY = LIVE_EVENT_COMPACT_TOP * (1 - expansionProgress) + compactPullY
+  const sheetScale = sheetMetrics.compactScale + (1 - sheetMetrics.compactScale) * expansionProgress
+  const sheetRadius = 28 * (1 - expansionProgress)
   const rootStyle = {
     ['--live-event-sheet-width' as string]: `${sheetMetrics.viewportWidth}px`,
     ['--live-event-sheet-height' as string]: `${sheetMetrics.viewportHeight}px`,
     ['--live-event-compact-scale' as string]: String(sheetMetrics.compactScale),
     ['--live-event-compact-top' as string]: `${LIVE_EVENT_COMPACT_TOP}px`,
     ['--live-event-compact-pull-y' as string]: `${compactPullY}px`,
+    ['--live-event-expansion-progress' as string]: String(expansionProgress),
+    ['--live-event-sheet-offset-y' as string]: `${sheetOffsetY}px`,
+    ['--live-event-sheet-scale' as string]: String(sheetScale),
+    ['--live-event-sheet-radius' as string]: `${sheetRadius}px`,
   } as CSSProperties
 
   return createPortal(
@@ -2761,9 +2924,12 @@ export function LiveEventPage({
                       sport={previousTransitionMatch.sport ?? sport}
                       currentTime={previousTransitionMatchTime}
                       isExpanded={isExpanded}
+                      expansionProgress={expansionProgress}
                       onRequestClose={requestClose}
                       onRequestExpand={requestExpand}
                       onRequestCollapse={requestCollapse}
+                      onExpansionProgressChange={handleExpansionProgressChange}
+                      onExpansionGestureEnd={handleExpansionGestureEnd}
                       onCompactPullChange={handleCompactPullChange}
                       onCompactPullEnd={handleCompactPullEnd}
                     />
@@ -2783,9 +2949,12 @@ export function LiveEventPage({
                     sport={selectedMatch.sport ?? sport}
                     currentTime={selectedMatchTime}
                     isExpanded={isExpanded}
+                    expansionProgress={expansionProgress}
                     onRequestClose={requestClose}
                     onRequestExpand={requestExpand}
                     onRequestCollapse={requestCollapse}
+                    onExpansionProgressChange={handleExpansionProgressChange}
+                    onExpansionGestureEnd={handleExpansionGestureEnd}
                     onCompactPullChange={handleCompactPullChange}
                     onCompactPullEnd={handleCompactPullEnd}
                   />

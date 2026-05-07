@@ -57,6 +57,33 @@
   padding-top: var(--sport-header-padding-top);
 }
 
+.home--header-morph-active {
+  padding-top: 194px;
+  transition: none;
+}
+
+.home--header-morph-active.home--sport-active,
+.home--header-morph-active.home--sport-active.home--header-compact {
+  padding-top: 293px;
+}
+
+.home--header-morph-active .header__bg-dark,
+.home--header-morph-active .header__top,
+.home--header-morph-active .sport-rail,
+.home--header-morph-active .sport-rail__item,
+.home--header-morph-active .sport-rail__label,
+.home--header-morph-active .sport-filter-bar,
+.home--header-morph-active .sports-match-carousel,
+.home--header-morph-active .sports-match-carousel__track,
+.home--header-morph-active .sports-match-carousel__card-header,
+.home--header-morph-active .sports-match-carousel__teams,
+.home--header-morph-active .sports-match-carousel__team-list,
+.home--header-morph-active .sports-match-carousel__team-row,
+.home--header-morph-active .sports-match-carousel__score-column,
+.home--header-morph-active .sports-match-carousel__team-score {
+  transition: none;
+}
+
 /* Padrão e v2 - Sem dividers */
 .home--no-dividers .promotion-section,
 .home--no-dividers .offers-section,

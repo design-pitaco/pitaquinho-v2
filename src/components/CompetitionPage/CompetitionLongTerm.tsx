@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './CompetitionLongTerm.css'
 import setaLink from '../../assets/setaLink.png'
 import { TeamLogo } from '../TeamLogo'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
 import type { LongTermOdd } from './competitionData'
 
@@ -13,7 +14,17 @@ interface CompetitionLongTermProps {
 
 export function CompetitionLongTerm({ tabs, oddsByTab, sport = '' }: CompetitionLongTermProps) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? '')
+  const chipsRef = useRef<HTMLDivElement>(null)
+  const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const odds = oddsByTab[activeTab] ?? []
+  const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab)
+  const activeTabIndicatorKey = `${activeTab}:${tabs.map((tab) => tab.id).join('|')}`
+
+  useSlidingActiveIndicator({
+    activeKey: activeTabIndicatorKey,
+    containerRef: chipsRef,
+    getActiveElement: () => chipRefs.current[activeTabIndex],
+  })
 
   return (
     <section className="competition-longterm">
@@ -21,11 +32,13 @@ export function CompetitionLongTerm({ tabs, oddsByTab, sport = '' }: Competition
         <span>Longo Prazo</span>
       </div>
 
-      <div className="competition-longterm__chips">
-        {tabs.map((tab) => (
+      <div className="competition-longterm__chips sliding-chip-group" ref={chipsRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
+        {tabs.map((tab, index) => (
           <button
             key={tab.id}
-            className={`competition-longterm__chip ${activeTab === tab.id ? 'competition-longterm__chip--active' : ''}`}
+            ref={(el) => { chipRefs.current[index] = el }}
+            className={`competition-longterm__chip sliding-chip ${activeTab === tab.id ? 'competition-longterm__chip--active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}

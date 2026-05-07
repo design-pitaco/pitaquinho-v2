@@ -142,13 +142,63 @@
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+  isolation: isolate;
 }
 
 .header__highlight-chips::-webkit-scrollbar {
   display: none;
 }
 
+.header__highlight-chip-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: var(--highlight-chip-active-width, 0px);
+  height: var(--highlight-chip-active-height, 28px);
+  border-radius: 160px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  box-shadow: 0 6px 16px rgba(82, 40, 255, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(var(--highlight-chip-active-x, 0), var(--highlight-chip-active-y, 0), 0) scale(0.98);
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 120ms ease;
+  will-change: transform, width, height, opacity;
+}
+
+.header__highlight-chip-indicator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(45deg, rgba(82, 40, 255, 0.64) 0.62%, rgba(174, 24, 255, 0.64) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.header__highlight-chips--indicator-ready .header__highlight-chip-indicator {
+  opacity: 1;
+  transform: translate3d(var(--highlight-chip-active-x, 0), var(--highlight-chip-active-y, 0), 0) scale(1);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 120ms ease;
+}
+
 .header__highlight-chip {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,6 +211,13 @@
   color: #a8a8a8;
   cursor: pointer;
   flex-shrink: 0;
+  transition:
+    color 180ms ease,
+    transform 120ms ease;
+}
+
+.header__highlight-chip:active {
+  transform: scale(0.96);
 }
 
 .header__highlight-chip span {
@@ -173,23 +230,12 @@
 
 .header__highlight-chip--active {
   position: relative;
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  background: transparent;
   color: #ffffff;
 }
 
 .header__highlight-chip--active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 160px;
-  padding: 1px;
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  display: none;
 }
 
 .header__highlight-chip-icon {
@@ -197,6 +243,11 @@
   height: 16px;
   object-fit: contain;
   flex-shrink: 0;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header__highlight-chip--active .header__highlight-chip-icon {
+  transform: scale(1.08);
 }
 
 /* Saldo */
@@ -240,4 +291,13 @@
   height: 12px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__highlight-chip-indicator,
+  .header__highlight-chips--indicator-ready .header__highlight-chip-indicator,
+  .header__highlight-chip,
+  .header__highlight-chip-icon {
+    transition: none;
+  }
 }

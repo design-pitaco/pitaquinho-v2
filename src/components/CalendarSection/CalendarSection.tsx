@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, type MouseEvent, type RefObject } from 'react'
+import { useState, useRef, useEffect, type RefObject } from 'react'
 import '../PreMatchSection/PreMatchSection.css'
 import './CalendarSection.css'
 import { LiveMatchCard } from '../LiveMatchCard'
 import type { LiveEventMatch, LiveEventOpenPayload } from '../../pages/LiveEventPage'
 import { getTeamLogo } from '../../data/teamLogos'
 import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 import {
   getCompetitionLinkTarget,
   type CompetitionLinkTarget,
@@ -103,6 +104,9 @@ const basketballMarketChips: MarketChip[] = [
 
 const SHORT_COMPETITION_EVENT_LIMIT = 3
 const liveEventSports = new Set(['futebol', 'basquete'])
+
+const getDefaultMarketId = (sport?: string | null) =>
+  sport === 'basquete' ? 'vencedor' : 'resultado-final'
 
 function getCalendarSportFallbackIcon(sport: string): string {
   if (sport === 'basquete') return iconBasquete
@@ -1309,6 +1313,73 @@ const getCompetitionCalendarEventCount = (sections: CompetitionCalendarDaySectio
     sectionTotal + section.groups.reduce((groupTotal, group) => groupTotal + group.events.length, 0)
   ), 0)
 
+const scrollChipElementIntoView = (chipEl: HTMLButtonElement) => {
+  const containerEl = chipEl.parentElement
+  if (!containerEl) return
+
+  const chipLeft = chipEl.offsetLeft
+  const chipWidth = chipEl.offsetWidth
+  const containerWidth = containerEl.offsetWidth
+  const containerScroll = containerEl.scrollLeft
+  const padding = 20
+
+  if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
+    containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+  } else if (chipLeft < containerScroll + padding) {
+    containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
+  }
+}
+
+interface MarketChipsProps {
+  activeMarketId: string
+  chips: MarketChip[]
+  className?: string
+  containerRef?: RefObject<HTMLDivElement | null>
+  onMarketChange: (marketId: string) => void
+}
+
+function MarketChips({
+  activeMarketId,
+  chips,
+  className = '',
+  containerRef,
+  onMarketChange,
+}: MarketChipsProps) {
+  const internalRef = useRef<HTMLDivElement>(null)
+  const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const chipsRef = containerRef ?? internalRef
+  const activeIndex = chips.findIndex((chip) => chip.id === activeMarketId)
+  const activeIndicatorKey = `${activeMarketId}:${chips.map((chip) => chip.id).join('|')}`
+
+  useSlidingActiveIndicator({
+    activeKey: activeIndicatorKey,
+    containerRef: chipsRef,
+    getActiveElement: () => chipRefs.current[activeIndex],
+  })
+
+  return (
+    <div
+      className={`prematch-section__chips sliding-chip-group${className ? ` ${className}` : ''}`}
+      ref={chipsRef}
+    >
+      <span className="sliding-chip-indicator" aria-hidden="true" />
+      {chips.map((chip, index) => (
+        <button
+          key={chip.id}
+          ref={(el) => { chipRefs.current[index] = el }}
+          className={`prematch-section__chip prematch-section__chip--market sliding-chip ${activeMarketId === chip.id ? 'prematch-section__chip--active' : ''}`}
+          onClick={(event) => {
+            onMarketChange(chip.id)
+            scrollChipElementIntoView(event.currentTarget)
+          }}
+        >
+          <span data-text={chip.label}>{chip.label}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function CalendarSection({
   sportFilter,
   competitionId,
@@ -1317,9 +1388,9 @@ export function CalendarSection({
   onLiveMatchClick,
   onOpenCompetition,
 }: CalendarSectionProps = {}) {
-  const [activeMarket, setActiveMarket] = useState('resultado-final')
+  const [activeMarket, setActiveMarket] = useState(() => getDefaultMarketId(sportFilter))
+  const [competitionSectionMarkets, setCompetitionSectionMarkets] = useState<Record<string, string>>({})
   const marketChipsRef = useRef<HTMLDivElement>(null)
-  const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [internalMatchTimes, setInternalMatchTimes] = useState<Record<string, string>>(() => {
     const times: Record<string, string> = {}
     championships.forEach((championship) => {
@@ -1350,7 +1421,8 @@ export function CalendarSection({
   }, [sportFilter, competitionId, liveOnly])
 
   useEffect(() => {
-    setActiveMarket(sportFilter === 'basquete' ? 'vencedor' : 'resultado-final')
+    setActiveMarket(getDefaultMarketId(sportFilter))
+    setCompetitionSectionMarkets({})
     if (marketChipsRef.current) {
       marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
     }
@@ -1387,38 +1459,6 @@ export function CalendarSection({
     return () => clearInterval(interval)
   }, [hasMatchTimesOverride])
 
-  const scrollChipIntoView = (chipsRef: RefObject<HTMLDivElement | null>, chipEl: HTMLButtonElement | null) => {
-    const containerEl = chipsRef.current
-    if (!chipEl || !containerEl) return
-    const chipLeft = chipEl.offsetLeft
-    const chipWidth = chipEl.offsetWidth
-    const containerWidth = containerEl.offsetWidth
-    const containerScroll = containerEl.scrollLeft
-    const padding = 20
-    if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
-      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
-    } else if (chipLeft < containerScroll + padding) {
-      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
-    }
-  }
-
-  const scrollClickedChipIntoView = (chipEl: HTMLButtonElement) => {
-    const containerEl = chipEl.parentElement
-    if (!containerEl) return
-
-    const chipLeft = chipEl.offsetLeft
-    const chipWidth = chipEl.offsetWidth
-    const containerWidth = containerEl.offsetWidth
-    const containerScroll = containerEl.scrollLeft
-    const padding = 20
-
-    if (chipLeft + chipWidth > containerScroll + containerWidth - padding) {
-      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
-    } else if (chipLeft < containerScroll + padding) {
-      containerEl.scrollTo({ left: chipLeft - padding, behavior: 'smooth' })
-    }
-  }
-
   const openLiveEvent = (league: Championship, selectedEventId: string) => {
     const payload = getCompetitionLiveEventOpenPayload({ league, selectedEventId, matchTimes })
     if (payload) onLiveMatchClick?.(payload)
@@ -1427,35 +1467,24 @@ export function CalendarSection({
   const renderMarketChips = ({
     className = '',
     withRefs = false,
+    activeMarketId = activeMarket,
+    onMarketChange = setActiveMarket,
   }: {
     className?: string
     withRefs?: boolean
+    activeMarketId?: string
+    onMarketChange?: (marketId: string) => void
   } = {}) => (
-    <div
-      className={`prematch-section__chips${className ? ` ${className}` : ''}`}
-      ref={withRefs ? marketChipsRef : undefined}
-    >
-      {currentMarketChips.map((chip, index) => (
-        <button
-          key={chip.id}
-          ref={withRefs ? (el) => { marketChipRefs.current[index] = el } : undefined}
-          className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
-          onClick={(event: MouseEvent<HTMLButtonElement>) => {
-            setActiveMarket(chip.id)
-            if (withRefs) {
-              scrollChipIntoView(marketChipsRef, marketChipRefs.current[index])
-            } else {
-              scrollClickedChipIntoView(event.currentTarget)
-            }
-          }}
-        >
-          <span data-text={chip.label}>{chip.label}</span>
-        </button>
-      ))}
-    </div>
+    <MarketChips
+      activeMarketId={activeMarketId}
+      chips={currentMarketChips}
+      className={className}
+      containerRef={withRefs ? marketChipsRef : undefined}
+      onMarketChange={onMarketChange}
+    />
   )
 
-  const renderEventCard = (league: Championship, event: CompetitionEvent) => {
+  const renderEventCard = (league: Championship, event: CompetitionEvent, selectedMarket = activeMarket) => {
     const marketOdds = getMarketOdds(event, league.sport)
     const homeIcon = getTeamLogo(event.homeName, event.homeIcon)
     const awayIcon = getTeamLogo(event.awayName, event.awayIcon)
@@ -1470,7 +1499,7 @@ export function CalendarSection({
         <LiveMatchCard
           key={event.id}
           sport={league.sport}
-          activeMarket={activeMarket}
+          activeMarket={selectedMarket}
           currentTime={matchTimes[event.id] || event.dateTime}
           match={{
             id: event.id,
@@ -1544,7 +1573,7 @@ export function CalendarSection({
         </div>
 
         <div className="prematch-section__odds">
-          {activeMarket === 'dupla-chance' ? (
+          {selectedMarket === 'dupla-chance' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">Casa ou Empate</span>
@@ -1559,7 +1588,7 @@ export function CalendarSection({
                 <span className="prematch-section__odd-value">{marketOdds.doubleChance?.awayOrDraw}</span>
               </button>
             </>
-          ) : activeMarket === 'ambos-marcam' ? (
+          ) : selectedMarket === 'ambos-marcam' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">Sim</span>
@@ -1570,7 +1599,7 @@ export function CalendarSection({
                 <span className="prematch-section__odd-value">{marketOdds.bothTeamsScore?.no}</span>
               </button>
             </>
-          ) : activeMarket === 'total-gols' ? (
+          ) : selectedMarket === 'total-gols' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">Menos de {marketOdds.totalGoals?.line}</span>
@@ -1581,7 +1610,7 @@ export function CalendarSection({
                 <span className="prematch-section__odd-value">{marketOdds.totalGoals?.over}</span>
               </button>
             </>
-          ) : activeMarket === 'escanteios' ? (
+          ) : selectedMarket === 'escanteios' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">Menos de {marketOdds.totalCorners?.line}</span>
@@ -1592,18 +1621,18 @@ export function CalendarSection({
                 <span className="prematch-section__odd-value">{marketOdds.totalCorners?.over}</span>
               </button>
             </>
-          ) : activeMarket === 'total-pontos' || activeMarket === 'q3-total' || activeMarket === 'q4-total' ? (
+          ) : selectedMarket === 'total-pontos' || selectedMarket === 'q3-total' || selectedMarket === 'q4-total' ? (
             <>
               <button className="prematch-section__odd-btn">
-                <span className="prematch-section__odd-team">Menos de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
-                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.under : activeMarket === 'q4-total' ? marketOdds.q4Total?.under : marketOdds.totalPoints?.under}</span>
+                <span className="prematch-section__odd-team">Menos de {selectedMarket === 'q3-total' ? marketOdds.q3Total?.line : selectedMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                <span className="prematch-section__odd-value">{selectedMarket === 'q3-total' ? marketOdds.q3Total?.under : selectedMarket === 'q4-total' ? marketOdds.q4Total?.under : marketOdds.totalPoints?.under}</span>
               </button>
               <button className="prematch-section__odd-btn">
-                <span className="prematch-section__odd-team">Mais de {activeMarket === 'q3-total' ? marketOdds.q3Total?.line : activeMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
-                <span className="prematch-section__odd-value">{activeMarket === 'q3-total' ? marketOdds.q3Total?.over : activeMarket === 'q4-total' ? marketOdds.q4Total?.over : marketOdds.totalPoints?.over}</span>
+                <span className="prematch-section__odd-team">Mais de {selectedMarket === 'q3-total' ? marketOdds.q3Total?.line : selectedMarket === 'q4-total' ? marketOdds.q4Total?.line : marketOdds.totalPoints?.line}</span>
+                <span className="prematch-section__odd-value">{selectedMarket === 'q3-total' ? marketOdds.q3Total?.over : selectedMarket === 'q4-total' ? marketOdds.q4Total?.over : marketOdds.totalPoints?.over}</span>
               </button>
             </>
-          ) : activeMarket === 'handicap' ? (
+          ) : selectedMarket === 'handicap' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">{event.homeName} {marketOdds.handicap && marketOdds.handicap.homeLine > 0 ? '+' : ''}{marketOdds.handicap?.homeLine}</span>
@@ -1614,7 +1643,7 @@ export function CalendarSection({
                 <span className="prematch-section__odd-value">{marketOdds.handicap?.away}</span>
               </button>
             </>
-          ) : currentSport === 'basquete' ? (
+          ) : league.sport === 'basquete' ? (
             <>
               <button className="prematch-section__odd-btn">
                 <span className="prematch-section__odd-team">{event.homeName}</span>
@@ -1665,17 +1694,30 @@ export function CalendarSection({
   if (isCompetitionPage) {
     return (
       <section className={competitionSectionClasses}>
-        {competitionDaySections.map((section) => (
-          <div key={section.id} className="calendar-section__competition-day">
-            <h2 className="calendar-section__competition-day-title">{section.title}</h2>
-            {renderMarketChips({ className: 'calendar-section__competition-chips' })}
-            <div className="prematch-section__matches calendar-section__competition-matches">
-              {section.groups.flatMap(({ league, events }) =>
-                events.map((event) => renderEventCard(league, event))
-              )}
+        {competitionDaySections.map((section) => {
+          const sectionMarket = competitionSectionMarkets[section.id] ?? getDefaultMarketId(section.groups[0]?.league.sport ?? currentSport)
+
+          return (
+            <div key={section.id} className="calendar-section__competition-day">
+              <h2 className="calendar-section__competition-day-title">{section.title}</h2>
+              {renderMarketChips({
+                className: 'calendar-section__competition-chips',
+                activeMarketId: sectionMarket,
+                onMarketChange: (marketId) => {
+                  setCompetitionSectionMarkets((current) => ({
+                    ...current,
+                    [section.id]: marketId,
+                  }))
+                },
+              })}
+              <div className="prematch-section__matches calendar-section__competition-matches">
+                {section.groups.flatMap(({ league, events }) =>
+                  events.map((event) => renderEventCard(league, event, sectionMarket))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </section>
     )
   }

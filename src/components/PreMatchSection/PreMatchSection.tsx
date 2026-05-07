@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './PreMatchSection.css'
 import { getTeamLogo } from '../../data/teamLogos'
 import { useSportsDbTeamLogo } from '../../hooks/useSportsDbTeamLogo'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 import {
   getCompetitionLinkTarget,
   type CompetitionLinkTarget,
@@ -681,6 +682,21 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
   // Get current market chips and filtered leagues based on sport
   const currentMarketChips = activeSport === 'basquete' ? basketballMarketChips : footballMarketChips
   const filteredLeagues = leagues.filter((l) => l.sport === activeSport)
+  const activeSportChipIndex = sportChips.findIndex((chip) => chip.id === activeSport)
+  const activeMarketChipIndex = currentMarketChips.findIndex((chip) => chip.id === activeMarket)
+  const marketIndicatorKey = `${activeSport}:${activeMarket}:${currentMarketChips.map((chip) => chip.id).join('|')}`
+
+  useSlidingActiveIndicator({
+    activeKey: activeSport,
+    containerRef: sportChipsRef,
+    getActiveElement: () => sportChipRefs.current[activeSportChipIndex],
+  })
+
+  useSlidingActiveIndicator({
+    activeKey: marketIndicatorKey,
+    containerRef: marketChipsRef,
+    getActiveElement: () => marketChipRefs.current[activeMarketChipIndex],
+  })
 
   const openCompetitionFromLeague = (leagueId: string) => {
     const target = getCompetitionLinkTarget(leagueId)
@@ -763,12 +779,13 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
       </div>
 
       {/* Sport Chips */}
-      <div className="prematch-section__chips" ref={sportChipsRef}>
+      <div className="prematch-section__chips sliding-chip-group" ref={sportChipsRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
         {sportChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { sportChipRefs.current[index] = el }}
-            className={`prematch-section__chip ${activeSport === chip.id ? 'prematch-section__chip--active' : ''} ${chip.disabled ? 'prematch-section__chip--disabled' : ''}`}
+            className={`prematch-section__chip sliding-chip ${activeSport === chip.id ? 'prematch-section__chip--active' : ''} ${chip.disabled ? 'prematch-section__chip--disabled' : ''}`}
             onClick={() => {
               if (chip.disabled) return
               setActiveSport(chip.id)
@@ -798,12 +815,13 @@ export function PreMatchSection({ onOpenCompetition, onMatchClick }: PreMatchSec
       </div>
 
       {/* Market Chips */}
-      <div className={`prematch-section__chips prematch-section__chips--sticky${isFollowingScroll ? ' prematch-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
+      <div className={`prematch-section__chips prematch-section__chips--sticky sliding-chip-group${isFollowingScroll ? ' prematch-section__chips--scrolling' : ''}`} ref={marketChipsRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
         {currentMarketChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { marketChipRefs.current[index] = el }}
-            className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
+            className={`prematch-section__chip prematch-section__chip--market sliding-chip ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
             onClick={() => {
               setActiveMarket(chip.id)
               // Scroll to make chip visible

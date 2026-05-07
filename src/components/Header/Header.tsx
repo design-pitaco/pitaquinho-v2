@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import './Header.css'
 import { SportRail } from '../SportRail'
 import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
@@ -23,6 +23,25 @@ const highlightCompetitionChips = [
   competicaoConfigBySport.basquete.featuredCompetitions[0],
   ...competicaoConfigBySport.futebol.featuredCompetitions.slice(1),
 ].filter(Boolean)
+
+const setHighlightChipIndicator = (
+  containerEl: HTMLDivElement | null,
+  activeChip: HTMLButtonElement | null | undefined
+) => {
+  if (!containerEl || !activeChip) {
+    containerEl?.classList.remove('header__highlight-chips--indicator-ready')
+    return
+  }
+
+  const containerRect = containerEl.getBoundingClientRect()
+  const chipRect = activeChip.getBoundingClientRect()
+
+  containerEl.style.setProperty('--highlight-chip-active-x', `${chipRect.left - containerRect.left}px`)
+  containerEl.style.setProperty('--highlight-chip-active-y', `${chipRect.top - containerRect.top}px`)
+  containerEl.style.setProperty('--highlight-chip-active-width', `${chipRect.width}px`)
+  containerEl.style.setProperty('--highlight-chip-active-height', `${chipRect.height}px`)
+  containerEl.classList.add('header__highlight-chips--indicator-ready')
+}
 
 export function Header({
   activeSport,
@@ -66,6 +85,34 @@ export function Header({
     if (sportId === 'destaques') setActiveHighlightCompetition('')
     onSportChange?.(sportId)
   }
+
+  useLayoutEffect(() => {
+    const activeIndex = highlightCompetitionChips.findIndex((chip) => chip.id === activeHighlightCompetition)
+    setHighlightChipIndicator(highlightChipsRef.current, highlightChipRefs.current[activeIndex])
+  }, [activeHighlightCompetition])
+
+  useEffect(() => {
+    const containerEl = highlightChipsRef.current
+    if (!containerEl) return
+
+    const activeIndex = highlightCompetitionChips.findIndex((chip) => chip.id === activeHighlightCompetition)
+    const activeChip = highlightChipRefs.current[activeIndex]
+    const updateHighlightIndicator = () => {
+      setHighlightChipIndicator(containerEl, highlightChipRefs.current[activeIndex])
+    }
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateHighlightIndicator)
+      : null
+
+    resizeObserver?.observe(containerEl)
+    if (activeChip) resizeObserver?.observe(activeChip)
+    window.addEventListener('resize', updateHighlightIndicator)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateHighlightIndicator)
+    }
+  }, [activeHighlightCompetition])
 
   return (
     <header
@@ -118,7 +165,11 @@ export function Header({
 
       <SportRail activeSport={activeSport} onSportChange={handleSportRailChange} />
       {!isSportPage && (
-        <div className="header__highlight-chips" ref={highlightChipsRef}>
+        <div
+          className="header__highlight-chips"
+          ref={highlightChipsRef}
+        >
+          <span className="header__highlight-chip-indicator" aria-hidden="true" />
           {highlightCompetitionChips.map((chip, index) => (
             <button
               key={chip.id}

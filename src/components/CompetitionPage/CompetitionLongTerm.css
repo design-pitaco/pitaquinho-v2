@@ -28,6 +28,7 @@
 
 .competition-longterm__chip {
   position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -46,25 +47,12 @@
 }
 
 .competition-longterm__chip--active {
-  background:
-    linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%),
-    #131313;
+  background: transparent;
   color: #ffffff;
 }
 
 .competition-longterm__chip--active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 160px;
-  padding: 1px;
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  display: none;
 }
 
 .competition-longterm__list {

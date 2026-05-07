@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './OffersSection.css'
 import { TeamLogo } from '../TeamLogo'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
 import iconCombinada from '../../assets/iconCombinada.png'
 import iconSuperCombinada from '../../assets/iconSuperCombinada.png'
@@ -1014,6 +1015,8 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
   const selectedFilter = visibleChips.some((chip) => chip.id === activeFilter)
     ? activeFilter
     : visibleChips[0]?.id ?? activeFilter
+  const activeFilterIndex = visibleChips.findIndex((chip) => chip.id === selectedFilter)
+  const activeFilterIndicatorKey = `${selectedFilter}:${visibleChips.map((chip) => chip.id).join('|')}`
 
   const filteredOffers = allOffers.filter(offer => {
     if (offer.category !== selectedFilter) return false
@@ -1045,6 +1048,12 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
 
     return () => clearInterval(interval)
   }, [])
+
+  useSlidingActiveIndicator({
+    activeKey: activeFilterIndicatorKey,
+    containerRef: filtersRef,
+    getActiveElement: () => chipRefs.current[activeFilterIndex],
+  })
 
   if (filteredOffers.length === 0) {
     return null
@@ -1121,12 +1130,13 @@ export function OffersSection({ sportFilter, liveOnly = false }: OffersSectionPr
       </div>
 
       {/* Filter Chips */}
-      <div className="offers-section__filters" ref={filtersRef}>
+      <div className="offers-section__filters sliding-chip-group" ref={filtersRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
         {visibleChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { chipRefs.current[index] = el }}
-            className={`offers-section__chip ${selectedFilter === chip.id ? 'offers-section__chip--active' : ''}`}
+            className={`offers-section__chip sliding-chip ${selectedFilter === chip.id ? 'offers-section__chip--active' : ''}`}
             onClick={() => {
               setActiveFilter(chip.id)
               // Scroll para deixar o chip selecionado visível

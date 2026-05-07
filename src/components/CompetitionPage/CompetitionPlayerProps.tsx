@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type WheelEvent } from 'react'
 import './CompetitionPlayerProps.css'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
 import type { PlayerPropCard, PlayerPropOption } from './competitionData'
 
@@ -71,6 +72,14 @@ export function CompetitionPlayerProps({ statChips, cards }: CompetitionPlayerPr
   const wheelLock = useRef<Record<string, number>>({})
   const chipsRef = useRef<HTMLDivElement>(null)
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const activeStatIndex = statChips.findIndex((chip) => chip.id === activeStat)
+  const activeStatIndicatorKey = `${activeStat}:${statChips.map((chip) => chip.id).join('|')}`
+
+  useSlidingActiveIndicator({
+    activeKey: activeStatIndicatorKey,
+    containerRef: chipsRef,
+    getActiveElement: () => chipRefs.current[activeStatIndex],
+  })
 
   const scrollOptionIntoCenter = useCallback((optionKey: string, index: number, behavior: ScrollBehavior = 'smooth') => {
     const containerEl = optionScrollRefs.current[optionKey]
@@ -282,12 +291,13 @@ export function CompetitionPlayerProps({ statChips, cards }: CompetitionPlayerPr
         <span>Jogadores</span>
       </div>
 
-      <div className="competition-players__chips" ref={chipsRef}>
+      <div className="competition-players__chips sliding-chip-group" ref={chipsRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
         {statChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { chipRefs.current[index] = el }}
-            className={`competition-players__chip ${activeStat === chip.id ? 'competition-players__chip--active' : ''}`}
+            className={`competition-players__chip sliding-chip ${activeStat === chip.id ? 'competition-players__chip--active' : ''}`}
             onClick={() => {
               setActiveStat(chip.id)
               resetOptionsForStat(chip.id)

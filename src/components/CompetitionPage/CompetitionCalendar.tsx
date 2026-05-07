@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react'
 import '../PreMatchSection/PreMatchSection.css'
 import '../CalendarSection/CalendarSection.css'
 import './CompetitionCalendar.css'
+import { useSlidingActiveIndicator } from '../../hooks/useSlidingActiveIndicator'
 
 import setaLink from '../../assets/setaLink.png'
 import iconAoVivo from '../../assets/iconAoVivo.png'
@@ -54,6 +55,8 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
 
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const marketChipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const activeMarketChipIndex = marketChips.findIndex((chip) => chip.id === activeMarket)
+  const marketIndicatorKey = `${sport}:${activeMarket}:${marketChips.map((chip) => chip.id).join('|')}`
 
   const [liveTimes, setLiveTimes] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {}
@@ -73,6 +76,12 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
     }, 1000)
     return () => clearInterval(i)
   }, [])
+
+  useSlidingActiveIndicator({
+    activeKey: marketIndicatorKey,
+    containerRef: marketChipsRef,
+    getActiveElement: () => marketChipRefs.current[activeMarketChipIndex],
+  })
 
   const reiAntecipa = sport === 'basquete' ? reiAntecipaBasquete : reiAntecipaFutebol
 
@@ -151,12 +160,13 @@ export function CompetitionCalendar({ sport, matches }: CompetitionCalendarProps
         </div>
       </div>
 
-      <div className="prematch-section__chips" ref={marketChipsRef}>
+      <div className="prematch-section__chips sliding-chip-group" ref={marketChipsRef}>
+        <span className="sliding-chip-indicator" aria-hidden="true" />
         {marketChips.map((chip, index) => (
           <button
             key={chip.id}
             ref={(el) => { marketChipRefs.current[index] = el }}
-            className={`prematch-section__chip prematch-section__chip--market ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
+            className={`prematch-section__chip prematch-section__chip--market sliding-chip ${activeMarket === chip.id ? 'prematch-section__chip--active' : ''}`}
             onClick={() => {
               setActiveMarket(chip.id)
               scrollChipIntoView(marketChipsRef, marketChipRefs.current[index])

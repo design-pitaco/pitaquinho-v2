@@ -1,1 +1,1 @@
-export { TeamLogo, getSportFallbackLogo } from './TeamLogo'
+export { TeamLogo } from './TeamLogo'

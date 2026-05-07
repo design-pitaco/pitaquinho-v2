@@ -65,6 +65,8 @@
 } */
 
 .prematch-section__chip {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,23 +89,12 @@
 }
 
 .prematch-section__chip--active {
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%), #131313;
+  background: transparent;
   position: relative;
 }
 
 .prematch-section__chip--active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 160px;
-  padding: 1px;
-  background: linear-gradient(45deg, rgba(82, 40, 255, 0.56) 0.62%, rgba(174, 24, 255, 0.56) 100%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  display: none;
 }
 
 .prematch-section__chip--active span {
@@ -119,6 +110,11 @@
   width: 12px;
   height: 12px;
   object-fit: contain;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.prematch-section__chip--active .prematch-section__chip-icon {
+  transform: scale(1.08);
 }
 
 /* Leagues */

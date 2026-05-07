@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './SportRail.css'
 
 import iconAoVivo from '../../assets/iconAoVivo.png'
@@ -49,10 +49,32 @@ interface SportRailProps {
   onSportChange?: (sportId: string) => void
 }
 
+const setSportRailActiveIndicator = (
+  listEl: HTMLDivElement | null,
+  activeItem: HTMLButtonElement | null | undefined
+) => {
+  const activeIcon = activeItem?.querySelector<HTMLElement>('.sport-rail__icon')
+
+  if (!listEl || !activeIcon) {
+    listEl?.classList.remove('sport-rail__list--indicator-ready')
+    return
+  }
+
+  const listRect = listEl.getBoundingClientRect()
+  const iconRect = activeIcon.getBoundingClientRect()
+
+  listEl.style.setProperty('--sport-rail-active-x', `${iconRect.left - listRect.left}px`)
+  listEl.style.setProperty('--sport-rail-active-y', `${iconRect.top - listRect.top}px`)
+  listEl.style.setProperty('--sport-rail-active-width', `${iconRect.width}px`)
+  listEl.style.setProperty('--sport-rail-active-height', `${iconRect.height}px`)
+  listEl.classList.add('sport-rail__list--indicator-ready')
+}
+
 export function SportRail({ activeSport, onSportChange }: SportRailProps = {}) {
   const [gap, setGap] = useState(12)
   const listRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const activeSportId = activeSport ?? 'destaques'
 
   useEffect(() => {
     const calculateGap = () => {
@@ -78,9 +100,36 @@ export function SportRail({ activeSport, onSportChange }: SportRailProps = {}) {
     return () => window.removeEventListener('resize', calculateGap)
   }, [])
 
+  useLayoutEffect(() => {
+    const activeIndex = sports.findIndex((sport) => sport.id === activeSportId)
+    setSportRailActiveIndicator(listRef.current, itemRefs.current[activeIndex])
+  }, [activeSportId, gap])
+
   useEffect(() => {
-    if (!activeSport) return
-    const index = sports.findIndex((s) => s.id === activeSport)
+    const listEl = listRef.current
+    if (!listEl) return
+
+    const activeIndex = sports.findIndex((sport) => sport.id === activeSportId)
+    const activeItem = itemRefs.current[activeIndex]
+    const updateActiveIndicator = () => {
+      setSportRailActiveIndicator(listEl, itemRefs.current[activeIndex])
+    }
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateActiveIndicator)
+      : null
+
+    resizeObserver?.observe(listEl)
+    if (activeItem) resizeObserver?.observe(activeItem)
+    window.addEventListener('resize', updateActiveIndicator)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateActiveIndicator)
+    }
+  }, [activeSportId])
+
+  useEffect(() => {
+    const index = sports.findIndex((s) => s.id === activeSportId)
     const itemEl = itemRefs.current[index]
     const containerEl = listRef.current?.parentElement
     if (itemEl && containerEl) {
@@ -95,16 +144,21 @@ export function SportRail({ activeSport, onSportChange }: SportRailProps = {}) {
         containerEl.scrollTo({ left: itemLeft - padding, behavior: 'smooth' })
       }
     }
-  }, [activeSport])
+  }, [activeSportId])
 
   const isSportPage = !!activeSport && activeSport !== 'destaques'
   const liveSports = ['futebol', 'basquete']
 
   return (
     <div className={`sport-rail${isSportPage ? ' sport-rail--sport-active' : ''}`}>
-      <div className="sport-rail__list" ref={listRef} style={{ gap: `${gap}px` }}>
+      <div
+        className="sport-rail__list"
+        ref={listRef}
+        style={{ gap: `${gap}px` }}
+      >
+        <span className="sport-rail__active-indicator" aria-hidden="true" />
         {sports.map((sport, index) => {
-          const isActive = activeSport === sport.id || (!activeSport && sport.id === 'destaques')
+          const isActive = activeSportId === sport.id
           return (
             <button
               key={sport.id}
