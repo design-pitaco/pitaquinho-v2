@@ -6,6 +6,7 @@ export const COMPETITION_BADGES: Record<string, string> = {
   'fut-laliga': 'https://r2.thesportsdb.com/images/media/league/badge/ja4it51687628717.png',
   'bsq-nba': 'https://r2.thesportsdb.com/images/media/league/badge/frdjqy1536585083.png',
   'bsq-nba-2': 'https://r2.thesportsdb.com/images/media/league/badge/frdjqy1536585083.png',
+  'ten-atp-roma': 'https://r2.thesportsdb.com/images/media/league/badge/q7aej51769857150.png',
 }
 
 export function getCompetitionBadge(competitionId: string, fallback = ''): string {

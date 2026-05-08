@@ -1,3 +1,8 @@
+.sport-rail-shell {
+  position: relative;
+  width: 100%;
+}
+
 .sport-rail {
   --sport-rail-pulse-safe-area: 4px;
   position: relative;
@@ -24,11 +29,132 @@
   display: none;
 }
 
+.sport-rail--competitions.sport-rail--show-right-fade {
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), rgba(0, 0, 0, 0));
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), rgba(0, 0, 0, 0));
+}
+
+.sport-rail--competitions.sport-rail--show-left-fade {
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 48px, #000 100%);
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 48px, #000 100%);
+}
+
+.sport-rail--competitions.sport-rail--show-left-fade.sport-rail--show-right-fade {
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 48px, #000 calc(100% - 32px), rgba(0, 0, 0, 0));
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 48px, #000 calc(100% - 32px), rgba(0, 0, 0, 0));
+}
+
+.sport-rail__scroll-arrow {
+  position: absolute;
+  top: 27px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: rgba(255, 255, 255, 0.92);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.94);
+  transition:
+    opacity 240ms ease,
+    transform 220ms cubic-bezier(0.2, 0, 0, 1);
+  filter: none;
+}
+
+.sport-rail-shell--show-right-arrow .sport-rail__scroll-arrow {
+  opacity: 1;
+  animation: sport-rail-arrow-nudge 1.05s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+.sport-rail__scroll-arrow-icon {
+  display: block;
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transform-origin: center;
+  transition: opacity 220ms ease;
+  will-change: transform;
+}
+
+.sport-rail-shell--show-right-arrow .sport-rail__scroll-arrow-icon {
+  opacity: 1;
+}
+
+@keyframes sport-rail-arrow-nudge {
+  0%,
+  100% {
+    transform: translate3d(-2px, -50%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4px, -50%, 0) scale(1);
+  }
+}
+
 .sport-rail__list {
   position: relative;
   display: flex;
   align-items: flex-start;
   /* gap é definido dinamicamente via JS para garantir peek de 50% do próximo item */
+}
+
+.sport-rail__list--competitions {
+  --sport-rail-competition-item-gap: 8px;
+  --sport-rail-competition-section-padding: 12px;
+  gap: 0;
+  width: max-content;
+}
+
+.sport-rail__section {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.sport-rail__section--lead {
+  padding-left: 0;
+}
+
+.sport-rail__section--divided {
+  border-left: 1px solid rgba(0, 0, 0, 0.24);
+}
+
+.sport-rail__section--tail {
+  border-left: 1px solid rgba(0, 0, 0, 0.24);
+}
+
+.sport-rail__section--compact {
+  gap: 4px;
+}
+
+.sport-rail__section--tail {
+  padding-right: 20px;
+}
+
+.sport-rail--competitions .sport-rail__section {
+  gap: var(--sport-rail-competition-item-gap, 8px);
+  padding-right: var(--sport-rail-competition-section-padding, 12px);
+  padding-left: var(--sport-rail-competition-section-padding, 12px);
+}
+
+.sport-rail--competitions .sport-rail__section--lead {
+  padding-left: 0;
+}
+
+.sport-rail--competitions .sport-rail__section--compact {
+  gap: var(--sport-rail-competition-item-gap, 8px);
+}
+
+.sport-rail--competitions .sport-rail__section--tail {
+  padding-right: max(20px, var(--sport-rail-competition-section-padding, 12px));
 }
 
 .sport-rail__active-indicator {
@@ -101,6 +227,14 @@
   transform: scale(0.96);
 }
 
+.sport-rail__item--static {
+  cursor: default;
+}
+
+.sport-rail__item--static:active {
+  transform: none;
+}
+
 .sport-rail__list::after {
   content: '';
   flex-shrink: 0;
@@ -148,6 +282,31 @@
 .sport-rail__icon--active > img {
   width: 22px;
   height: 22px;
+}
+
+.sport-rail--competitions .sport-rail__item {
+  transform-origin: center 22px;
+}
+
+.sport-rail--competitions .sport-rail__icon {
+  width: 44px;
+  height: 44px;
+}
+
+.sport-rail--competitions .sport-rail__icon img,
+.sport-rail--competitions .sport-rail__icon--active > img {
+  width: 24px;
+  height: 24px;
+}
+
+.sport-rail--competitions .sport-rail__label {
+  font-weight: 400;
+}
+
+.sport-rail__more-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
 }
 
 .sport-rail__live-indicator {
@@ -233,7 +392,13 @@
   .sport-rail__item,
   .sport-rail__icon,
   .sport-rail__icon img,
+  .sport-rail__more-icon,
+  .sport-rail__scroll-arrow,
   .sport-rail__label {
     transition: none;
+  }
+
+  .sport-rail__scroll-arrow-icon {
+    animation: none !important;
   }
 }

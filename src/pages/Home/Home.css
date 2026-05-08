@@ -73,6 +73,37 @@
   padding-top: 293px;
 }
 
+.home--novo-trilho,
+.home--header-morph-active.home--novo-trilho {
+  --highlight-header-bg-height: 222px;
+  --sport-header-bg-height: 222px;
+  padding-top: 159px;
+}
+
+.home--novo-trilho.home--header-compact {
+  --highlight-header-bg-height: 182px;
+  --sport-header-bg-height: 182px;
+  padding-top: 159px;
+}
+
+.home--novo-trilho.home--event-rail-active {
+  --sport-header-bg-height: 222px;
+}
+
+.home--novo-trilho.home--sport-active,
+.home--header-morph-active.home--novo-trilho.home--sport-active,
+.home--header-morph-active.home--novo-trilho.home--sport-active.home--header-compact {
+  padding-top: 253px;
+}
+
+.home--novo-trilho.home--sport-active.home--header-compact {
+  padding-top: 205px;
+}
+
+.home--novo-trilho.home--competition-active > .calendar-section {
+  padding-top: 0;
+}
+
 .home--header-morph-active .header__bg-dark,
 .home--header-morph-active .header__top,
 .home--header-morph-active .sport-rail,
@@ -108,6 +139,11 @@
 .home[data-market-sticky-rail-protection="true"] .header--sport-active .header__bg-dark,
 .home[data-market-sticky-rail-clipped="true"] .header--sport-active .header__bg-dark {
   height: var(--sport-header-bg-height, 362px);
+  transition: none;
+}
+
+.home--novo-trilho[data-market-sticky-engaged="true"] .header--sport-active .header__bg-dark {
+  height: max(var(--sport-header-bg-height, 222px), var(--home-market-sticky-bg-height, 266px));
   transition: none;
 }
 
