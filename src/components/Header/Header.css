@@ -250,24 +250,32 @@
   transform: scale(1.08);
 }
 
-/* Saldo */
-.header__balance {
+/* Saldo + menu */
+.header__account-actions {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  justify-content: center;
-  width: 96px;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 116px;
+  min-width: 0;
   flex-shrink: 0;
   color: #ffffff;
   font-family: 'Red Hat Text', sans-serif;
 }
 
+.header__balance {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
 .header__balance-label {
   display: block;
-  align-self: flex-end;
-  width: 26px;
-  height: 12px;
+  max-width: 100%;
   font-size: 10px;
   font-weight: 400;
   line-height: 1.2;
@@ -275,29 +283,90 @@
 }
 
 .header__balance-value {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  width: 96px;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
+  text-align: right;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.header__balance-icon {
-  width: 12px;
-  height: 12px;
+.header__menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  color: #f3f3f3;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.header__menu-btn:hover,
+.header__menu-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.header__menu-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.68);
+  outline-offset: 2px;
+}
+
+.header__menu-btn:active {
+  transform: scale(0.96);
+}
+
+.header__menu-icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 380px) {
+  .header__top {
+    gap: 6px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .header__logo {
+    width: 90px;
+  }
+
+  .header__toggle-btn {
+    width: 52px;
+    flex-basis: 52px;
+    padding: 0 6px;
+  }
+
+  .header__account-actions {
+    width: 112px;
+    gap: 4px;
+  }
+
+  .header__menu-btn {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .header__highlight-chip-indicator,
   .header__highlight-chips--indicator-ready .header__highlight-chip-indicator,
   .header__highlight-chip,
-  .header__highlight-chip-icon {
+  .header__highlight-chip-icon,
+  .header__menu-btn {
     transition: none;
   }
 }

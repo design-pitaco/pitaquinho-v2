@@ -185,9 +185,16 @@ export function SportFilterBar({
   }, [activeChipId, hasClearCompetition])
 
   useEffect(() => {
-    if (!activeChipId) {
+    if (!activeChipId || activeChipId === firstChipId) {
       resetChipScroll()
-      return
+
+      const frame = window.requestAnimationFrame(resetChipScroll)
+      const settleTimer = window.setTimeout(resetChipScroll, 260)
+
+      return () => {
+        window.cancelAnimationFrame(frame)
+        window.clearTimeout(settleTimer)
+      }
     }
 
     const frame = window.requestAnimationFrame(() => {
@@ -195,7 +202,7 @@ export function SportFilterBar({
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [activeChipId, resetChipScroll, scrollChipIntoView])
+  }, [activeChipId, firstChipId, resetChipScroll, scrollChipIntoView])
 
   return (
     <div className="sport-filter-bar" ref={chipsContainerRef}>

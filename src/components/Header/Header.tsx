@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { PlusCircleIcon } from '@phosphor-icons/react'
+import { ListIcon } from '@phosphor-icons/react'
 import './Header.css'
 import { SportRail } from '../SportRail'
 import logoReidoPitaco from '../../assets/logoReidoPitaco.svg'
@@ -154,12 +154,14 @@ export function Header({
           </button>
         </div>
 
-        <div className="header__balance" aria-label="Saldo disponível">
-          <span className="header__balance-label">Saldo</span>
-          <span className="header__balance-value">
-            <PlusCircleIcon aria-hidden="true" className="header__balance-icon" weight="fill" />
-            <span>R$ 3.400,00</span>
-          </span>
+        <div className="header__account-actions">
+          <div className="header__balance" aria-label="Saldo disponível">
+            <span className="header__balance-label">Saldo</span>
+            <span className="header__balance-value">R$ 3.400,00</span>
+          </div>
+          <button type="button" className="header__menu-btn" aria-label="Abrir menu">
+            <ListIcon aria-hidden="true" className="header__menu-icon" weight="bold" />
+          </button>
         </div>
       </div>
 
