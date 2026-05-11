@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type UIEvent, type WheelEvent } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
 import { CaretRightIcon, ChartBarIcon, CourtBasketballIcon, MonitorPlayIcon, SoccerBallIcon } from '@phosphor-icons/react'
 import './LiveEventPage.css'
 
@@ -100,6 +100,9 @@ interface LiveEventContentProps {
   onExpansionGestureEnd: (progress: number) => void
   onCompactPullChange: (distance: number) => void
   onCompactPullEnd: (distance: number) => void
+  onSwipeStart: () => void
+  onSwipeMove: (dx: number) => void
+  onSwipeEnd: (dx: number, velocity: number) => void
 }
 
 type TabId = 'transmissao' | 'campo'
@@ -1283,6 +1286,9 @@ function LiveEventContent({
   onExpansionGestureEnd,
   onCompactPullChange,
   onCompactPullEnd,
+  onSwipeStart,
+  onSwipeMove,
+  onSwipeEnd,
   isExpanded,
   expansionProgress,
   match,
@@ -1306,9 +1312,13 @@ function LiveEventContent({
   const scoreBoxRef = useRef<HTMLDivElement>(null)
   const stickyScoreHeaderVisibleRef = useRef(false)
   const dragStartYRef = useRef<number | null>(null)
+  const stickyCollapseGestureRef = useRef<{
+    startY: number
+    startProgress: number
+    lastProgress: number
+    isDragging: boolean
+  } | null>(null)
   const expansionProgressRef = useRef(expansionProgress)
-  const isResettingCompactScrollRef = useRef(false)
-  const compactScrollResetTimerRef = useRef<number | null>(null)
   const scrollAnimationFrameRef = useRef<number | null>(null)
   const lastScrollTopRef = useRef(0)
   const pendingScrollTopRef = useRef(0)
@@ -1320,6 +1330,11 @@ function LiveEventContent({
     isControlling: boolean
     pullDistance: number
     lastProgress: number
+    startedAt: number
+    horizontalLocked: boolean
+    lastX: number
+    lastT: number
+    startedOnHorizontalScroller: boolean
   } | null>(null)
   const contentSport = match.sport ?? sport
   const isBasketball = contentSport === 'basquete'
@@ -1383,7 +1398,7 @@ function LiveEventContent({
     const scrollElement = scrollRef.current
     const scoreElement = scoreBoxRef.current
 
-    if (!scrollElement || !scoreElement || !isExpanded) {
+    if (!scrollElement || !scoreElement) {
       syncStickyScoreHeaderVisibility(false)
       return
     }
@@ -1391,7 +1406,7 @@ function LiveEventContent({
     const scoreRect = scoreElement.getBoundingClientRect()
     const scrollRect = scrollElement.getBoundingClientRect()
     syncStickyScoreHeaderVisibility(scoreRect.bottom <= scrollRect.top + 1)
-  }, [isExpanded, syncStickyScoreHeaderVisibility])
+  }, [syncStickyScoreHeaderVisibility])
 
   const handlePlayerOddsWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
     const horizontalDelta = getHorizontalWheelDelta(event.deltaX, event.deltaY, event.shiftKey)
@@ -1415,14 +1430,6 @@ function LiveEventContent({
   }, [syncPlayerOddsRowScrollState])
 
   const handleContentScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
-    if (isResettingCompactScrollRef.current) return
-
-    if (!isExpanded) {
-      event.currentTarget.scrollTop = 0
-      syncStickyScoreHeaderVisibility(false)
-      return
-    }
-
     pendingScrollTopRef.current = event.currentTarget.scrollTop
 
     if (scrollAnimationFrameRef.current !== null) return
@@ -1435,7 +1442,7 @@ function LiveEventContent({
       lastScrollTopRef.current = scrollTop
       updateStickyScoreHeaderVisibility()
     })
-  }, [isExpanded, syncStickyScoreHeaderVisibility, updateStickyScoreHeaderVisibility])
+  }, [updateStickyScoreHeaderVisibility])
 
   const handleContentWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
     const verticalDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : 0
@@ -1452,7 +1459,6 @@ function LiveEventContent({
     event.preventDefault()
     event.stopPropagation()
 
-    scrollElement.scrollTop = 0
     onCompactPullChange(0)
 
     const nextProgress = clampLiveEventExpansionProgress(
@@ -1497,10 +1503,6 @@ function LiveEventContent({
   }, [match, syncStickyScoreHeaderVisibility])
 
   useEffect(() => () => {
-    if (compactScrollResetTimerRef.current !== null) {
-      window.clearTimeout(compactScrollResetTimerRef.current)
-      compactScrollResetTimerRef.current = null
-    }
     if (scrollAnimationFrameRef.current !== null) {
       window.cancelAnimationFrame(scrollAnimationFrameRef.current)
       scrollAnimationFrameRef.current = null
@@ -1508,28 +1510,9 @@ function LiveEventContent({
   }, [])
 
   useEffect(() => {
-    if (isExpanded) return
-
-    const stickyHeaderTimer = window.setTimeout(() => {
-      syncStickyScoreHeaderVisibility(false)
-    }, 0)
-
-    isResettingCompactScrollRef.current = true
-    lastScrollTopRef.current = 0
-    pendingScrollTopRef.current = 0
-    scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-
-    if (compactScrollResetTimerRef.current !== null) {
-      window.clearTimeout(compactScrollResetTimerRef.current)
-    }
-
-    compactScrollResetTimerRef.current = window.setTimeout(() => {
-      isResettingCompactScrollRef.current = false
-      compactScrollResetTimerRef.current = null
-    }, LIVE_EVENT_TRANSITION_MS)
-
-    return () => window.clearTimeout(stickyHeaderTimer)
-  }, [isExpanded, syncStickyScoreHeaderVisibility])
+    const animationFrame = window.requestAnimationFrame(updateStickyScoreHeaderVisibility)
+    return () => window.cancelAnimationFrame(animationFrame)
+  }, [isExpanded, updateStickyScoreHeaderVisibility])
 
   useEffect(() => {
     const animationFrame = window.requestAnimationFrame(updateStickyScoreHeaderVisibility)
@@ -1550,6 +1533,9 @@ function LiveEventContent({
       if (!touch) return
 
       const currentProgress = expansionProgressRef.current
+      const target = event.target as Element | null
+      const startedOnHorizontalScroller = !!target?.closest('.live-event-page__player-odds-row')
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
 
       expansionGestureRef.current = {
         startX: touch.clientX,
@@ -1559,6 +1545,11 @@ function LiveEventContent({
         isControlling: false,
         pullDistance: 0,
         lastProgress: currentProgress,
+        startedAt: now,
+        horizontalLocked: false,
+        lastX: touch.clientX,
+        lastT: now,
+        startedOnHorizontalScroller,
       }
     }
 
@@ -1570,9 +1561,33 @@ function LiveEventContent({
       const dx = touch.clientX - gesture.startX
       const dy = touch.clientY - gesture.startY
       const currentProgress = expansionProgressRef.current
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
+
+      gesture.lastX = touch.clientX
+      gesture.lastT = now
+
+      if (gesture.horizontalLocked) {
+        if (event.cancelable) event.preventDefault()
+        event.stopPropagation()
+        onSwipeMove(dx)
+        return
+      }
+
       const hasVerticalIntent = Math.abs(dy) >= LIVE_EVENT_PULL_START_THRESHOLD && Math.abs(dy) > Math.abs(dx)
+      const hasHorizontalIntent = currentProgress < 1
+        && Math.abs(dx) >= LIVE_EVENT_SWIPE_INTENT_THRESHOLD
+        && Math.abs(dx) > Math.abs(dy)
 
       if (!gesture.isControlling) {
+        if (hasHorizontalIntent && !gesture.startedOnHorizontalScroller) {
+          gesture.horizontalLocked = true
+          if (event.cancelable) event.preventDefault()
+          event.stopPropagation()
+          onSwipeStart()
+          onSwipeMove(dx)
+          return
+        }
+
         const wantsExpand = dy <= -LIVE_EVENT_PULL_START_THRESHOLD && currentProgress < 1
         const wantsCollapse = dy >= LIVE_EVENT_PULL_START_THRESHOLD
           && (
@@ -1587,7 +1602,6 @@ function LiveEventContent({
 
       if (event.cancelable) event.preventDefault()
       event.stopPropagation()
-      scrollElement.scrollTop = 0
 
       const nextProgress = clampLiveEventExpansionProgress(
         gesture.startProgress - dy / LIVE_EVENT_EXPANSION_TOUCH_DISTANCE
@@ -1605,10 +1619,19 @@ function LiveEventContent({
       onCompactPullChange(gesture.pullDistance)
     }
 
-    const finishExpansionGesture = () => {
+    const finishGesture = () => {
       const gesture = expansionGestureRef.current
       expansionGestureRef.current = null
-      if (!gesture?.isControlling) return
+      if (!gesture) return
+
+      if (gesture.horizontalLocked) {
+        const dx = gesture.lastX - gesture.startX
+        const dt = Math.max(1, gesture.lastT - gesture.startedAt)
+        onSwipeEnd(dx, dx / dt)
+        return
+      }
+
+      if (!gesture.isControlling) return
 
       if (gesture.pullDistance > 0) {
         onCompactPullEnd(gesture.pullDistance)
@@ -1622,16 +1645,16 @@ function LiveEventContent({
 
     scrollElement.addEventListener('touchstart', handleTouchStart, { passive: true })
     scrollElement.addEventListener('touchmove', handleTouchMove, { passive: false })
-    scrollElement.addEventListener('touchend', finishExpansionGesture)
-    scrollElement.addEventListener('touchcancel', finishExpansionGesture)
+    scrollElement.addEventListener('touchend', finishGesture)
+    scrollElement.addEventListener('touchcancel', finishGesture)
 
     return () => {
       scrollElement.removeEventListener('touchstart', handleTouchStart)
       scrollElement.removeEventListener('touchmove', handleTouchMove)
-      scrollElement.removeEventListener('touchend', finishExpansionGesture)
-      scrollElement.removeEventListener('touchcancel', finishExpansionGesture)
+      scrollElement.removeEventListener('touchend', finishGesture)
+      scrollElement.removeEventListener('touchcancel', finishGesture)
     }
-  }, [onCompactPullChange, onCompactPullEnd, onExpansionGestureEnd, onExpansionProgressChange])
+  }, [onCompactPullChange, onCompactPullEnd, onExpansionGestureEnd, onExpansionProgressChange, onSwipeStart, onSwipeMove, onSwipeEnd])
 
   const handleCloseHandlePointerDown = (event: PointerEvent<HTMLSpanElement>) => {
     dragStartYRef.current = event.clientY
@@ -1666,6 +1689,65 @@ function LiveEventContent({
     dragStartYRef.current = null
   }
 
+  const handleStickyCollapsePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isExpanded) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    stickyCollapseGestureRef.current = {
+      startY: event.clientY,
+      startProgress: expansionProgressRef.current,
+      lastProgress: expansionProgressRef.current,
+      isDragging: false,
+    }
+  }
+
+  const handleStickyCollapsePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const gesture = stickyCollapseGestureRef.current
+    if (!gesture) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const dy = Math.max(0, event.clientY - gesture.startY)
+    if (dy < LIVE_EVENT_PULL_START_THRESHOLD && !gesture.isDragging) return
+
+    gesture.isDragging = true
+    const nextProgress = clampLiveEventExpansionProgress(
+      gesture.startProgress - dy / LIVE_EVENT_EXPANSION_TOUCH_DISTANCE
+    )
+
+    gesture.lastProgress = nextProgress
+    expansionProgressRef.current = nextProgress
+    onExpansionProgressChange(nextProgress)
+  }
+
+  const handleStickyCollapsePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const gesture = stickyCollapseGestureRef.current
+    stickyCollapseGestureRef.current = null
+
+    if (!gesture) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!gesture.isDragging) {
+      onRequestCollapse()
+      return
+    }
+
+    onExpansionGestureEnd(gesture.lastProgress)
+  }
+
+  const handleStickyCollapsePointerCancel = () => {
+    const gesture = stickyCollapseGestureRef.current
+    stickyCollapseGestureRef.current = null
+
+    if (!gesture?.isDragging) return
+    onExpansionGestureEnd(gesture.lastProgress)
+  }
+
   const handleTopAreaClick = () => {
     onRequestClose()
   }
@@ -1682,7 +1764,14 @@ function LiveEventContent({
           isStickyScoreHeaderVisible ? 'live-event-page__sticky-score-header--visible' : '',
         ].filter(Boolean).join(' ')}
         aria-hidden={!isStickyScoreHeaderVisible}
+        onPointerDown={handleStickyCollapsePointerDown}
+        onPointerMove={handleStickyCollapsePointerMove}
+        onPointerUp={handleStickyCollapsePointerUp}
+        onPointerCancel={handleStickyCollapsePointerCancel}
       >
+        <span className="live-event-page__sticky-collapse-handle" aria-hidden="true">
+          <span />
+        </span>
         <div className="live-event-page__sticky-score-inner">
           <div className="live-event-page__sticky-score-team">
             {homeTeamIcon.src && (
@@ -2434,7 +2523,18 @@ const LIVE_EVENT_EXPANSION_TOUCH_DISTANCE = 180
 const LIVE_EVENT_EXPANSION_WHEEL_DISTANCE = 260
 const LIVE_EVENT_EXPANSION_SETTLE_THRESHOLD = 0.5
 const LIVE_EVENT_WHEEL_SETTLE_DELAY_MS = 140
+const LIVE_EVENT_SWIPE_INTENT_THRESHOLD = 8
+const LIVE_EVENT_SWIPE_COMMIT_RATIO = 0.25
+const LIVE_EVENT_SWIPE_COMMIT_VELOCITY = 0.45
+const LIVE_EVENT_SWIPE_SNAP_MS = 220
+const LIVE_EVENT_SWIPE_EDGE_RESISTANCE = 0.28
+const LIVE_EVENT_SWIPE_PAGE_GAP = 24
 type LiveEventSwitchDirection = 'next' | 'previous'
+
+interface SwipeState {
+  direction: LiveEventSwitchDirection
+  isSnapping: boolean
+}
 
 interface LiveEventContentTransition {
   matchesKey: string
@@ -2587,9 +2687,20 @@ export function LiveEventPage({
   const [compactPullY, setCompactPullY] = useState(0)
   const [isCompactPulling, setIsCompactPulling] = useState(false)
   const [sheetMetrics, setSheetMetrics] = useState<SheetMetrics>(() => measureSheetMetrics())
+  const [swipeState, setSwipeState] = useState<SwipeState | null>(null)
   const closeTimerRef = useRef<number | null>(null)
   const switchTimerRef = useRef<number | null>(null)
   const expansionSettleTimerRef = useRef<number | null>(null)
+  const swipeSnapTimerRef = useRef<number | null>(null)
+  const pageRootRef = useRef<HTMLDivElement | null>(null)
+  const swipeRuntimeRef = useRef({
+    selectedMatchIndex,
+    eventMatchesLength: eventMatches.length,
+    eventMatchesKey,
+    requestedSelectedMatchIndex,
+    sheetMetrics,
+    expansionProgress,
+  })
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -2635,7 +2746,29 @@ export function LiveEventPage({
       window.clearTimeout(expansionSettleTimerRef.current)
       expansionSettleTimerRef.current = null
     }
+    if (swipeSnapTimerRef.current !== null) {
+      window.clearTimeout(swipeSnapTimerRef.current)
+      swipeSnapTimerRef.current = null
+    }
   }, [])
+
+  useLayoutEffect(() => {
+    swipeRuntimeRef.current = {
+      selectedMatchIndex,
+      eventMatchesLength: eventMatches.length,
+      eventMatchesKey,
+      requestedSelectedMatchIndex,
+      sheetMetrics,
+      expansionProgress,
+    }
+  }, [
+    eventMatches.length,
+    eventMatchesKey,
+    expansionProgress,
+    requestedSelectedMatchIndex,
+    selectedMatchIndex,
+    sheetMetrics,
+  ])
 
   useEffect(() => {
     if (!shouldRender || railItems.length === 0 || !railItems.some((item) => item.isLive)) return
@@ -2813,13 +2946,7 @@ export function LiveEventPage({
     setCompactPullY(0)
   }, [requestClose])
 
-  const handleRailItemSelect = useCallback((item: LiveEventRailItem, railIndex: number) => {
-    const nextMatchIndex = matchIndexByIdentity.get(getLiveEventRailIdentity(item))
-    if (nextMatchIndex === undefined || nextMatchIndex === selectedMatchIndex) return
-
-    const currentRailIndex = activeRailIndex >= 0 ? activeRailIndex : selectedMatchIndex
-    const direction: LiveEventSwitchDirection = railIndex > currentRailIndex ? 'next' : 'previous'
-
+  const commitMatchSwitch = useCallback((nextMatchIndex: number, direction: LiveEventSwitchDirection) => {
     if (switchTimerRef.current !== null) {
       window.clearTimeout(switchTimerRef.current)
       switchTimerRef.current = null
@@ -2848,7 +2975,100 @@ export function LiveEventPage({
       setContentTransition(null)
       switchTimerRef.current = null
     }, LIVE_EVENT_CONTENT_SWITCH_MS)
-  }, [activeRailIndex, eventMatchesKey, matchIndexByIdentity, requestedSelectedMatchIndex, selectedMatchIndex])
+  }, [eventMatchesKey, requestedSelectedMatchIndex, selectedMatchIndex])
+
+  const handleRailItemSelect = useCallback((item: LiveEventRailItem, railIndex: number) => {
+    const nextMatchIndex = matchIndexByIdentity.get(getLiveEventRailIdentity(item))
+    if (nextMatchIndex === undefined || nextMatchIndex === selectedMatchIndex) return
+
+    const currentRailIndex = activeRailIndex >= 0 ? activeRailIndex : selectedMatchIndex
+    const direction: LiveEventSwitchDirection = railIndex > currentRailIndex ? 'next' : 'previous'
+
+    commitMatchSwitch(nextMatchIndex, direction)
+  }, [activeRailIndex, commitMatchSwitch, matchIndexByIdentity, selectedMatchIndex])
+
+  const handleSwipeStart = useCallback(() => {
+    if (swipeSnapTimerRef.current !== null) return
+
+    pageRootRef.current?.style.setProperty('--live-event-swipe-x', '0px')
+    setSwipeState({ direction: 'next', isSnapping: false })
+  }, [])
+
+  const handleSwipeMove = useCallback((dx: number) => {
+    if (swipeSnapTimerRef.current !== null) return
+
+    const {
+      selectedMatchIndex: currentMatchIndex,
+      eventMatchesLength,
+    } = swipeRuntimeRef.current
+    const direction: LiveEventSwitchDirection = dx < 0 ? 'next' : 'previous'
+    const hasNeighbor = direction === 'next'
+      ? currentMatchIndex < eventMatchesLength - 1
+      : currentMatchIndex > 0
+    const adjustedDx = hasNeighbor ? dx : dx * LIVE_EVENT_SWIPE_EDGE_RESISTANCE
+    pageRootRef.current?.style.setProperty('--live-event-swipe-x', `${adjustedDx}px`)
+
+    setSwipeState((current) => {
+      if (current && current.direction === direction && !current.isSnapping) return current
+      return { direction, isSnapping: false }
+    })
+  }, [])
+
+  const handleSwipeEnd = useCallback((dx: number, velocity: number) => {
+    if (swipeSnapTimerRef.current !== null) return
+
+    const {
+      selectedMatchIndex: currentMatchIndex,
+      eventMatchesLength,
+      eventMatchesKey: currentEventMatchesKey,
+      requestedSelectedMatchIndex: currentRequestedSelectedMatchIndex,
+      sheetMetrics: currentSheetMetrics,
+      expansionProgress: currentExpansionProgress,
+    } = swipeRuntimeRef.current
+    const direction: LiveEventSwitchDirection = dx < 0 ? 'next' : 'previous'
+    const hasNeighbor = direction === 'next'
+      ? currentMatchIndex < eventMatchesLength - 1
+      : currentMatchIndex > 0
+    const viewportWidth = currentSheetMetrics.viewportWidth
+    const currentSheetScale = currentSheetMetrics.compactScale + (1 - currentSheetMetrics.compactScale) * currentExpansionProgress
+    const swipePageDistance = viewportWidth * currentSheetScale + LIVE_EVENT_SWIPE_PAGE_GAP
+    const passedDistance = Math.abs(dx) >= swipePageDistance * LIVE_EVENT_SWIPE_COMMIT_RATIO
+    const passedVelocity = Math.abs(velocity) >= LIVE_EVENT_SWIPE_COMMIT_VELOCITY
+      && Math.abs(dx) >= LIVE_EVENT_SWIPE_INTENT_THRESHOLD * 2
+    const shouldCommit = hasNeighbor && (passedDistance || passedVelocity)
+
+    if (swipeSnapTimerRef.current !== null) {
+      window.clearTimeout(swipeSnapTimerRef.current)
+      swipeSnapTimerRef.current = null
+    }
+
+    if (shouldCommit) {
+      const nextIndex = currentMatchIndex + (direction === 'next' ? 1 : -1)
+      const targetPx = (direction === 'next' ? -1 : 1) * swipePageDistance
+      pageRootRef.current?.style.setProperty('--live-event-swipe-x', `${targetPx}px`)
+      setSwipeState({ direction, isSnapping: true })
+
+      swipeSnapTimerRef.current = window.setTimeout(() => {
+        flushSync(() => {
+          setActiveMatchState({
+            matchesKey: currentEventMatchesKey,
+            requestedIndex: currentRequestedSelectedMatchIndex,
+            index: nextIndex,
+          })
+          setSwipeState(null)
+        })
+        pageRootRef.current?.style.setProperty('--live-event-swipe-x', '0px')
+        swipeSnapTimerRef.current = null
+      }, LIVE_EVENT_SWIPE_SNAP_MS)
+    } else {
+      pageRootRef.current?.style.setProperty('--live-event-swipe-x', '0px')
+      setSwipeState({ direction, isSnapping: true })
+      swipeSnapTimerRef.current = window.setTimeout(() => {
+        setSwipeState(null)
+        swipeSnapTimerRef.current = null
+      }, LIVE_EVENT_SWIPE_SNAP_MS)
+    }
+  }, [])
 
   if (!shouldRender || !selectedMatch) return null
 
@@ -2872,7 +3092,19 @@ export function LiveEventPage({
     isExpansionGestureActive ? 'live-event-page--gesture-resizing' : '',
     isCompactPulling ? 'live-event-page--compact-pulling' : '',
     activeContentTransition ? 'live-event-page--content-switching' : '',
+    swipeState ? 'live-event-page--swiping' : '',
+    swipeState?.isSnapping ? 'live-event-page--swipe-snapping' : '',
   ].filter(Boolean).join(' ')
+  const swipeNeighborIndex = swipeState
+    ? (swipeState.direction === 'next'
+        ? (selectedMatchIndex < eventMatches.length - 1 ? selectedMatchIndex + 1 : null)
+        : (selectedMatchIndex > 0 ? selectedMatchIndex - 1 : null))
+    : null
+  const swipeNeighborMatch = swipeNeighborIndex !== null ? eventMatches[swipeNeighborIndex] : null
+  const showSwipeNeighbor = !!swipeState
+    && swipeNeighborMatch !== null
+    && swipeNeighborMatch !== undefined
+    && !activeContentTransition
   const sheetOffsetY = LIVE_EVENT_COMPACT_TOP * (1 - expansionProgress) + compactPullY
   const sheetScale = sheetMetrics.compactScale + (1 - sheetMetrics.compactScale) * expansionProgress
   const sheetRadius = 28 * (1 - expansionProgress)
@@ -2886,10 +3118,11 @@ export function LiveEventPage({
     ['--live-event-sheet-offset-y' as string]: `${sheetOffsetY}px`,
     ['--live-event-sheet-scale' as string]: String(sheetScale),
     ['--live-event-sheet-radius' as string]: `${sheetRadius}px`,
+    ['--live-event-swipe-page-gap' as string]: `${LIVE_EVENT_SWIPE_PAGE_GAP}px`,
   } as CSSProperties
 
   return createPortal(
-    <div className={pageClasses} style={rootStyle}>
+    <div ref={pageRootRef} className={pageClasses} style={rootStyle}>
       <div className="live-event-page__overlay" onClick={requestClose} />
       <div className="live-event-page__sheet-layer">
         {railItems.length > 0 && (
@@ -2911,7 +3144,7 @@ export function LiveEventPage({
               <div className="live-event-page__content-stage">
                 {activeContentTransition && previousTransitionMatch && (
                   <div
-                    key={`previous-${getLiveEventMatchIdentity(previousTransitionMatch, activeContentTransition.previousIndex)}-${activeContentTransition.key}`}
+                    key={getLiveEventMatchIdentity(previousTransitionMatch, activeContentTransition.previousIndex)}
                     className={[
                       'live-event-page__content-pane',
                       'live-event-page__content-pane--previous',
@@ -2932,11 +3165,14 @@ export function LiveEventPage({
                       onExpansionGestureEnd={handleExpansionGestureEnd}
                       onCompactPullChange={handleCompactPullChange}
                       onCompactPullEnd={handleCompactPullEnd}
+                      onSwipeStart={handleSwipeStart}
+                      onSwipeMove={handleSwipeMove}
+                      onSwipeEnd={handleSwipeEnd}
                     />
                   </div>
                 )}
                 <div
-                  key={`active-${selectedMatchIdentity}`}
+                  key={selectedMatchIdentity}
                   className={[
                     'live-event-page__content-pane',
                     'live-event-page__content-pane--active',
@@ -2957,8 +3193,41 @@ export function LiveEventPage({
                     onExpansionGestureEnd={handleExpansionGestureEnd}
                     onCompactPullChange={handleCompactPullChange}
                     onCompactPullEnd={handleCompactPullEnd}
+                    onSwipeStart={handleSwipeStart}
+                    onSwipeMove={handleSwipeMove}
+                    onSwipeEnd={handleSwipeEnd}
                   />
                 </div>
+                {showSwipeNeighbor && swipeNeighborMatch && swipeState && (
+                  <div
+                    key={getLiveEventMatchIdentity(swipeNeighborMatch, swipeNeighborIndex!)}
+                    className={[
+                      'live-event-page__content-pane',
+                      'live-event-page__content-pane--swipe-neighbor',
+                      `live-event-page__content-pane--swipe-neighbor-${swipeState.direction}`,
+                    ].join(' ')}
+                    aria-hidden
+                  >
+                    <MemoLiveEventContent
+                      match={swipeNeighborMatch}
+                      leagueName={swipeNeighborMatch.leagueName ?? leagueName}
+                      sport={swipeNeighborMatch.sport ?? sport}
+                      currentTime={getLiveEventMatchTime(swipeNeighborMatch, swipeNeighborIndex!, currentTimes)}
+                      isExpanded={isExpanded}
+                      expansionProgress={expansionProgress}
+                      onRequestClose={requestClose}
+                      onRequestExpand={requestExpand}
+                      onRequestCollapse={requestCollapse}
+                      onExpansionProgressChange={handleExpansionProgressChange}
+                      onExpansionGestureEnd={handleExpansionGestureEnd}
+                      onCompactPullChange={handleCompactPullChange}
+                      onCompactPullEnd={handleCompactPullEnd}
+                      onSwipeStart={handleSwipeStart}
+                      onSwipeMove={handleSwipeMove}
+                      onSwipeEnd={handleSwipeEnd}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
