@@ -4,6 +4,8 @@ export const COMPETITION_BADGES: Record<string, string> = {
   'fut-champions': 'https://r2.thesportsdb.com/images/media/league/badge/facv1u1742998896.png',
   'fut-premier-league': 'https://r2.thesportsdb.com/images/media/league/badge/gasy9d1737743125.png',
   'fut-laliga': 'https://r2.thesportsdb.com/images/media/league/badge/ja4it51687628717.png',
+  'fut-mls': 'https://r2.thesportsdb.com/images/media/league/badge/dqo6r91549878326.png',
+  'fut-bundesliga': 'https://r2.thesportsdb.com/images/media/league/badge/teqh1b1679952008.png',
   'bsq-nba': 'https://r2.thesportsdb.com/images/media/league/badge/frdjqy1536585083.png',
   'bsq-nba-2': 'https://r2.thesportsdb.com/images/media/league/badge/frdjqy1536585083.png',
   'ten-atp-roma': 'https://r2.thesportsdb.com/images/media/league/badge/q7aej51769857150.png',

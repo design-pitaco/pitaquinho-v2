@@ -34,6 +34,8 @@ const futebolConfig: CompeticaoConfig = {
     { id: 'fut-champions', name: 'Champions League' },
     { id: 'fut-premier-league', name: 'Premier League' },
     { id: 'fut-laliga', name: 'LaLiga' },
+    { id: 'fut-mls', name: 'MLS' },
+    { id: 'fut-bundesliga', name: 'Bundesliga' },
   ],
   topCompetitions: [
     { id: 'fut-brasileiro', name: 'Brasileirão Série A' },
@@ -59,6 +61,14 @@ const futebolConfig: CompeticaoConfig = {
         { id: 'fut-bundesliga', name: 'Bundesliga' },
         { id: 'fut-2-bundesliga', name: '2. Bundesliga' },
         { id: 'fut-dfb-pokal', name: 'DFB-Pokal' },
+      ],
+    },
+    {
+      id: 'fut-estados-unidos',
+      name: 'Estados Unidos',
+      flag: flagUSA,
+      competitions: [
+        { id: 'fut-mls', name: 'MLS' },
       ],
     },
     {
@@ -241,6 +251,8 @@ const enabledCompetitionIds = new Set([
   'fut-champions',
   'fut-premier-league',
   'fut-laliga',
+  'fut-mls',
+  'fut-bundesliga',
   'bsq-nba',
   'bsq-nba-2',
   'bsq-ncaab',

@@ -61,6 +61,8 @@ export function Header({
 }: HeaderProps = {}) {
   const isSportPage = !!activeSport && activeSport !== 'destaques'
   const usesCompetitionRail = railVariant === 'competitions'
+  const usesInvertedHierarchy = railVariant === 'inverted-hierarchy'
+  const hidesHighlightCompetitionChips = usesCompetitionRail || usesInvertedHierarchy
   const [activeToggle, setActiveToggle] = useState<HeaderToggleOption>('apostas')
   const [activeHighlightCompetition, setActiveHighlightCompetition] = useState('')
   const [balanceDisplayValue, setBalanceDisplayValue] = useState(balanceDisplayOptions[0])
@@ -240,6 +242,7 @@ export function Header({
         'header',
         isSportPage ? 'header--sport-active' : 'header--highlight-chips',
         usesCompetitionRail ? 'header--competition-rail' : '',
+        usesInvertedHierarchy ? 'header--inverted-hierarchy' : '',
         isLogoCompact ? 'header--compact-logo' : '',
       ]
         .filter(Boolean)
@@ -306,7 +309,7 @@ export function Header({
         onSportChange={handleSportRailChange}
         onOpenCompetition={onOpenCompetition}
       />
-      {!isSportPage && !usesCompetitionRail && (
+      {!isSportPage && !hidesHighlightCompetitionChips && (
         <div
           className="header__highlight-chips"
           ref={highlightChipsRef}

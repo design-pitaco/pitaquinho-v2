@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useRef, useState, useEffect, useMemo } from 'react'
+import { Fragment, useCallback, useRef, useState, useEffect, useLayoutEffect, useMemo } from 'react'
 import { Header } from '../../components/Header'
 import { TrilhoEBanner } from '../../components/TrilhoEBanner'
 import { PromotionSection } from '../../components/PromotionSection'
@@ -21,9 +21,13 @@ const HEADER_EXPAND_SCROLL_TOP = 4
 const HEADER_MORPH_SCROLL_START = 64
 const HEADER_EVENT_RAIL_MORPH_SCROLL_START = 0
 const HEADER_MORPH_SCROLL_END = 190
+const HEADER_COMPETITION_MORPH_SCROLL_END = 112
+const HEADER_INVERTED_MORPH_SCROLL_START = HEADER_EVENT_RAIL_MORPH_SCROLL_START
+const HEADER_INVERTED_MORPH_SCROLL_END = HEADER_MORPH_SCROLL_END
 const SPORT_RAIL_TEXT_COLLAPSE_SCROLL_DISTANCE = 84
 const HEADER_SNAP_IDLE_MS = 160
 const HEADER_SNAP_SETTLE_MS = 420
+const HEADER_CONTENT_GAP = 20
 const EVENT_RAIL_HEIGHT = 112
 const EVENT_RAIL_PADDING_BOTTOM = 20
 const EVENT_RAIL_COLLAPSE_TRANSLATE_Y = -28
@@ -74,10 +78,20 @@ const marketStickySelector = [
 export function Home({ railVariant = 'default' }: HomeProps = {}) {
   const homeRef = useRef<HTMLDivElement>(null)
   const usesCompetitionRail = railVariant === 'competitions'
-  const highlightHeaderExpandedBgHeight = usesCompetitionRail ? 222 : HIGHLIGHT_HEADER_EXPANDED_BG_HEIGHT
-  const highlightHeaderCompactBgHeight = usesCompetitionRail ? 182 : HIGHLIGHT_HEADER_COMPACT_BG_HEIGHT
-  const sportHeaderExpandedBgHeight = usesCompetitionRail ? 222 : SPORT_HEADER_EXPANDED_BG_HEIGHT
-  const sportHeaderCompactBgHeight = usesCompetitionRail ? 182 : SPORT_HEADER_COMPACT_BG_HEIGHT
+  const usesInvertedHierarchy = railVariant === 'inverted-hierarchy'
+  const usesShortcutRail = usesCompetitionRail || usesInvertedHierarchy
+  const highlightHeaderExpandedBgHeight = usesShortcutRail
+    ? 222
+    : HIGHLIGHT_HEADER_EXPANDED_BG_HEIGHT
+  const highlightHeaderCompactBgHeight = usesShortcutRail
+    ? 182
+    : HIGHLIGHT_HEADER_COMPACT_BG_HEIGHT
+  const sportHeaderExpandedBgHeight = usesShortcutRail
+    ? 222
+    : SPORT_HEADER_EXPANDED_BG_HEIGHT
+  const sportHeaderCompactBgHeight = usesShortcutRail
+    ? 182
+    : SPORT_HEADER_COMPACT_BG_HEIGHT
   const [isVariant2, setIsVariant2] = useState(false)
   const [isVariant3, setIsVariant3] = useState(false)
   const [activeSport, setActiveSport] = useState<string | null>(null)
@@ -97,6 +111,9 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
   )
   const sportsCarouselResetKey = `${activeSport ?? 'destaques'}:${selectedCompetition?.id ?? 'todas'}`
   const isCompetitionMode = !!selectedCompetition
+  const hasSportsCarouselEvents = !!activeSport && sportsCarouselEvents.length > 0
+  const usesContentEventRail = hasSportsCarouselEvents
+  const usesHeaderEventRail = hasSportsCarouselEvents && !usesContentEventRail
 
   const handleLiveMatchClick = (payload: LiveEventOpenPayload) => {
     setSelectedLiveMatch(payload)
@@ -118,6 +135,13 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
     homeEl.style.removeProperty('--sport-rail-label-max-height')
     homeEl.style.removeProperty('--sport-rail-label-opacity')
     homeEl.style.removeProperty('--sport-rail-label-translate-y')
+    homeEl.style.removeProperty('--sport-chip-rail-max-height')
+    homeEl.style.removeProperty('--sport-chip-rail-padding-bottom')
+    homeEl.style.removeProperty('--sport-chip-rail-opacity')
+    homeEl.style.removeProperty('--sport-chip-rail-pointer-events')
+    homeEl.style.removeProperty('--sport-chip-rail-translate-y')
+    homeEl.style.removeProperty('--home-header-content-padding-top')
+    homeEl.removeAttribute('data-header-morph-complete')
     homeEl.style.removeProperty('--sport-filter-padding-bottom')
     homeEl.style.removeProperty('--sports-carousel-teams-gap')
     homeEl.style.removeProperty('--sports-carousel-teams-min-height')
@@ -148,7 +172,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
     return () => window.removeEventListener('hashchange', checkHash)
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const homeEl = homeRef.current
     if (!homeEl) return
 
@@ -178,16 +202,24 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       headerSnapSettleTimer = null
     }
 
-    const hasEventRailHeader = () => !!activeSport && sportsCarouselEvents.length > 0
+    const hasEventRailHeader = () => !!activeSport && sportsCarouselEvents.length > 0 && !usesContentEventRail
     const canSnapHeaderMorph = () => {
-      if (usesCompetitionRail && !activeSport) return false
+      if (usesShortcutRail && !activeSport) return false
+      if (usesContentEventRail) return true
+      if (usesInvertedHierarchy && activeSport) return true
       return !activeSport || hasEventRailHeader()
     }
-    const getHeaderMorphScrollStart = () => (
-      hasEventRailHeader()
-        ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
-        : HEADER_MORPH_SCROLL_START
-    )
+    const getHeaderMorphScrollStart = () => {
+      if (usesContentEventRail) return HEADER_EVENT_RAIL_MORPH_SCROLL_START
+      if (usesInvertedHierarchy && activeSport) return HEADER_INVERTED_MORPH_SCROLL_START
+      if (hasEventRailHeader()) return HEADER_EVENT_RAIL_MORPH_SCROLL_START
+      return HEADER_MORPH_SCROLL_START
+    }
+    const getHeaderMorphScrollEnd = () => {
+      if (isCompetitionMode) return HEADER_COMPETITION_MORPH_SCROLL_END
+      if (usesInvertedHierarchy && activeSport) return HEADER_INVERTED_MORPH_SCROLL_END
+      return HEADER_MORPH_SCROLL_END
+    }
 
     const scrollToHeaderMorphTarget = (targetScrollTop: number) => {
       homeEl.scrollTo({ top: targetScrollTop, left: 0, behavior: 'smooth' })
@@ -208,12 +240,12 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
         const morphProgress = getScrollProgress(
           scrollTop,
           getHeaderMorphScrollStart(),
-          HEADER_MORPH_SCROLL_END
+          getHeaderMorphScrollEnd()
         )
 
         if (morphProgress <= 0 || morphProgress >= 1) return
 
-        const targetScrollTop = HEADER_MORPH_SCROLL_END
+        const targetScrollTop = getHeaderMorphScrollEnd()
 
         if (Math.abs(scrollTop - targetScrollTop) < 1) return
 
@@ -238,6 +270,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
         headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip--active') ??
         headerEl.querySelector<HTMLElement>('.sport-filter-bar__chip') ??
         headerEl.querySelector<HTMLElement>('.sport-rail__item--active') ??
+        headerEl.querySelector<HTMLElement>('.sport-rail__item') ??
         headerEl
       const desiredStickyTop = stickyAnchorEl.getBoundingClientRect().bottom + MARKET_STICKY_GAP
       const homeStyle = window.getComputedStyle(homeEl)
@@ -247,7 +280,11 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
         (homeStyle.overflowY === 'auto' || homeStyle.overflowY === 'scroll')
       )
       const stickyTop = usesHomeScroll
-        ? desiredStickyTop - homeEl.getBoundingClientRect().top - homePaddingTop
+        ? isCompetitionMode
+          ? MARKET_STICKY_GAP - HEADER_CONTENT_GAP
+          : desiredStickyTop -
+            homeEl.getBoundingClientRect().top -
+            homePaddingTop
         : desiredStickyTop
 
       homeEl.style.setProperty(
@@ -260,7 +297,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       )
     }
 
-    const getVisibleMarketStickyEl = () => {
+    const getVisibleMarketStickyEl = (stuckOnly = false) => {
       const stickyEls = Array.from(homeEl.querySelectorAll<HTMLElement>(marketStickySelector))
       const visibleStickyEls = stickyEls
         .map((stickyEl) => ({
@@ -268,9 +305,10 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
           rect: stickyEl.getBoundingClientRect(),
           style: window.getComputedStyle(stickyEl),
         }))
-        .filter(({ rect, style }) => (
+        .filter(({ rect, stickyEl, style }) => (
           style.display !== 'none' &&
           style.visibility !== 'hidden' &&
+          (!stuckOnly || stickyEl.getAttribute('data-market-sticky-stuck') === 'true') &&
           rect.width > 0 &&
           rect.height > 1
         ))
@@ -300,7 +338,11 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
 
     const getSportsCarouselMetrics = (naturalMaxHeight: number, naturalPaddingBottom: number) => {
       const carouselEl = headerEl?.querySelector<HTMLElement>('.sports-match-carousel')
-      const clipTarget = isCompetitionMode ? getVisibleMarketStickyEl() : getFirstVisibleContentEl()
+      const clipTarget = usesInvertedHierarchy
+        ? getVisibleMarketStickyEl(true)
+        : isCompetitionMode
+          ? getVisibleMarketStickyEl()
+          : getFirstVisibleContentEl()
 
       if (!carouselEl || !clipTarget) {
         return {
@@ -333,7 +375,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
     const getCompetitionChipHeaderBgHeight = () => {
       if (!headerEl) return sportHeaderCompactBgHeight
 
-      if (usesCompetitionRail) {
+      if (usesShortcutRail) {
         const sportHeaderAnchorEl =
           headerEl.querySelector<HTMLElement>('.sport-rail') ??
           headerEl
@@ -356,43 +398,146 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       )
     }
 
+    const syncHomeHeaderContentPaddingTop = ({
+      eventRailMaxHeight = 0,
+      eventRailPaddingBottom = 0,
+      hasEventRail,
+    }: {
+      eventRailMaxHeight?: number
+      eventRailPaddingBottom?: number
+      hasEventRail: boolean
+    }) => {
+      if (!headerEl) return
+
+      const homeTop = homeEl.getBoundingClientRect().top
+
+      if (hasEventRail) {
+        const carouselEl = headerEl.querySelector<HTMLElement>('.sports-match-carousel')
+        if (carouselEl) {
+          const trackHeight = carouselEl
+            .querySelector<HTMLElement>('.sports-match-carousel__track')
+            ?.getBoundingClientRect()
+            .height ?? eventRailMaxHeight
+          const visibleEventRailHeight = Math.min(trackHeight, eventRailMaxHeight)
+          const contentOffset = carouselEl.getBoundingClientRect().top - homeTop +
+            visibleEventRailHeight +
+            eventRailPaddingBottom
+
+          homeEl.style.setProperty(
+            '--home-header-content-padding-top',
+            `${roundCssNumber(Math.max(contentOffset, 0))}px`
+          )
+          return
+        }
+      }
+
+      const headerContentEndEl =
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar__chips') ??
+        headerEl.querySelector<HTMLElement>('.header__highlight-chip') ??
+        headerEl.querySelector<HTMLElement>('.sport-rail__list') ??
+        headerEl.querySelector<HTMLElement>('.sport-filter-bar') ??
+        headerEl.querySelector<HTMLElement>('.header__highlight-chips') ??
+        headerEl.querySelector<HTMLElement>('.sport-rail') ??
+        headerEl.querySelector<HTMLElement>('.header__top')
+
+      if (!headerContentEndEl) return
+
+      const contentOffset = headerContentEndEl.getBoundingClientRect().bottom - homeTop + HEADER_CONTENT_GAP
+      homeEl.style.setProperty(
+        '--home-header-content-padding-top',
+        `${roundCssNumber(Math.max(contentOffset, 0))}px`
+      )
+    }
+
     const syncHeaderMorph = (scrollTop: number) => {
-      const hasEventRail = !!activeSport && sportsCarouselEvents.length > 0
-      const morphScrollStart = hasEventRail
+      const hasHeaderEventRail = hasEventRailHeader()
+      const morphScrollStart = hasHeaderEventRail
         ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
-        : HEADER_MORPH_SCROLL_START
+        : usesContentEventRail
+          ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
+        : usesInvertedHierarchy && activeSport
+          ? HEADER_INVERTED_MORPH_SCROLL_START
+          : HEADER_MORPH_SCROLL_START
+      const morphScrollEnd = getHeaderMorphScrollEnd()
       const requestedMorphProgress = smoothStep(
-        getScrollProgress(scrollTop, morphScrollStart, HEADER_MORPH_SCROLL_END)
+        getScrollProgress(scrollTop, morphScrollStart, morphScrollEnd)
       )
       const morphProgress = requestedMorphProgress
+      homeEl.toggleAttribute('data-header-morph-complete', morphProgress >= 1)
+      homeEl.dispatchEvent(new CustomEvent('home-header-morph-change'))
       const sportRailTextCollapseStart =
         usesCompetitionRail && !activeSport
           ? HEADER_EVENT_RAIL_MORPH_SCROLL_START
           : morphScrollStart
-      const sportRailTextProgress = smoothStep(
-        getScrollProgress(
-          scrollTop,
-          sportRailTextCollapseStart,
-          Math.min(sportRailTextCollapseStart + SPORT_RAIL_TEXT_COLLAPSE_SCROLL_DISTANCE, HEADER_MORPH_SCROLL_END)
-        )
-      )
-      const eventRailVisualProgress = hasEventRail
+      const sportRailTextProgress = usesInvertedHierarchy
+        ? 0
+        : smoothStep(
+            getScrollProgress(
+              scrollTop,
+              sportRailTextCollapseStart,
+              Math.min(sportRailTextCollapseStart + SPORT_RAIL_TEXT_COLLAPSE_SCROLL_DISTANCE, morphScrollEnd)
+            )
+          )
+      const sportChipRailProgress = usesInvertedHierarchy
         ? smoothStep(
-            getScrollProgress(scrollTop, HEADER_EVENT_RAIL_MORPH_SCROLL_START, EVENT_RAIL_VISUAL_COLLAPSE_SCROLL_END)
+            getScrollProgress(
+              scrollTop,
+              morphScrollStart,
+              morphScrollStart + SPORT_RAIL_TEXT_COLLAPSE_SCROLL_DISTANCE
+            )
+          )
+        : 0
+      const sportRailPaddingBottom = usesInvertedHierarchy
+        ? SPORT_RAIL_EXPANDED_PADDING_BOTTOM
+        : interpolate(
+            SPORT_RAIL_EXPANDED_PADDING_BOTTOM,
+            SPORT_RAIL_COMPACT_PADDING_BOTTOM,
+            morphProgress
+          )
+      const sportFilterPaddingBottom = interpolate(
+        SPORT_FILTER_EXPANDED_PADDING_BOTTOM,
+        SPORT_FILTER_COMPACT_PADDING_BOTTOM,
+        morphProgress
+      )
+      const headerTopPaddingY = interpolate(
+        HEADER_TOP_EXPANDED_PADDING_Y,
+        HEADER_TOP_COMPACT_PADDING_Y,
+        morphProgress
+      )
+      const highlightHeaderBgHeight = usesInvertedHierarchy
+        ? getCompetitionChipHeaderBgHeight()
+        : interpolate(
+            highlightHeaderExpandedBgHeight,
+            highlightHeaderCompactBgHeight,
+            morphProgress
+          )
+      const sportHeaderBgHeight = hasHeaderEventRail || usesContentEventRail || usesInvertedHierarchy
+        ? getCompetitionChipHeaderBgHeight()
+        : interpolate(sportHeaderExpandedBgHeight, sportHeaderCompactBgHeight, morphProgress)
+      const eventRailVisualStart = usesInvertedHierarchy
+        ? morphScrollStart
+        : HEADER_EVENT_RAIL_MORPH_SCROLL_START
+      const eventRailVisualProgress = hasHeaderEventRail
+        ? smoothStep(
+            getScrollProgress(
+              scrollTop,
+              eventRailVisualStart,
+              eventRailVisualStart + EVENT_RAIL_VISUAL_COLLAPSE_SCROLL_END
+            )
           )
         : morphProgress
 
       homeEl.style.setProperty(
         '--highlight-header-bg-height',
-        `${roundCssNumber(interpolate(highlightHeaderExpandedBgHeight, highlightHeaderCompactBgHeight, morphProgress))}px`
+        `${roundCssNumber(highlightHeaderBgHeight)}px`
       )
       homeEl.style.setProperty(
         '--header-top-padding-y',
-        `${roundCssNumber(interpolate(HEADER_TOP_EXPANDED_PADDING_Y, HEADER_TOP_COMPACT_PADDING_Y, morphProgress))}px`
+        `${roundCssNumber(headerTopPaddingY)}px`
       )
       homeEl.style.setProperty(
         '--sport-rail-padding-bottom',
-        `${roundCssNumber(interpolate(SPORT_RAIL_EXPANDED_PADDING_BOTTOM, SPORT_RAIL_COMPACT_PADDING_BOTTOM, morphProgress))}px`
+        `${roundCssNumber(sportRailPaddingBottom)}px`
       )
       homeEl.style.setProperty(
         '--sport-rail-item-gap',
@@ -411,15 +556,32 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
         `${roundCssNumber(interpolate(SPORT_RAIL_EXPANDED_LABEL_TRANSLATE_Y, SPORT_RAIL_COMPACT_LABEL_TRANSLATE_Y, sportRailTextProgress))}px`
       )
       homeEl.style.setProperty(
+        '--sport-chip-rail-max-height',
+        `${roundCssNumber(interpolate(40, 0, sportChipRailProgress))}px`
+      )
+      homeEl.style.setProperty(
+        '--sport-chip-rail-padding-bottom',
+        `${roundCssNumber(interpolate(12, 0, sportChipRailProgress))}px`
+      )
+      homeEl.style.setProperty(
+        '--sport-chip-rail-opacity',
+        `${roundCssNumber(1 - sportChipRailProgress)}`
+      )
+      homeEl.style.setProperty(
+        '--sport-chip-rail-pointer-events',
+        sportChipRailProgress >= 0.98 ? 'none' : 'auto'
+      )
+      homeEl.style.setProperty(
+        '--sport-chip-rail-translate-y',
+        `${roundCssNumber(interpolate(0, -6, sportChipRailProgress))}px`
+      )
+      homeEl.style.setProperty(
         '--sport-filter-padding-bottom',
-        `${roundCssNumber(interpolate(SPORT_FILTER_EXPANDED_PADDING_BOTTOM, SPORT_FILTER_COMPACT_PADDING_BOTTOM, morphProgress))}px`
+        `${roundCssNumber(sportFilterPaddingBottom)}px`
       )
       homeEl.style.setProperty(
         '--sport-header-bg-height',
-        `${roundCssNumber(hasEventRail
-          ? getCompetitionChipHeaderBgHeight()
-          : interpolate(sportHeaderExpandedBgHeight, sportHeaderCompactBgHeight, morphProgress)
-        )}px`
+        `${roundCssNumber(sportHeaderBgHeight)}px`
       )
       homeEl.style.setProperty(
         '--sports-carousel-teams-gap',
@@ -436,9 +598,14 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
 
       syncMarketStickyTop()
 
-      if (hasEventRail) {
+      if (hasHeaderEventRail) {
         const naturalMaxHeight = EVENT_RAIL_HEIGHT * (1 - morphProgress)
         const naturalPaddingBottom = EVENT_RAIL_PADDING_BOTTOM * (1 - morphProgress)
+        syncHomeHeaderContentPaddingTop({
+          eventRailMaxHeight: naturalMaxHeight,
+          eventRailPaddingBottom: naturalPaddingBottom,
+          hasEventRail: hasHeaderEventRail,
+        })
         const sportsCarouselMetrics = getSportsCarouselMetrics(naturalMaxHeight, naturalPaddingBottom)
 
         homeEl.style.setProperty(
@@ -464,10 +631,11 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
         homeEl.style.setProperty('--sports-carousel-collapse-opacity', '1')
         homeEl.style.setProperty('--sports-carousel-collapse-translate-y', '0px')
         homeEl.removeAttribute('data-market-sticky-rail-clipped')
+        syncHomeHeaderContentPaddingTop({ hasEventRail: hasHeaderEventRail })
       }
 
       setIsSportsMatchCarouselCollapsed((isCollapsed) => {
-        const shouldCollapse = hasEventRail && morphProgress >= EVENT_RAIL_DISABLE_INTERACTION_PROGRESS
+        const shouldCollapse = hasHeaderEventRail && morphProgress >= EVENT_RAIL_DISABLE_INTERACTION_PROGRESS
         return isCollapsed === shouldCollapse ? isCollapsed : shouldCollapse
       })
     }
@@ -511,6 +679,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       clearHeaderSnapTimer()
       clearHeaderSnapSettleTimer()
       homeEl.removeAttribute('data-market-sticky-rail-clipped')
+      homeEl.removeAttribute('data-header-morph-complete')
       homeEl.removeEventListener('scroll', handleScroll)
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', scheduleUpdate)
@@ -526,6 +695,9 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
     sportHeaderExpandedBgHeight,
     sportsCarouselEvents.length,
     usesCompetitionRail,
+    usesContentEventRail,
+    usesInvertedHierarchy,
+    usesShortcutRail,
   ])
 
   const handleSportChange = (sportId: string) => {
@@ -563,10 +735,12 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
   const homeClasses = [
     'home',
     'home--header-morph-active',
-    usesCompetitionRail ? 'home--novo-trilho' : '',
+    usesShortcutRail ? 'home--novo-trilho' : '',
+    usesInvertedHierarchy ? 'home--novo-trilho-02' : '',
     isVariant3 ? '' : 'home--no-dividers',
     activeSport ? 'home--sport-active' : '',
-    activeSport && sportsCarouselEvents.length > 0 ? 'home--event-rail-active' : '',
+    usesHeaderEventRail ? 'home--event-rail-active' : '',
+    usesContentEventRail ? 'home--content-event-rail-active' : '',
     isCompetitionMode ? 'home--competition-active' : '',
     isSportHeaderCompact ? 'home--header-compact' : '',
   ]
@@ -584,7 +758,7 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       >
         {activeSport && (
           <>
-            {!usesCompetitionRail && (
+            {!usesShortcutRail && (
               <SportFilterBar
                 sport={activeSport}
                 selectedCompetitionId={selectedCompetition?.id ?? null}
@@ -592,16 +766,29 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
                 onClearCompetition={handleClearCompetition}
               />
             )}
-            <SportsMatchCarousel
-              events={sportsCarouselEvents}
-              resetKey={sportsCarouselResetKey}
-              competitionMode={isCompetitionMode}
-              isCollapsed={isSportsMatchCarouselCollapsed}
-              onLiveMatchClick={handleLiveMatchClick}
-            />
+            {!usesContentEventRail && (
+              <SportsMatchCarousel
+                events={sportsCarouselEvents}
+                resetKey={sportsCarouselResetKey}
+                competitionMode={isCompetitionMode}
+                isCollapsed={isSportsMatchCarouselCollapsed}
+                onLiveMatchClick={handleLiveMatchClick}
+              />
+            )}
           </>
         )}
       </Header>
+      {usesContentEventRail && (
+        <div className="home__content-event-rail">
+          <SportsMatchCarousel
+            events={sportsCarouselEvents}
+            resetKey={sportsCarouselResetKey}
+            competitionMode={isCompetitionMode}
+            isCollapsed={false}
+            onLiveMatchClick={handleLiveMatchClick}
+          />
+        </div>
+      )}
       <TrilhoEBanner hideBanner={!!activeSport} />
       {activeSport ? (
         <Fragment key={`sport-${activeSport}-${contentResetKey}`}>

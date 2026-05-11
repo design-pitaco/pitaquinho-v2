@@ -64,26 +64,34 @@
 }
 
 .home--header-morph-active {
-  padding-top: 194px;
+  padding-top: var(--home-header-content-padding-top, 194px);
   transition: none;
 }
 
 .home--header-morph-active.home--sport-active,
 .home--header-morph-active.home--sport-active.home--header-compact {
-  padding-top: 293px;
+  padding-top: var(--home-header-content-padding-top, 293px);
+}
+
+.home--content-event-rail-active,
+.home--header-morph-active.home--content-event-rail-active,
+.home--sport-active.home--content-event-rail-active,
+.home--header-morph-active.home--sport-active.home--content-event-rail-active,
+.home--sport-active.home--content-event-rail-active.home--header-compact {
+  padding-top: var(--home-header-content-padding-top, 293px);
 }
 
 .home--novo-trilho,
 .home--header-morph-active.home--novo-trilho {
   --highlight-header-bg-height: 222px;
   --sport-header-bg-height: 222px;
-  padding-top: 159px;
+  padding-top: var(--home-header-content-padding-top, 159px);
 }
 
 .home--novo-trilho.home--header-compact {
   --highlight-header-bg-height: 182px;
   --sport-header-bg-height: 182px;
-  padding-top: 159px;
+  padding-top: var(--home-header-content-padding-top, 159px);
 }
 
 .home--novo-trilho.home--event-rail-active {
@@ -93,15 +101,47 @@
 .home--novo-trilho.home--sport-active,
 .home--header-morph-active.home--novo-trilho.home--sport-active,
 .home--header-morph-active.home--novo-trilho.home--sport-active.home--header-compact {
-  padding-top: 253px;
+  padding-top: var(--home-header-content-padding-top, 253px);
 }
 
 .home--novo-trilho.home--sport-active.home--header-compact {
-  padding-top: 205px;
+  padding-top: var(--home-header-content-padding-top, 205px);
+}
+
+.home--novo-trilho.home--content-event-rail-active,
+.home--header-morph-active.home--novo-trilho.home--content-event-rail-active,
+.home--novo-trilho.home--content-event-rail-active.home--header-compact,
+.home--header-morph-active.home--novo-trilho.home--content-event-rail-active.home--header-compact {
+  padding-top: var(--home-header-content-padding-top, 159px);
 }
 
 .home--novo-trilho.home--competition-active > .calendar-section {
   padding-top: 0;
+}
+
+.home--novo-trilho-02,
+.home--header-morph-active.home--novo-trilho-02,
+.home--novo-trilho-02.home--header-compact {
+  padding-top: var(--home-header-content-padding-top, 159px);
+}
+
+.home--novo-trilho-02.home--sport-active,
+.home--header-morph-active.home--novo-trilho-02.home--sport-active,
+.home--header-morph-active.home--novo-trilho-02.home--sport-active.home--header-compact {
+  padding-top: var(--home-header-content-padding-top, 253px);
+}
+
+.home--novo-trilho-02.home--sport-active.home--header-compact {
+  padding-top: var(--home-header-content-padding-top, 205px);
+}
+
+.home__content-event-rail {
+  position: relative;
+  z-index: 0;
+  --sports-carousel-collapse-max-height: 112px;
+  --sports-carousel-collapse-padding-bottom: 20px;
+  --sports-carousel-collapse-opacity: 1;
+  --sports-carousel-collapse-translate-y: 0px;
 }
 
 .home--header-morph-active .header__bg-dark,
@@ -109,6 +149,8 @@
 .home--header-morph-active .sport-rail,
 .home--header-morph-active .sport-rail__item,
 .home--header-morph-active .sport-rail__label,
+.home--header-morph-active .sport-rail__sport-chips,
+.home--header-morph-active .sport-rail__sport-chip,
 .home--header-morph-active .sport-filter-bar,
 .home--header-morph-active .sports-match-carousel,
 .home--header-morph-active .sports-match-carousel__track,

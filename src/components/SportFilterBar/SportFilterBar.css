@@ -170,6 +170,10 @@
   color: #ffffff;
 }
 
+.sport-filter-bar__chip--active .sport-filter-bar__chip-label {
+  color: #ffffff;
+}
+
 .sport-filter-bar__chip--active::before {
   display: none;
 }

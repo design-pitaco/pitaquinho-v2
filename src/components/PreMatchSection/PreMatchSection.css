@@ -61,16 +61,12 @@
   will-change: opacity;
 }
 
-.prematch-section__chips--sticky-stuck {
-  z-index: 210;
-}
-
-.prematch-section__chips--sticky[data-market-sticky-stuck="true"] {
-  z-index: 210;
-}
-
 .prematch-section__chips--sticky[data-market-sticky-stuck="false"] {
   z-index: 1;
+}
+
+.prematch-section__chips--sticky[data-market-sticky-layered="true"] {
+  z-index: 210;
 }
 
 .prematch-section__chips--sticky[data-market-sticky-event-rail="true"][data-market-sticky-visible="true"] {
@@ -146,6 +142,10 @@
 }
 
 .prematch-section__chip--active span {
+  color: #ffffff;
+}
+
+.prematch-section__chip--market.prematch-section__chip--active span {
   color: #ffffff;
 }
 

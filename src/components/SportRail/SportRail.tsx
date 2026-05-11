@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { CaretRightIcon, SquaresFourIcon } from '@phosphor-icons/react'
 import './SportRail.css'
 
@@ -22,6 +22,7 @@ import iconValorant from '../../assets/iconSports/valorant.png'
 import iconVolei from '../../assets/iconSports/volleyball.png'
 import { getCompetitionBadge } from '../../data/competitionBadges'
 import type { CompetitionLinkTarget } from '../../utils/competitionNavigation'
+import { competicaoConfigBySport, isCompetitionEnabled } from '../SportFilterBar/competicaoData'
 
 interface SportItem {
   id: string
@@ -29,7 +30,7 @@ interface SportItem {
   label: string
 }
 
-export type SportRailVariant = 'default' | 'competitions'
+export type SportRailVariant = 'default' | 'competitions' | 'inverted-hierarchy'
 
 interface SportRailBaseItem {
   id: string
@@ -162,6 +163,26 @@ const competitionRailSections: SportRailSection[] = [
         label: 'La Liga',
         clickable: true,
       },
+      {
+        id: 'competition:fut-mls',
+        type: 'competition',
+        sportId: 'futebol',
+        competitionId: 'fut-mls',
+        competitionName: 'MLS',
+        icon: getCompetitionBadge('fut-mls', iconFutebol),
+        label: 'MLS',
+        clickable: true,
+      },
+      {
+        id: 'competition:fut-bundesliga',
+        type: 'competition',
+        sportId: 'futebol',
+        competitionId: 'fut-bundesliga',
+        competitionName: 'Bundesliga',
+        icon: getCompetitionBadge('fut-bundesliga', iconFutebol),
+        label: 'Bundesliga',
+        clickable: true,
+      },
     ],
   },
   {
@@ -253,6 +274,96 @@ const competitionRailSections: SportRailSection[] = [
   },
 ]
 
+const competitionLabelOverrides: Record<string, string> = {
+  'fut-brasileiro': 'Brasileirão',
+  'fut-champions': 'Champions',
+  'fut-premier-league': 'Premier',
+  'fut-laliga': 'La Liga',
+  'fut-mls': 'MLS',
+  'fut-bundesliga': 'Bundesliga',
+  'ten-atp-roma': 'ATP',
+}
+
+const invertedHighlightCompetitionOrder = [
+  { sportId: 'futebol', competitionId: 'fut-brasileiro' },
+  { sportId: 'basquete', competitionId: 'bsq-nba' },
+  { sportId: 'futebol', competitionId: 'fut-champions' },
+  { sportId: 'futebol', competitionId: 'fut-premier-league' },
+  { sportId: 'futebol', competitionId: 'fut-laliga' },
+  { sportId: 'futebol', competitionId: 'fut-mls' },
+  { sportId: 'futebol', competitionId: 'fut-bundesliga' },
+  { sportId: 'tenis', competitionId: 'ten-atp-roma', clickable: false },
+]
+
+const getExistingCompetitionItem = (competitionId: string) => {
+  const flatItems = competitionRailSections.flatMap((section) => section.items)
+  return flatItems.find((item): item is SportRailCompetitionItem => (
+    item.type === 'competition' && item.competitionId === competitionId
+  ))
+}
+
+const createInvertedCompetitionItem = ({
+  clickable,
+  competitionId,
+  sportId,
+}: {
+  clickable?: boolean
+  competitionId: string
+  sportId: string
+}): SportRailCompetitionItem | null => {
+  const existingItem = getExistingCompetitionItem(competitionId)
+  if (existingItem) {
+    return {
+      ...existingItem,
+      clickable: clickable ?? existingItem.clickable,
+      label: competitionLabelOverrides[competitionId] ?? existingItem.label,
+    }
+  }
+
+  const sportConfig = competicaoConfigBySport[sportId]
+  const competition = sportConfig?.featuredCompetitions.find((item) => item.id === competitionId)
+  if (!sportConfig || !competition) return null
+
+  return {
+    id: `competition:${competition.id}`,
+    type: 'competition',
+    sportId,
+    competitionId: competition.id,
+    competitionName: competition.name,
+    icon: getCompetitionBadge(competition.id, sportConfig.sportIcon),
+    label: competitionLabelOverrides[competition.id] ?? competition.name,
+    clickable: clickable ?? isCompetitionEnabled(competition.id),
+  }
+}
+
+const getInvertedSportCompetitionItems = (sportId: string) => {
+  const sportConfig = competicaoConfigBySport[sportId]
+  if (!sportConfig) return []
+
+  return sportConfig.featuredCompetitions
+    .map((competition) => createInvertedCompetitionItem({
+      sportId,
+      competitionId: competition.id,
+    }))
+    .filter((item): item is SportRailCompetitionItem => !!item)
+}
+
+const getInvertedCompetitionRailSections = (activeSportId: string): SportRailSection[] => {
+  const items = activeSportId === 'destaques'
+    ? invertedHighlightCompetitionOrder
+        .map((item) => createInvertedCompetitionItem(item))
+        .filter((item): item is SportRailCompetitionItem => !!item)
+    : getInvertedSportCompetitionItems(activeSportId)
+
+  return [
+    {
+      id: `inverted-${activeSportId}`,
+      className: 'sport-rail__section--lead sport-rail__section--inverted',
+      items,
+    },
+  ]
+}
+
 interface SportRailProps {
   variant?: SportRailVariant
   activeSport?: string | null
@@ -282,12 +393,153 @@ const setSportRailActiveIndicator = (
   listEl.classList.add('sport-rail__list--indicator-ready')
 }
 
+const setSportChipActiveIndicator = (
+  chipsListEl: HTMLDivElement | null,
+  activeChip: HTMLButtonElement | null | undefined
+) => {
+  if (!chipsListEl || !activeChip) {
+    chipsListEl?.classList.remove('sport-rail__sport-chip-list--indicator-ready')
+    return
+  }
+
+  const chipsRect = chipsListEl.getBoundingClientRect()
+  const chipRect = activeChip.getBoundingClientRect()
+
+  chipsListEl.style.setProperty('--sport-chip-active-x', `${chipRect.left - chipsRect.left}px`)
+  chipsListEl.style.setProperty('--sport-chip-active-y', `${chipRect.top - chipsRect.top}px`)
+  chipsListEl.style.setProperty('--sport-chip-active-width', `${chipRect.width}px`)
+  chipsListEl.style.setProperty('--sport-chip-active-height', `${chipRect.height}px`)
+  chipsListEl.classList.add('sport-rail__sport-chip-list--indicator-ready')
+}
+
 const getSportRailScrollAnchorId = (item: SportRailItem | undefined) => {
   if (!item) return null
   return item.type === 'competition' ? item.sportId : item.id
 }
 
-export function SportRail({
+export function SportRail(props: SportRailProps = {}) {
+  if (props.variant === 'inverted-hierarchy') {
+    return <InvertedHierarchyRail {...props} />
+  }
+
+  return <ClassicSportRail {...props} />
+}
+
+function SportChipRow({
+  activeSport,
+  onSportChange,
+}: Pick<SportRailProps, 'activeSport' | 'onSportChange'>) {
+  const activeSportId = activeSport ?? 'destaques'
+  const chipsContainerRef = useRef<HTMLDivElement>(null)
+  const chipsListRef = useRef<HTMLDivElement>(null)
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+
+  const scrollSportChipToStart = useCallback((sportId: string, behavior: ScrollBehavior = 'smooth') => {
+    const chipEl = chipRefs.current[sportId]
+    const containerEl = chipsContainerRef.current
+    if (!chipEl || !containerEl) return
+
+    const targetLeft = chipEl.offsetLeft - 12
+    const maxScrollLeft = Math.max(containerEl.scrollWidth - containerEl.clientWidth, 0)
+    const nextScrollLeft = Math.min(Math.max(targetLeft, 0), maxScrollLeft)
+
+    containerEl.scrollTo({ left: nextScrollLeft, behavior })
+  }, [])
+
+  const handleSportClick = (sportId: string, clickable: boolean) => {
+    if (!clickable || activeSportId === sportId) return
+    scrollSportChipToStart(sportId)
+    onSportChange?.(sportId)
+  }
+
+  useLayoutEffect(() => {
+    setSportChipActiveIndicator(chipsListRef.current, chipRefs.current[activeSportId])
+  }, [activeSportId])
+
+  useEffect(() => {
+    const chipsEl = chipsListRef.current
+    const activeChip = chipRefs.current[activeSportId]
+    if (!chipsEl || !activeChip) return
+
+    const updateActiveIndicator = () => {
+      setSportChipActiveIndicator(chipsEl, chipRefs.current[activeSportId])
+    }
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateActiveIndicator)
+      : null
+
+    resizeObserver?.observe(chipsEl)
+    resizeObserver?.observe(activeChip)
+    window.addEventListener('resize', updateActiveIndicator)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateActiveIndicator)
+    }
+  }, [activeSportId])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      scrollSportChipToStart(activeSportId)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [activeSportId, scrollSportChipToStart])
+
+  return (
+    <div className="sport-rail__sport-chips" ref={chipsContainerRef} aria-label="Esportes">
+      <div className="sport-rail__sport-chip-list" ref={chipsListRef}>
+        <span className="sport-rail__sport-chip-indicator" aria-hidden="true" />
+        {sports.map((sport) => {
+          const isActive = activeSportId === sport.id
+          const isClickable = clickableSports.has(sport.id)
+          const className = [
+            'sport-rail__sport-chip',
+            isActive ? 'sport-rail__sport-chip--active' : '',
+            !isClickable ? 'sport-rail__sport-chip--disabled' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+
+          return (
+            <button
+              key={sport.id}
+              ref={(el) => { chipRefs.current[sport.id] = el }}
+              type="button"
+              className={className}
+              aria-pressed={isActive}
+              aria-disabled={!isClickable || isActive}
+              onClick={() => handleSportClick(sport.id, isClickable)}
+            >
+              <img src={sport.icon} alt="" className="sport-rail__sport-chip-icon" />
+              <span className="sport-rail__sport-chip-label">{sport.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function InvertedHierarchyRail({
+  activeSport,
+  onSportChange,
+  ...props
+}: SportRailProps = {}) {
+  return (
+    <div className="sport-rail-inverted-hierarchy">
+      <SportChipRow activeSport={activeSport} onSportChange={onSportChange} />
+      <ClassicSportRail
+        {...props}
+        activeSport={activeSport}
+        onSportChange={onSportChange}
+        variant="inverted-hierarchy"
+      />
+    </div>
+  )
+}
+
+function ClassicSportRail({
   variant = 'default',
   activeSport,
   selectedCompetitionId,
@@ -303,15 +555,21 @@ export function SportRail({
   const itemRefs = useRef<(HTMLElement | null)[]>([])
   const hasUserScrolledRailRef = useRef(false)
   const isCompetitionVariant = variant === 'competitions'
+  const isInvertedHierarchyVariant = variant === 'inverted-hierarchy'
+  const isCircularRailVariant = isCompetitionVariant || isInvertedHierarchyVariant
+  const activeSportId = activeSport ?? 'destaques'
+  const previousActiveSportIdRef = useRef(activeSportId)
   const railSections = useMemo(
-    () => isCompetitionVariant ? competitionRailSections : defaultRailSections,
-    [isCompetitionVariant]
+    () => {
+      if (isInvertedHierarchyVariant) return getInvertedCompetitionRailSections(activeSportId)
+      return isCompetitionVariant ? competitionRailSections : defaultRailSections
+    },
+    [activeSportId, isCompetitionVariant, isInvertedHierarchyVariant]
   )
   const flatRailItems = useMemo(
     () => railSections.flatMap((section) => section.items),
     [railSections]
   )
-  const activeSportId = activeSport ?? 'destaques'
   const requestedActiveItemId = selectedCompetitionId
     ? `competition:${selectedCompetitionId}`
     : activeSportId
@@ -319,7 +577,9 @@ export function SportRail({
     ? requestedActiveItemId
     : activeSportId
   const activeRailItemIndex = flatRailItems.findIndex((item) => item.id === activeRailItemId)
-  const activeScrollAnchorItemId = getSportRailScrollAnchorId(flatRailItems[activeRailItemIndex])
+  const activeScrollAnchorItemId = isInvertedHierarchyVariant
+    ? activeRailItemId
+    : getSportRailScrollAnchorId(flatRailItems[activeRailItemIndex])
   const activeScrollAnchorIndex = flatRailItems.findIndex((item) => item.id === activeScrollAnchorItemId)
 
   const resetRailUserScrollHint = useCallback(() => {
@@ -329,14 +589,19 @@ export function SportRail({
   }, [])
 
   useEffect(() => {
-    if (isCompetitionVariant) {
-      return
-    }
-
     const calculateGap = () => {
       const itemWidth = 56
       const paddingLeft = 12
       const viewportWidth = listRef.current?.parentElement?.clientWidth || window.innerWidth
+
+      if (isCircularRailVariant) {
+        const fullVisibleItems = 5
+        const visibleItems = fullVisibleItems + 0.5
+        const calculatedGap = (viewportWidth - paddingLeft - visibleItems * itemWidth) / fullVisibleItems
+        setGap(Math.max(0, calculatedGap))
+        return
+      }
+
       const minGap = 8
       const maxGap = 24
       const maxFullItems = Math.min(Math.max(flatRailItems.length - 1, 1), 8)
@@ -355,7 +620,7 @@ export function SportRail({
     calculateGap()
     window.addEventListener('resize', calculateGap)
     return () => window.removeEventListener('resize', calculateGap)
-  }, [flatRailItems.length, isCompetitionVariant])
+  }, [flatRailItems.length, isCircularRailVariant])
 
   useLayoutEffect(() => {
     setSportRailActiveIndicator(listRef.current, itemRefs.current[activeRailItemIndex])
@@ -364,7 +629,7 @@ export function SportRail({
   useEffect(() => {
     const listEl = listRef.current
     const containerEl = listEl?.parentElement
-    if (!isCompetitionVariant || !listEl || !containerEl) return
+    if (!isCircularRailVariant || !listEl || !containerEl) return
 
     let frame: number | null = null
 
@@ -446,7 +711,7 @@ export function SportRail({
       window.removeEventListener('resize', scheduleUpdate)
       resizeObserver?.disconnect()
     }
-  }, [flatRailItems.length, isCompetitionVariant])
+  }, [flatRailItems.length, isCircularRailVariant])
 
   useEffect(() => {
     const listEl = listRef.current
@@ -514,7 +779,37 @@ export function SportRail({
   }, [flatRailItems, scrollRailItemToStart])
 
   useEffect(() => {
-    if (isCompetitionVariant) {
+    if (!isInvertedHierarchyVariant) {
+      previousActiveSportIdRef.current = activeSportId
+      return
+    }
+
+    const hasActiveSportChanged = previousActiveSportIdRef.current !== activeSportId
+    previousActiveSportIdRef.current = activeSportId
+
+    if (!hasActiveSportChanged) return
+
+    hasUserScrolledRailRef.current = false
+    window.requestAnimationFrame(() => {
+      setHasUserScrolledRail(false)
+      setHasMoreItemsLeft(false)
+    })
+
+    if (activeScrollAnchorIndex >= 0) {
+      scrollRailItemToStart(activeScrollAnchorIndex, 'auto')
+      return
+    }
+
+    listRef.current?.parentElement?.scrollTo({ left: 0, behavior: 'auto' })
+  }, [
+    activeScrollAnchorIndex,
+    activeSportId,
+    isInvertedHierarchyVariant,
+    scrollRailItemToStart,
+  ])
+
+  useEffect(() => {
+    if (isCircularRailVariant) {
       if (activeScrollAnchorIndex < 0) return
       scrollRailItemToStart(activeScrollAnchorIndex)
       return
@@ -526,7 +821,7 @@ export function SportRail({
     activeRailItemIndex,
     activeScrollAnchorIndex,
     gap,
-    isCompetitionVariant,
+    isCircularRailVariant,
     scrollRailItemIntoView,
     scrollRailItemToStart,
   ])
@@ -538,9 +833,16 @@ export function SportRail({
     flatRailItems.findIndex((railItem) => railItem.id === item.id)
 
   const handleItemClick = (item: SportRailItem) => {
-    if (isCompetitionVariant) {
+    const itemIndex = getRailItemIndex(item)
+    const isActive = activeRailItemIndex === itemIndex
+
+    if (isActive) return
+
+    if (isCircularRailVariant) {
       resetRailUserScrollHint()
-      scrollRailItemToStartById(getSportRailScrollAnchorId(item))
+      scrollRailItemToStartById(
+        isInvertedHierarchyVariant ? item.id : getSportRailScrollAnchorId(item),
+      )
     }
 
     if (item.type === 'sport') {
@@ -582,7 +884,7 @@ export function SportRail({
     const itemIndex = getRailItemIndex(item)
     const isActive = activeRailItemIndex === itemIndex
     const isClickable = item.type !== 'more' && item.clickable
-    const isStatic = isCompetitionVariant && !isClickable
+    const isStatic = isCircularRailVariant && (!isClickable || isActive)
     const className = [
       'sport-rail__item',
       isActive ? 'sport-rail__item--active' : '',
@@ -620,20 +922,24 @@ export function SportRail({
     )
   }
 
-  const railListStyle = isCompetitionVariant ? undefined : { gap: `${gap}px` }
+  const railListStyle = isCircularRailVariant
+    ? { '--sport-rail-competition-item-gap': `${gap}px` } as CSSProperties
+    : { gap: `${gap}px` }
   const railClasses = [
     'sport-rail',
     isSportPage ? 'sport-rail--sport-active' : '',
-    isCompetitionVariant ? 'sport-rail--competitions' : '',
-    isCompetitionVariant && hasMoreItemsLeft ? 'sport-rail--show-left-fade' : '',
-    isCompetitionVariant && hasMoreItemsRight ? 'sport-rail--show-right-fade' : '',
+    isCircularRailVariant ? 'sport-rail--competitions' : '',
+    isInvertedHierarchyVariant ? 'sport-rail--inverted-hierarchy' : '',
+    isCircularRailVariant && hasMoreItemsLeft ? 'sport-rail--show-left-fade' : '',
+    isCircularRailVariant && hasMoreItemsRight ? 'sport-rail--show-right-fade' : '',
   ]
     .filter(Boolean)
     .join(' ')
   const railShellClasses = [
     'sport-rail-shell',
-    isCompetitionVariant ? 'sport-rail-shell--competitions' : '',
-    isCompetitionVariant && !hasUserScrolledRail && !isRailScrolledFromStart && hasMoreItemsRight
+    isCircularRailVariant ? 'sport-rail-shell--competitions' : '',
+    isInvertedHierarchyVariant ? 'sport-rail-shell--inverted-hierarchy' : '',
+    isCircularRailVariant && !isInvertedHierarchyVariant && !hasUserScrolledRail && !isRailScrolledFromStart && hasMoreItemsRight
       ? 'sport-rail-shell--show-right-arrow'
       : '',
   ]
@@ -644,12 +950,12 @@ export function SportRail({
     <div className={railShellClasses}>
       <div className={railClasses}>
         <div
-          className={`sport-rail__list${isCompetitionVariant ? ' sport-rail__list--competitions' : ''}`}
+          className={`sport-rail__list${isCircularRailVariant ? ' sport-rail__list--competitions' : ''}`}
           ref={listRef}
           style={railListStyle}
         >
           <span className="sport-rail__active-indicator" aria-hidden="true" />
-          {isCompetitionVariant
+          {isCircularRailVariant
             ? railSections.map((section) => (
                 <div
                   key={section.id}
@@ -661,7 +967,7 @@ export function SportRail({
             : defaultRailItems.map(renderItem)}
         </div>
       </div>
-      {isCompetitionVariant && (
+      {isCircularRailVariant && !isInvertedHierarchyVariant && (
         <span className="sport-rail__scroll-arrow" aria-hidden="true">
           <CaretRightIcon className="sport-rail__scroll-arrow-icon" weight="bold" />
         </span>

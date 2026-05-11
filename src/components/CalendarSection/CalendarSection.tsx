@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode, type RefObject } from 'react'
+import { useState, useRef, useEffect, type RefObject } from 'react'
 import { CaretRightIcon, CaretUpIcon } from '@phosphor-icons/react'
 import '../PreMatchSection/PreMatchSection.css'
 import './CalendarSection.css'
@@ -733,6 +733,65 @@ export const championships: Championship[] = [
       },
     ],
   },
+  {
+    id: 'mls',
+    name: 'EUA - MLS',
+    flag: flagUSA,
+    sport: 'futebol',
+    events: [
+      {
+        id: 'mls-live-1',
+        dateTime: '1T 28:14',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 1,
+        awayScore: 0,
+        homeName: 'Inter Miami',
+        homeIcon: getTeamLogo('Inter Miami', iconFutebol),
+        awayName: 'Whitecaps',
+        awayIcon: getTeamLogo('Whitecaps', iconFutebol),
+        odds: { home: '1.40x', draw: '4.50x', away: '6.25x' },
+        doubleChanceOdds: { homeOrDraw: '1.12x', homeOrAway: '1.18x', awayOrDraw: '2.55x' },
+        bothTeamsScoreOdds: { yes: '1.95x', no: '1.80x' },
+        totalGoalsOdds: { line: 2.5, under: '1.80x', over: '1.95x' },
+        totalCornersOdds: { line: 9.5, under: '1.90x', over: '1.85x' },
+      },
+      {
+        id: 'mls-live-2',
+        dateTime: '1T 03:22',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 0,
+        awayScore: 0,
+        homeName: 'Cincinnati',
+        homeIcon: getTeamLogo('Cincinnati', iconFutebol),
+        awayName: 'Chicago Fire',
+        awayIcon: getTeamLogo('Chicago Fire', iconFutebol),
+        odds: { home: '1.95x', draw: '3.60x', away: '3.80x' },
+        doubleChanceOdds: { homeOrDraw: '1.28x', homeOrAway: '1.30x', awayOrDraw: '1.85x' },
+        bothTeamsScoreOdds: { yes: '1.85x', no: '1.90x' },
+        totalGoalsOdds: { line: 2.5, under: '1.90x', over: '1.85x' },
+        totalCornersOdds: { line: 9.5, under: '1.88x', over: '1.88x' },
+      },
+      {
+        id: 'mls-live-3',
+        dateTime: '1T 32:05',
+        isLive: true,
+        earlyPayout: false,
+        homeScore: 2,
+        awayScore: 1,
+        homeName: 'Nashville',
+        homeIcon: getTeamLogo('Nashville', iconFutebol),
+        awayName: 'New York City',
+        awayIcon: getTeamLogo('New York City', iconFutebol),
+        odds: { home: '1.85x', draw: '3.70x', away: '4.00x' },
+        doubleChanceOdds: { homeOrDraw: '1.25x', homeOrAway: '1.28x', awayOrDraw: '1.92x' },
+        bothTeamsScoreOdds: { yes: '1.50x', no: '2.45x' },
+        totalGoalsOdds: { line: 3.5, under: '1.40x', over: '2.90x' },
+        totalCornersOdds: { line: 9.5, under: '1.78x', over: '1.98x' },
+      },
+    ],
+  },
   // Basquete
   {
     id: 'nba',
@@ -1017,6 +1076,8 @@ export const competitionToChampionship: Record<string, string> = {
   'fut-champions': 'champions-league',
   'fut-premier-league': 'premier-league',
   'fut-laliga': 'la-liga',
+  'fut-mls': 'mls',
+  'fut-bundesliga': 'bundesliga',
   'bsq-nba': 'nba',
   'bsq-nba-2': 'nba',
   'bsq-ncaab': 'ncaab',
@@ -1392,44 +1453,6 @@ const getMarketStickyClassName = (
   .filter(Boolean)
   .join(' ')
 
-interface CompetitionDayMarketSectionProps {
-  section: CompetitionCalendarDaySection
-  activeMarketId: string
-  chips: MarketChip[]
-  onMarketChange: (marketId: string) => void
-  renderEventCard: (league: Championship, event: CompetitionEvent, selectedMarket?: string) => ReactNode
-}
-
-function CompetitionDayMarketSection({
-  section,
-  activeMarketId,
-  chips,
-  onMarketChange,
-  renderEventCard,
-}: CompetitionDayMarketSectionProps) {
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const marketChipsRef = useRef<HTMLDivElement>(null)
-  const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
-
-  return (
-    <div key={section.id} className="calendar-section__competition-day" ref={sectionRef}>
-      <h2 className="calendar-section__competition-day-title">{section.title}</h2>
-      <MarketChips
-        activeMarketId={activeMarketId}
-        chips={chips}
-        className={getMarketStickyClassName(marketStickyState, 'calendar-section__competition-chips')}
-        containerRef={marketChipsRef}
-        onMarketChange={onMarketChange}
-      />
-      <div className="prematch-section__matches calendar-section__competition-matches">
-        {section.groups.flatMap(({ league, events }) =>
-          events.map((event) => renderEventCard(league, event, activeMarketId))
-        )}
-      </div>
-    </div>
-  )
-}
-
 export function CalendarSection({
   sportFilter,
   competitionId,
@@ -1440,7 +1463,6 @@ export function CalendarSection({
 }: CalendarSectionProps = {}) {
   const sectionRef = useRef<HTMLElement>(null)
   const [activeMarket, setActiveMarket] = useState(() => getDefaultMarketId(sportFilter))
-  const [competitionSectionMarkets, setCompetitionSectionMarkets] = useState<Record<string, string>>({})
   const marketChipsRef = useRef<HTMLDivElement>(null)
   const marketStickyState = useHomeMarketStickyState(sectionRef, marketChipsRef)
   const [internalMatchTimes, setInternalMatchTimes] = useState<Record<string, string>>(() => {
@@ -1474,7 +1496,6 @@ export function CalendarSection({
 
   useEffect(() => {
     setActiveMarket(getDefaultMarketId(sportFilter))
-    setCompetitionSectionMarkets({})
     if (marketChipsRef.current) {
       marketChipsRef.current.scrollTo({ left: 0, behavior: 'smooth' })
     }
@@ -1745,26 +1766,21 @@ export function CalendarSection({
 
   if (isCompetitionPage) {
     return (
-      <section className={competitionSectionClasses}>
-        {competitionDaySections.map((section) => {
-          const sectionMarket = competitionSectionMarkets[section.id] ?? getDefaultMarketId(section.groups[0]?.league.sport ?? currentSport)
-
-          return (
-            <CompetitionDayMarketSection
-              key={section.id}
-              section={section}
-              activeMarketId={sectionMarket}
-              chips={currentMarketChips}
-              onMarketChange={(marketId) => {
-                setCompetitionSectionMarkets((current) => ({
-                  ...current,
-                  [section.id]: marketId,
-                }))
-              }}
-              renderEventCard={renderEventCard}
-            />
-          )
+      <section className={competitionSectionClasses} ref={sectionRef}>
+        {renderMarketChips({
+          className: getMarketStickyClassName(marketStickyState, 'calendar-section__competition-chips'),
+          withRefs: true,
         })}
+        {competitionDaySections.map((section) => (
+          <div key={section.id} className="calendar-section__competition-day">
+            <h2 className="calendar-section__competition-day-title">{section.title}</h2>
+            <div className="prematch-section__matches calendar-section__competition-matches">
+              {section.groups.flatMap(({ league, events }) =>
+                events.map((event) => renderEventCard(league, event, activeMarket))
+              )}
+            </div>
+          </div>
+        ))}
       </section>
     )
   }
