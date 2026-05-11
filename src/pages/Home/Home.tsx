@@ -4,7 +4,6 @@ import { TrilhoEBanner } from '../../components/TrilhoEBanner'
 import { PromotionSection } from '../../components/PromotionSection'
 import { OffersSection } from '../../components/OffersSection'
 import { LiveSection } from '../../components/LiveSection'
-import { EscadinhaSection } from '../../components/EscadinhaSection'
 import { PreMatchSection } from '../../components/PreMatchSection'
 import { SportFilterBar } from '../../components/SportFilterBar'
 import { CalendarSection, getCalendarDisplayedEvents } from '../../components/CalendarSection'
@@ -812,22 +811,12 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
       ) : (
         <Fragment key={`destaques-${contentResetKey}`}>
           {/* <ContentTabs /> */}
-          {isVariant2 ? (
-            <>
-              <OffersSection />
-              <PromotionSection />
-            </>
-          ) : (
-            <>
-              <PromotionSection />
-              <OffersSection />
-            </>
-          )}
+          <PromotionSection />
           <LiveSection
             onMatchClick={handleLiveMatchClick}
             onOpenCompetition={handleOpenCompetition}
           />
-          <EscadinhaSection />
+          <OffersSection />
           <PreMatchSection
             onOpenCompetition={handleOpenCompetition}
             onMatchClick={handleLiveMatchClick}

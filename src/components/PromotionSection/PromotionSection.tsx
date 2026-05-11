@@ -6,7 +6,6 @@ import './PromotionSection.css'
 import imgMissaoVerdao from '../../assets/imgMissaoVerdao.png'
 import imgPagamentoAntecipado from '../../assets/img-promo-pagamento-antecipado-futebol.png'
 import imgFlamengo from '../../assets/bgFlamengo.png'
-import imgRatinho from '../../assets/img-ratinho.png'
 import imgTesouroRei from '../../assets/img-promo-tesouro-do-rei.png'
 
 interface Promotion {
@@ -50,16 +49,6 @@ const promotions: Promotion[] = [
     title: 'Ganhe R$5 no brasileirão.',
     description: 'Aposte R$50 no jogo do Flamengo e ganhe mais 20 coroas.',
     image: imgFlamengo,
-  },
-  {
-    id: '4',
-    type: 'missao',
-    timeLabel: 'Termina em 3 dias',
-    hasTimer: true,
-    label: ['Missão'],
-    title: 'Missão Ratinho',
-    description: 'Aposte R$20 no jogo do Ratinho Sortudo e ganhe 5 Rodadas.',
-    image: imgRatinho,
   },
   {
     id: '5',

@@ -12,7 +12,6 @@ import {
 } from '../BottomSheet'
 
 // Backgrounds
-import bgMissao from '../../assets/bgMissao.png'
 import bg1x2 from '../../assets/bg1x2.png'
 import bgAumentada from '../../assets/bgAumentada.png'
 import bgVirtuais from '../../assets/bgVirtuais.png'
@@ -146,18 +145,6 @@ const banners: Banner[] = [
       { value: 'ARS +4', label: 'Total de Escanteios' },
     ],
     oddBoosted: { old: '7.50x', new: '10.50x' },
-  },
-  {
-    id: 1,
-    type: 'missao',
-    headerLeft: 'Missão Rodada Grátis',
-    headerRight: 'Termina em 3 dias',
-    showTimer: true,
-    background: bgMissao,
-    title: 'Ganhe 40 rodadas!',
-    description: 'Aposte R$100 no jogo SpaceMan e ganhe 40 rodadas grátis.',
-    buttonText: 'Ativar Missão',
-    showInfoBtn: true,
   },
   {
     id: 6,
