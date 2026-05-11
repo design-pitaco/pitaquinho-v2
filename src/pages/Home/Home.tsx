@@ -91,7 +91,6 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
   const sportHeaderCompactBgHeight = usesShortcutRail
     ? 182
     : SPORT_HEADER_COMPACT_BG_HEIGHT
-  const [isVariant2, setIsVariant2] = useState(false)
   const [isVariant3, setIsVariant3] = useState(false)
   const [activeSport, setActiveSport] = useState<string | null>(null)
   const [isSportHeaderCompact, setIsSportHeaderCompact] = useState(false)
@@ -161,7 +160,6 @@ export function Home({ railVariant = 'default' }: HomeProps = {}) {
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash
-      setIsVariant2(hash === '#v2' || hash === '#/2')
       setIsVariant3(hash === '#v3' || hash === '#/3')
     }
 
